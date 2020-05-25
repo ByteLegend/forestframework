@@ -10,14 +10,18 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import kotlin.coroutines.Continuation;
+import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 import org.apache.commons.math3.util.Pair;
 import org.forestframework.KotlinSuspendFunctionBridge;
+import org.forestframework.ResponseProcessor;
 import org.forestframework.RoutingHandlerArgumentResolver;
 import org.forestframework.annotation.ArgumentResolvedBy;
 import org.forestframework.annotation.Blocking;
 import org.forestframework.annotation.ComponentClasses;
 import org.forestframework.annotation.Intercept;
+import org.forestframework.annotation.ReturnValueProcessedBy;
 import org.forestframework.annotation.Route;
+import org.forestframework.annotation.RouteType;
 import org.forestframework.annotation.Router;
 
 import javax.inject.Singleton;
@@ -25,14 +29,25 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.forestframework.annotation.RouteType.AFTER_HANDLER_COMPLETION;
+import static org.forestframework.annotation.RouteType.AFTER_HANDLER_SUCCESS;
+import static org.forestframework.annotation.RouteType.HANDLER;
+import static org.forestframework.annotation.RouteType.PRE_HANDLER;
+import static org.forestframework.annotation.RouteType.values;
+
 @Singleton
 public class DefaultRoutingEngine implements RoutingEngine {
-    private final List<Routing> routings;
+    private static final String ENABLED_STATES_KEY = "FOREST_ROUTING_ENGINE_ENABLED_STATES";
+    private final Map<RouteType, List<Routing>> routings;
     private final Injector injector;
     private final Vertx vertx;
 
@@ -45,11 +60,11 @@ public class DefaultRoutingEngine implements RoutingEngine {
         this.routings = createRoutings(componentClasses);
     }
 
-    protected List<Routing> createRoutings(List<Class<?>> componentClasses) {
+    protected Map<RouteType, List<Routing>> createRoutings(List<Class<?>> componentClasses) {
         return componentClasses.stream()
                 .filter(this::isRouterClass)
                 .flatMap(this::findRoutingHandlers)
-                .collect(Collectors.toList());
+                .collect(Collectors.groupingBy(Routing::getRouteType));
     }
 
     private boolean isRouterClass(Class<?> klass) {
@@ -59,28 +74,106 @@ public class DefaultRoutingEngine implements RoutingEngine {
     @Override
     public Handler<HttpServerRequest> createRouter() {
         io.vertx.ext.web.Router router = io.vertx.ext.web.Router.router(vertx);
-        routings.forEach(routing -> configureRouter(router, routing));
+
+        configurePreHandlerRoute(router, routings.getOrDefault(PRE_HANDLER, emptyList()));
+        configureHandlerRoute(router, routings.getOrDefault(PRE_HANDLER, emptyList()));
+        configureFinalizingRoute(router);
         return router;
     }
 
-    private void configureRouter(io.vertx.ext.web.Router router, Routing routing) {
-        routing.configure(router).handler(context -> {
-            Object[] arguments = resolveArguments(routing, context);
-            Object returnValue = invoke(routing, arguments);
-            if (returnValue instanceof Future) {
-                ((Future) returnValue).onSuccess(ret -> {
-                    context.next();
-                    context.response().end();
-                }).onFailure((failure) -> {
-                    ((Throwable) failure).printStackTrace();
-                });
-            } else {
-
-            }
-        });
+    private void configureFinalizingRoute(io.vertx.ext.web.Router router) {
+        io.vertx.ext.web.Route route = router.route("/*");
+        for (HttpMethod method : HttpMethod.values()) {
+            route = route.method(method);
+        }
+        route.handler(RoutingContext::end);
     }
 
-    private Object invoke(Routing routing, Object[] arguments) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void configureHandlerRoute(io.vertx.ext.web.Router router, List<Routing> routings) {
+        for (Routing routing : routings) {
+            routing.configure(router).handler(ctx -> {
+                RoutingContextDecorator context = new RoutingContextDecorator(ctx);
+                if (context.get(ENABLED_STATES_KEY) == null || handlerEnabled(context, HANDLER)) {
+                    Object[] arguments = resolveArguments(routing, context);
+                    CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
+
+                    returnValueFuture.thenAccept(returnValue -> {
+                        if (!context.isRerouteInvoked()) {
+                            processResult(context, routing, returnValue);
+                        }
+                        context.next();
+                    }).exceptionally((Throwable failure) -> {
+                        failure.printStackTrace();
+                        context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_SUCCESS, AFTER_HANDLER_COMPLETION));
+                        return null;
+                    });
+                } else {
+                    context.next();
+                }
+            });
+        }
+    }
+
+    private void processResult(RoutingContextDecorator context, Routing routing, Object returnValue) {
+        List<Pair<ReturnValueProcessedBy, Class<?>>> annoAndResolverClass
+                = findAnnotationWithType(routing.getHandlerMethod().getDeclaredAnnotations(), ReturnValueProcessedBy.class, ReturnValueProcessedBy::value);
+
+        if (annoAndResolverClass.isEmpty()) {
+            // TODO a fallback resolver
+            throw new RuntimeException("processor not found");
+        }
+        if (annoAndResolverClass.size() > 1) {
+            throw new RuntimeException("Found multiple resolvers!");
+        }
+
+        Annotation annotation = annoAndResolverClass.get(0).getFirst();
+        Class<? extends ResponseProcessor> resolverClass = (Class<? extends ResponseProcessor>) annoAndResolverClass.get(0).getSecond();
+
+        injector.getInstance(resolverClass).processResponse(context, routing, returnValue, annotation);
+    }
+
+
+    private void configurePreHandlerRoute(io.vertx.ext.web.Router router, List<Routing> routings) {
+        for (Routing routing : routings) {
+            validPreHandler(routing);
+            routing.configure(router).handler(context -> {
+                if (context.get(ENABLED_STATES_KEY) == null || handlerEnabled(context, PRE_HANDLER)) {
+                    Object[] arguments = resolveArguments(routing, context);
+                    CompletableFuture<Boolean> returnValue = invokeHandler(routing, arguments);
+
+                    returnValue.thenAccept(shouldContinue -> {
+                        if (shouldContinue) {
+                            context.put(ENABLED_STATES_KEY, Arrays.asList(values()));
+                        } else {
+                            context.put(ENABLED_STATES_KEY, singletonList(AFTER_HANDLER_COMPLETION));
+                        }
+
+                        context.next();
+                    }).exceptionally(failure -> {
+                        failure.printStackTrace();
+                        context.put(ENABLED_STATES_KEY, singletonList(AFTER_HANDLER_COMPLETION));
+                        context.next();
+                        return null;
+                    });
+                } else {
+                    context.next();
+                }
+            });
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean handlerEnabled(RoutingContext routingContext, RouteType type) {
+        return ((List<RouteType>) routingContext.data().getOrDefault(ENABLED_STATES_KEY, emptyList())).contains(type);
+    }
+
+    private void validPreHandler(Routing routing) {
+        // TODO A valid pre handler must returns boolean/Boolean/Future[Boolean]
+    }
+
+
+    private <T> CompletableFuture<T> invokeHandler(Routing routing, Object[] arguments) {
         if (isKotlinSuspendFunction(routing)) {
             return invokeViaKotlinBridge(routing, arguments);
         } else if (isBlockingMethod(routing)) {
@@ -91,27 +184,31 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Future<T> invokeViaJavaReflection(Routing routing, Object[] arguments) {
+    private <T> CompletableFuture<T> invokeViaJavaReflection(Routing routing, Object[] arguments) {
         try {
             Object ret = routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments);
             if (ret instanceof Future) {
-                return (Future<T>) ret;
+                return VertxCompletableFuture.from((Future<T>) ret);
+            } else if (ret instanceof CompletableFuture) {
+                return (CompletableFuture<T>) ret;
             } else {
-                return (Future<T>) Future.succeededFuture(ret);
+                return (CompletableFuture<T>) CompletableFuture.completedFuture(ret);
             }
         } catch (Throwable e) {
-            return Future.failedFuture(e);
+            CompletableFuture<T> failedFuture = new CompletableFuture<>();
+            failedFuture.completeExceptionally(e);
+            return failedFuture;
         }
     }
 
-    private <T> Future<T> invokeBlockingViaJavaReflection(Routing routing, Object[] arguments) {
-        return vertx.executeBlocking((Promise<T> promise) -> {
+    private <T> CompletableFuture<T> invokeBlockingViaJavaReflection(Routing routing, Object[] arguments) {
+        return VertxCompletableFuture.from(vertx.executeBlocking((Promise<T> promise) -> {
             try {
-                promise.complete(routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments);
+                promise.complete((T) routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments));
             } catch (Throwable e) {
                 promise.fail(e);
             }
-        });
+        }));
     }
 
     private boolean isBlockingMethod(Routing routing) {
@@ -136,6 +233,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
                 arguments[i] = resolveArgument(routing, argumentAnnontations[i], argumentsType[i], context);
             }
         }
+        return arguments;
     }
 
     private boolean isContinuation(Class<?> argumentType) {
@@ -143,15 +241,17 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     @SuppressWarnings({"rawtypes"})
-    private List<Pair<? extends Annotation, Class<? extends RoutingHandlerArgumentResolver>>> findAnnotationWithResolver(Annotation[] annotations) {
+    private <ANNO extends Annotation> List<Pair<ANNO, Class<?>>> findAnnotationWithType(Annotation[] annotations,
+                                                                                        Class<ANNO> annotationClass,
+                                                                                        Function<ANNO, Class<?>> function) {
         return Stream.of(annotations)
                 .map(anno -> {
-                    ArgumentResolvedBy argumentResolvedBy = anno.getClass().getAnnotation(ArgumentResolvedBy.class);
-                    if (argumentResolvedBy == null) {
+                    ANNO targetAnnotation = anno.getClass().getAnnotation(annotationClass);
+                    if (targetAnnotation == null) {
                         return null;
                     } else {
-                        Class<? extends RoutingHandlerArgumentResolver> resolverClass = argumentResolvedBy.value();
-                        Pair<? extends Annotation, Class<? extends RoutingHandlerArgumentResolver>> pair = Pair.create(anno, resolverClass);
+                        Class<?> resolverClass = function.apply(targetAnnotation);
+                        Pair<ANNO, Class<?>> pair = Pair.create(targetAnnotation, resolverClass);
                         return pair;
                     }
                 }).filter(Objects::nonNull)
@@ -165,7 +265,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
             return (T) routingContext;
         }
 
-        List<Pair<? extends Annotation, Class<? extends RoutingHandlerArgumentResolver>>> annoAndResolverClass = findAnnotationWithResolver(annotations);
+        List<Pair<ArgumentResolvedBy, Class<?>>> annoAndResolverClass = findAnnotationWithType(annotations, ArgumentResolvedBy.class, ArgumentResolvedBy::value);
 
         if (annoAndResolverClass.isEmpty()) {
             // TODO a fallback resolver
@@ -176,7 +276,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
         }
 
         Annotation annotation = annoAndResolverClass.get(0).getFirst();
-        Class<? extends RoutingHandlerArgumentResolver> resolverClass = annoAndResolverClass.get(0).getSecond();
+        Class<? extends RoutingHandlerArgumentResolver> resolverClass = (Class<? extends RoutingHandlerArgumentResolver>) annoAndResolverClass.get(0).getSecond();
 
         return (T) injector.getInstance(resolverClass).resolveArgument(routing, argumentType, routingContext, annotation);
     }

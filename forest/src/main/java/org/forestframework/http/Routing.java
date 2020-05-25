@@ -3,11 +3,14 @@ package org.forestframework.http;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import org.forestframework.annotation.RouteType;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
 public interface Routing {
+    RouteType getRouteType();
+
     List<HttpMethod> getMethods();
 
     String getPath();
