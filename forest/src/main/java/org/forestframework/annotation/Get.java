@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Route(method = HttpMethod.GET)
+@Route(methods = {HttpMethod.GET})
 public @interface Get {
     String value();
 }

@@ -2,6 +2,6 @@ package org.forestframework.annotation;
 
 import org.forestframework.AcceptAwareResponseProcessor;
 
-@ReturnValueProcessedBy(AcceptAwareResponseProcessor.class)
+//@ReturnValueProcessedBy(AcceptAwareResponseProcessor.class)
 public @interface ResponseBody {
 }

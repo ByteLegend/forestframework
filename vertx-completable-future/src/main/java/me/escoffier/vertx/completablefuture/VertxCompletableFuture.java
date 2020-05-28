@@ -3,6 +3,7 @@ package me.escoffier.vertx.completablefuture;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.WorkerExecutor;
 
@@ -544,14 +545,15 @@ public class VertxCompletableFuture<T> extends CompletableFuture<T> implements C
    * @return the Vert.x future completed or failed when the given {@link CompletableFuture} completes or fails.
    */
   public static <T> Future<T> toFuture(CompletableFuture<T> future) {
-    Future<T> fut = Future.future();
-    Objects.requireNonNull(future).whenComplete((res, err) -> {
-      if (err != null) {
-        fut.fail(err);
-      } else {
-        fut.complete(res);
-      }
-    });
+    Future<T> fut = Future.future(promise ->
+      Objects.requireNonNull(future).whenComplete((res, err) -> {
+        if (err != null) {
+          promise.fail(err);
+        } else {
+          promise.complete(res);
+        }
+      })
+    );
     // this can't recurse because the Future API guarantees repeated completions should do nothing
     fut.setHandler(res -> {
       if (res.succeeded()) {

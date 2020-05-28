@@ -5,10 +5,11 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
 import io.vertx.core.Vertx;
 import org.forestframework.Forest;
 import org.forestframework.annotation.ComponentClasses;
-import org.forestframework.annotation.Router;
+import org.forestframework.utils.ComponentScanUtils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.google.common.reflect.ClassPath.from;
+import static org.forestframework.utils.ComponentScanUtils.isGuavaModule;
+import static org.forestframework.utils.ComponentScanUtils.isRouter;
 
 public class DefaultInjectorCreator implements InjectorCreator {
     @Override
@@ -23,7 +26,7 @@ public class DefaultInjectorCreator implements InjectorCreator {
         Vertx vertx = Vertx.vertx();
         List<Class<?>> componentClasses = scanComponentClasses(applicationClass);
         List<Module> modules = getModuleClasses(componentClasses);
-        modules.add(new CoreModule(vertx));
+        modules.add(new CoreModule(vertx, componentClasses));
         return Guice.createInjector(modules);
     }
 
@@ -46,17 +49,9 @@ public class DefaultInjectorCreator implements InjectorCreator {
         return isGuavaModule(klass) || isRouter(klass);
     }
 
-    private boolean isGuavaModule(Class<?> klass) {
-        return Module.class.isAssignableFrom(klass);
-    }
-
-    private boolean isRouter(Class<?> klass) {
-        return klass.isAnnotationPresent(Router.class);
-    }
-
     private List<Module> getModuleClasses(List<Class<?>> componentClasses) {
         return componentClasses.stream()
-                .filter(this::isGuavaModule)
+                .filter(ComponentScanUtils::isGuavaModule)
                 .map(klass -> (Class<? extends Module>) klass)
                 .map(Forest::instantiate)
                 .collect(Collectors.toList());
@@ -74,7 +69,8 @@ public class DefaultInjectorCreator implements InjectorCreator {
         @Override
         protected void configure() {
             bind(Vertx.class).toInstance(vertx);
-            bind(List.class).annotatedWith(ComponentClasses.class).toInstance(componentClasses);
+            bind(new TypeLiteral<List<Class<?>>>() {
+            }).annotatedWith(ComponentClasses.class).toInstance(componentClasses);
         }
     }
 }

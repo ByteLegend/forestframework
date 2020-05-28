@@ -23,6 +23,8 @@ public @interface ForestApplication {
     String[] includeName() default {};
 
     Class<? extends InjectorCreator> injectorCreatedBy() default DefaultInjectorCreator.class;
+
+    Class<?>[] extensions() default {};
 }
 
 

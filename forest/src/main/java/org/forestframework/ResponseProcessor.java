@@ -10,5 +10,5 @@ import java.lang.annotation.Annotation;
  * Must not invoke {@link HttpServerResponse#end()} method.
  */
 public interface ResponseProcessor<A extends Annotation> {
-    void processResponse(RoutingContext routingContext, Routing routing, Object returnValue, A annotation);
+    Object processResponse(RoutingContext routingContext, Routing routing, Object returnValue, A annotation);
 }

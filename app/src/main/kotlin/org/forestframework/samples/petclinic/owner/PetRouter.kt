@@ -9,10 +9,10 @@ import org.forestframework.annotation.Intercept
 import org.forestframework.annotation.PathParam
 import org.forestframework.annotation.Post
 import org.forestframework.annotation.RequestBody
-import org.forestframework.annotation.Router
+import org.forestframework.annotation.Route
 import javax.validation.Valid
 
-@Router("/owners/:ownerId")
+@Route("/owners/:ownerId")
 class PetRouter @Inject constructor(private val pets: PetRepository, private val owners: OwnerRepository) {
     private val VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm"
 

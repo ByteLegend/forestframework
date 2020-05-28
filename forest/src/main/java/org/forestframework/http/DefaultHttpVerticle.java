@@ -20,17 +20,21 @@ public class DefaultHttpVerticle extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) {
-        vertx.createHttpServer()
-                .requestHandler(routingEngine.createRouter())
-                .listen(8080, result -> {
-                    if (result.succeeded()) {
-                        LOGGER.info("Success");
-                        startPromise.complete();
-                    } else {
-                        LOGGER.error("", result.cause());
-                        result.cause().printStackTrace();
-                        startPromise.fail(result.cause());
-                    }
-                });
+        try {
+            vertx.createHttpServer()
+                    .requestHandler(routingEngine.createRouter())
+                    .listen(8080, result -> {
+                        if (result.succeeded()) {
+                            LOGGER.info("Success");
+                            startPromise.complete();
+                        } else {
+                            LOGGER.error("", result.cause());
+                            result.cause().printStackTrace();
+                            startPromise.fail(result.cause());
+                        }
+                    });
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 }

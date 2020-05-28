@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ArgumentResolvedBy(PathParamResolver.class)
+//@ArgumentResolvedBy(PathParamResolver.class)
 public @interface PathParam {
     String value();
 }

@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Route(method = HttpMethod.POST)
+@Route(methods = {HttpMethod.POST})
 public @interface Post {
     String value();
 }

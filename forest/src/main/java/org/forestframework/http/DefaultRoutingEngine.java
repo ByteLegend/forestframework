@@ -18,11 +18,13 @@ import org.forestframework.RoutingHandlerArgumentResolver;
 import org.forestframework.annotation.ArgumentResolvedBy;
 import org.forestframework.annotation.Blocking;
 import org.forestframework.annotation.ComponentClasses;
+import org.forestframework.annotation.Get;
 import org.forestframework.annotation.Intercept;
+import org.forestframework.annotation.Post;
 import org.forestframework.annotation.ReturnValueProcessedBy;
 import org.forestframework.annotation.Route;
 import org.forestframework.annotation.RouteType;
-import org.forestframework.annotation.Router;
+import org.forestframework.utils.ComponentScanUtils;
 
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
@@ -62,13 +64,9 @@ public class DefaultRoutingEngine implements RoutingEngine {
 
     protected Map<RouteType, List<Routing>> createRoutings(List<Class<?>> componentClasses) {
         return componentClasses.stream()
-                .filter(this::isRouterClass)
+                .filter(ComponentScanUtils::isRouter)
                 .flatMap(this::findRoutingHandlers)
                 .collect(Collectors.groupingBy(Routing::getRouteType));
-    }
-
-    private boolean isRouterClass(Class<?> klass) {
-        return klass.getAnnotation(Router.class) != null;
     }
 
     @Override
@@ -76,7 +74,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
         io.vertx.ext.web.Router router = io.vertx.ext.web.Router.router(vertx);
 
         configurePreHandlerRoute(router, routings.getOrDefault(PRE_HANDLER, emptyList()));
-        configureHandlerRoute(router, routings.getOrDefault(PRE_HANDLER, emptyList()));
+        configureHandlerRoute(router, routings.getOrDefault(HANDLER, emptyList()));
         configureFinalizingRoute(router);
         return router;
     }
@@ -100,9 +98,16 @@ public class DefaultRoutingEngine implements RoutingEngine {
 
                     returnValueFuture.thenAccept(returnValue -> {
                         if (!context.isRerouteInvoked()) {
-                            processResult(context, routing, returnValue);
+                            processResult(context, routing, returnValue).thenAccept(ret -> {
+                                context.next();
+                            }).exceptionally((Throwable failure) -> {
+                                failure.printStackTrace();
+                                context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_SUCCESS, AFTER_HANDLER_COMPLETION));
+                                return null;
+                            });
+                        } else {
+                            context.next();
                         }
-                        context.next();
                     }).exceptionally((Throwable failure) -> {
                         failure.printStackTrace();
                         context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_SUCCESS, AFTER_HANDLER_COMPLETION));
@@ -115,7 +120,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
         }
     }
 
-    private void processResult(RoutingContextDecorator context, Routing routing, Object returnValue) {
+    private CompletableFuture<Object> processResult(RoutingContextDecorator context, Routing routing, Object returnValue) {
         List<Pair<ReturnValueProcessedBy, Class<?>>> annoAndResolverClass
                 = findAnnotationWithType(routing.getHandlerMethod().getDeclaredAnnotations(), ReturnValueProcessedBy.class, ReturnValueProcessedBy::value);
 
@@ -130,7 +135,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
         Annotation annotation = annoAndResolverClass.get(0).getFirst();
         Class<? extends ResponseProcessor> resolverClass = (Class<? extends ResponseProcessor>) annoAndResolverClass.get(0).getSecond();
 
-        injector.getInstance(resolverClass).processResponse(context, routing, returnValue, annotation);
+        return adapt(injector.getInstance(resolverClass).processResponse(context, routing, returnValue, annotation));
     }
 
 
@@ -184,16 +189,19 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     @SuppressWarnings("unchecked")
+    private <T> CompletableFuture<T> adapt(Object obj) {
+        if (obj instanceof Future) {
+            return VertxCompletableFuture.from((Future<T>) obj);
+        } else if (obj instanceof CompletableFuture) {
+            return (CompletableFuture<T>) obj;
+        } else {
+            return (CompletableFuture<T>) CompletableFuture.completedFuture(obj);
+        }
+    }
+
     private <T> CompletableFuture<T> invokeViaJavaReflection(Routing routing, Object[] arguments) {
         try {
-            Object ret = routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments);
-            if (ret instanceof Future) {
-                return VertxCompletableFuture.from((Future<T>) ret);
-            } else if (ret instanceof CompletableFuture) {
-                return (CompletableFuture<T>) ret;
-            } else {
-                return (CompletableFuture<T>) CompletableFuture.completedFuture(ret);
-            }
+            return adapt(routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments));
         } catch (Throwable e) {
             CompletableFuture<T> failedFuture = new CompletableFuture<>();
             failedFuture.completeExceptionally(e);
@@ -240,18 +248,31 @@ public class DefaultRoutingEngine implements RoutingEngine {
         return argumentType == Continuation.class;
     }
 
+    /*
+     * There're two annotation types involved. Suppose the handler is annontated by @A:
+     *
+     * @A
+     * public void handlerMethod() {}
+     *
+     * And class A is annotated by B:
+     *
+     * @Retention(RUNTIME)
+     * @B(value=XXX.class)
+     * @interface A {}
+     *
+     */
     @SuppressWarnings({"rawtypes"})
-    private <ANNO extends Annotation> List<Pair<ANNO, Class<?>>> findAnnotationWithType(Annotation[] annotations,
-                                                                                        Class<ANNO> annotationClass,
-                                                                                        Function<ANNO, Class<?>> function) {
+    private <A extends Annotation, B extends Annotation> List<Pair<A, Class<?>>> findAnnotationWithType(Annotation[] annotations,
+                                                                                                        Class<B> annotationClass,
+                                                                                                        Function<B, Class<?>> function) {
         return Stream.of(annotations)
                 .map(anno -> {
-                    ANNO targetAnnotation = anno.getClass().getAnnotation(annotationClass);
+                    B targetAnnotation = anno.annotationType().getAnnotation(annotationClass);
                     if (targetAnnotation == null) {
                         return null;
                     } else {
                         Class<?> resolverClass = function.apply(targetAnnotation);
-                        Pair<ANNO, Class<?>> pair = Pair.create(targetAnnotation, resolverClass);
+                        Pair<A, Class<?>> pair = Pair.create((A) anno, resolverClass);
                         return pair;
                     }
                 }).filter(Objects::nonNull)
@@ -298,11 +319,11 @@ public class DefaultRoutingEngine implements RoutingEngine {
     private Pair<Method, Annotation> toMethodAnnotationPair(Method method) {
         Annotation[] annotations = method.getAnnotations();
         for (Annotation annotation : annotations) {
-            if (annotation.getClass() == Route.class) {
+            if (annotation.annotationType() == Route.class) {
                 return Pair.create(method, annotation);
             }
 
-            if (annotation.getClass().getAnnotation(Route.class) != null) {
+            if (annotation.annotationType().getAnnotation(Route.class) != null) {
                 return Pair.create(method, annotation);
             }
         }
@@ -310,7 +331,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     private Routing toRouting(Class<?> klass, Object handlerInstance, Method method, Annotation annotation) {
-        String classRouterPath = klass.getAnnotation(Router.class).value();
+        String classRouterPath = klass.isAnnotationPresent(Route.class) ? klass.getAnnotation(Route.class).value() : "";
         String methodRoutePath = getPath(annotation);
         String path = classRouterPath + methodRoutePath;
         List<HttpMethod> httpMethods = getHttpMethods(annotation);
@@ -318,19 +339,27 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     private String getPath(Annotation annotation) {
-        if (annotation.getClass() == Route.class) {
+        if (annotation.annotationType() == Get.class) {
+            return ((Get) annotation).value();
+        } else if (annotation.annotationType() == Post.class) {
+            return ((Post) annotation).value();
+        } else if (annotation.annotationType() == Route.class) {
             return ((Route) annotation).value();
-        } else if (annotation.getClass() == Intercept.class) {
+        } else if (annotation.annotationType() == Intercept.class) {
             return ((Intercept) annotation).value();
         }
         throw new IllegalStateException();
     }
 
     private List<HttpMethod> getHttpMethods(Annotation annotation) {
-        if (annotation.getClass() == Route.class) {
+        if (annotation.annotationType() == Get.class) {
+            return singletonList(HttpMethod.GET);
+        } else if (annotation.annotationType() == Post.class) {
+            return singletonList(HttpMethod.POST);
+        } else if (annotation.annotationType() == Route.class) {
             HttpMethod[] methods = ((Route) annotation).methods();
             return Arrays.asList(methods);
-        } else if (annotation.getClass() == Intercept.class) {
+        } else if (annotation.annotationType() == Intercept.class) {
             HttpMethod[] methods = ((Intercept) annotation).methods();
             return Arrays.asList(methods);
         }

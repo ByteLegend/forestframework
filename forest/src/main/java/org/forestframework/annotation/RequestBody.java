@@ -11,6 +11,6 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE_USE;
 
 @Target({ METHOD, FIELD, CONSTRUCTOR, PARAMETER, TYPE_USE })
-@ArgumentResolvedBy(ContentTypeAwareRequestBodyParser.class)
+//@ArgumentResolvedBy(ContentTypeAwareRequestBodyParser.class)
 public @interface RequestBody {
 }

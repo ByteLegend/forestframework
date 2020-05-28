@@ -5,12 +5,10 @@ import org.forestframework.Form
 import org.forestframework.annotation.Get
 import org.forestframework.annotation.PathParam
 import org.forestframework.annotation.Post
-import org.forestframework.annotation.Router
 import org.forestframework.samples.petclinic.visit.VisitRepository
 import javax.inject.Inject
 import javax.validation.Valid
 
-@Router
 class OwnRouter @Inject constructor(val owners: OwnerRepository, val visits: VisitRepository) {
 
     private val VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm"
