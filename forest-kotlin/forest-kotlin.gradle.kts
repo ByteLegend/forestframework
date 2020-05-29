@@ -15,7 +15,7 @@ tasks.withType<KotlinCompile>() {
 
 dependencies {
     val kotlinVersion = "1.3.72"
-    val vertxVersion = "4.0.0-milestone4"
+    val vertxVersion = "4.0.0-milestone5"
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.7")
     api("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")

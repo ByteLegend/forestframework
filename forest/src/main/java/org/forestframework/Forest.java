@@ -1,10 +1,29 @@
 package org.forestframework;
 
+import com.google.common.reflect.ClassPath;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
+import com.google.inject.util.Modules;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import org.forestframework.annotation.ComponentClasses;
 import org.forestframework.annotation.ForestApplication;
 import org.forestframework.bootstrap.HttpServerStarter;
+import org.forestframework.utils.ComponentScanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.google.common.reflect.ClassPath.from;
+import static org.forestframework.utils.ComponentScanUtils.isGuavaModule;
+import static org.forestframework.utils.ComponentScanUtils.isRouter;
 
 public class Forest {
     private static final Logger LOGGER = LoggerFactory.getLogger(Forest.class);
@@ -33,7 +52,69 @@ public class Forest {
         if (annotation == null) {
             throw new RuntimeException();
         } else {
-            return instantiate(annotation.injectorCreatedBy()).createInjector(applicationClass);
+            List<Class<?>> componentClasses = scanComponentClasses(applicationClass);
+            CoreModule coreModule = new CoreModule(componentClasses);
+            return createOverridingInjector(coreModule, customModules(componentClasses));
+        }
+    }
+
+    private static Injector createOverridingInjector(Module coreModule, List<Module> customModules) {
+        Module current = coreModule;
+        for (Module module : customModules) {
+            current = Modules.override(current).with(module);
+        }
+        return Guice.createInjector(current);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Module> customModules(List<Class<?>> componentClasses) {
+        return componentClasses.stream()
+                .filter(ComponentScanUtils::isGuavaModule)
+                .map(klass -> (Class<? extends Module>) klass)
+                .map(Forest::instantiate)
+                .collect(Collectors.toList());
+    }
+
+    private static List<Class<?>> scanComponentClasses(Class<?> applicationClass) {
+        String packageName = applicationClass.getPackage().getName();
+        try {
+            return from(applicationClass.getClassLoader())
+                    .getTopLevelClassesRecursive(packageName)
+                    .stream()
+                    .map(ClassPath.ClassInfo::load)
+                    .filter(Forest::isComponentClass)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static boolean isComponentClass(Class<?> klass) {
+        return isGuavaModule(klass) || isRouter(klass);
+    }
+
+    private List<Module> getModuleClasses(List<Class<?>> componentClasses) {
+        return componentClasses.stream()
+                .filter(ComponentScanUtils::isGuavaModule)
+                .map(klass -> (Class<? extends Module>) klass)
+                .map(Forest::instantiate)
+                .collect(Collectors.toList());
+    }
+
+    public static class CoreModule extends AbstractModule {
+        private final Vertx vertx = Vertx.vertx();
+        private final List<Class<?>> componentClasses;
+
+        public CoreModule(List<Class<?>> componentClasses) {
+            this.componentClasses = componentClasses;
+        }
+
+        @Override
+        protected void configure() {
+            bind(Vertx.class).toInstance(vertx);
+            bind(EventBus.class).toInstance(vertx.eventBus());
+            bind(new TypeLiteral<List<Class<?>>>() {
+            }).annotatedWith(ComponentClasses.class).toInstance(componentClasses);
         }
     }
 

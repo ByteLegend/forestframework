@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    val vertxVersion = "4.0.0-milestone4"
+    val vertxVersion = "4.0.0-milestone5"
     val guiceVersion = "4.2.3"
     val guavaVersion = "28.2-jre"
     val slf4jVersion = "1.7.30"

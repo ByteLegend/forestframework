@@ -1,8 +1,5 @@
 package org.forestframework.annotation;
 
-import org.forestframework.bootstrap.DefaultInjectorCreator;
-import org.forestframework.bootstrap.InjectorCreator;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -21,10 +18,6 @@ public @interface ForestApplication {
      * The package/class names to be auto-scanned
      */
     String[] includeName() default {};
-
-    Class<? extends InjectorCreator> injectorCreatedBy() default DefaultInjectorCreator.class;
-
-    Class<?>[] extensions() default {};
 }
 
 
