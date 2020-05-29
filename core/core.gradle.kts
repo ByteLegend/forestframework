@@ -24,7 +24,7 @@ dependencies {
     // https://mvnrepository.com/artifact/javax.ws.rs/jsr311-api
     compileOnly("javax.ws.rs:jsr311-api:1.1.1")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation(project(":forest-kotlin"))
+    implementation(project(":kotlin"))
     implementation(project(":vertx-completable-future"))
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")

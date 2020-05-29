@@ -19,7 +19,7 @@ dependencies {
     val jpaVersion = "2.2"
     val javaxValidationVersion = "2.0.1.Final"
     val logbackVersion = "1.2.3"
-    implementation(project(":forest"))
+    implementation(project(":core"))
     implementation("javax.ws.rs:jsr311-api:1.1.1")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("javax.persistence:javax.persistence-api:$jpaVersion")

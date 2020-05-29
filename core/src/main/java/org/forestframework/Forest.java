@@ -9,6 +9,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.util.Modules;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.shareddata.SharedData;
 import org.forestframework.annotation.ComponentClasses;
 import org.forestframework.annotation.ForestApplication;
 import org.forestframework.bootstrap.HttpServerStarter;
@@ -119,6 +120,7 @@ public class Forest {
         protected void configure() {
             bind(Vertx.class).toInstance(vertx);
             bind(EventBus.class).toInstance(vertx.eventBus());
+            bind(SharedData.class).toInstance(vertx.sharedData());
             bind(new TypeLiteral<List<Class<?>>>() {
             }).annotatedWith(ComponentClasses.class).toInstance(componentClasses);
         }
