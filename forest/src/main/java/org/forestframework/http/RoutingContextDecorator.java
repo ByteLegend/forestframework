@@ -1,5 +1,6 @@
 package org.forestframework.http;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -89,6 +90,11 @@ public class RoutingContextDecorator implements RoutingContext {
         return delegate.normalisedPath();
     }
 
+    @Override
+    public String normalizedPath() {
+        return delegate.normalizedPath();
+    }
+
     public Cookie getCookie(String name) {
         return delegate.getCookie(name);
     }
@@ -141,6 +147,11 @@ public class RoutingContextDecorator implements RoutingContext {
         return delegate.session();
     }
 
+    @Override
+    public boolean isSessionAccessed() {
+        return delegate.isSessionAccessed();
+    }
+
     public User user() {
         return delegate.user();
     }
@@ -175,6 +186,16 @@ public class RoutingContextDecorator implements RoutingContext {
 
     public boolean removeBodyEndHandler(int handlerID) {
         return delegate.removeBodyEndHandler(handlerID);
+    }
+
+    @Override
+    public int addEndHandler(Handler<AsyncResult<Void>> handler) {
+        return delegate.addEndHandler(handler);
+    }
+
+    @Override
+    public boolean removeEndHandler(int handlerID) {
+        return delegate.removeEndHandler(handlerID);
     }
 
     public boolean failed() {

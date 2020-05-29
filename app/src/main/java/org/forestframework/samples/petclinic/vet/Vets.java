@@ -3,8 +3,8 @@ package org.forestframework.samples.petclinic.vet;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+//import javax.xml.bind.annotation.XmlElement;
+//import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Simple domain object representing a list of veterinarians. Mostly here to be used for
@@ -12,12 +12,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Arjen Poutsma
  */
-@XmlRootElement
+//@XmlRootElement
 public class Vets {
 
     private List<Vet> vets;
 
-    @XmlElement
+//    @XmlElement
     public List<Vet> getVetList() {
         if (vets == null) {
             vets = new ArrayList<>();

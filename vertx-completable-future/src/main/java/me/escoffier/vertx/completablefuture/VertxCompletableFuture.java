@@ -233,7 +233,7 @@ public class VertxCompletableFuture<T> extends CompletableFuture<T> implements C
    */
   public static <T> VertxCompletableFuture<T> from(Context context, Future<T> future) {
     VertxCompletableFuture<T> res = new VertxCompletableFuture<>(Objects.requireNonNull(context));
-    Objects.requireNonNull(future).setHandler(ar -> {
+    Objects.requireNonNull(future).onComplete(ar -> {
       if (context == Vertx.currentContext()) {
         res.completeFromAsyncResult(ar);
       } else {
@@ -555,7 +555,7 @@ public class VertxCompletableFuture<T> extends CompletableFuture<T> implements C
       })
     );
     // this can't recurse because the Future API guarantees repeated completions should do nothing
-    fut.setHandler(res -> {
+    fut.onComplete(res -> {
       if (res.succeeded()) {
         future.complete(res.result());
       } else {

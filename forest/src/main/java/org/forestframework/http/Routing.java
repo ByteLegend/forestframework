@@ -1,6 +1,5 @@
 package org.forestframework.http;
 
-import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import org.forestframework.annotation.RouteType;

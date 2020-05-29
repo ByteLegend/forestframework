@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id("application")
 }
 
 repositories {
@@ -24,4 +25,8 @@ dependencies {
     implementation("javax.persistence:javax.persistence-api:$jpaVersion")
     implementation("javax.validation:validation-api:$javaxValidationVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
+}
+
+application {
+    mainClassName = "org.forestframework.samples.petclinic.PetClinicApplicationKt"
 }

@@ -6,7 +6,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import kotlin.coroutines.Continuation;
@@ -82,7 +81,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
     private void configureFinalizingRoute(io.vertx.ext.web.Router router) {
         io.vertx.ext.web.Route route = router.route("/*");
         for (HttpMethod method : HttpMethod.values()) {
-            route = route.method(method);
+            route = route.method(method.toVertxHttpMethod());
         }
         route.handler(RoutingContext::end);
     }

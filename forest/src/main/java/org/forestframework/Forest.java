@@ -18,8 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.reflect.ClassPath.from;
 import static org.forestframework.utils.ComponentScanUtils.isGuavaModule;
@@ -35,16 +39,6 @@ public class Forest {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
-//        Vertx vertx = Vertx.vertx();
-//        List<Class<?>> componentClasses = scanComponentClasses(applicationClass);
-//        List<Module> modules = getModuleClasses(componentClasses);
-//        modules.add(new CoreModule(vertx));
-//
-//        Injector injector = Guice.createInjector(modules);
-//        vertx.exceptionHandler(e -> LOGGER.error("", e));
-//        List<Class<?>> routerClasses = getRouterClasses(componentClasses);
-//        vertx.deployVerticle(new HttpVerticle(injector, vertx, routerClasses));
     }
 
     private static Injector createInjector(Class<?> applicationClass) {
@@ -52,7 +46,7 @@ public class Forest {
         if (annotation == null) {
             throw new RuntimeException();
         } else {
-            List<Class<?>> componentClasses = scanComponentClasses(applicationClass);
+            List<Class<?>> componentClasses = scanComponentClasses(applicationClass, annotation);
             CoreModule coreModule = new CoreModule(componentClasses);
             return createOverridingInjector(coreModule, customModules(componentClasses));
         }
@@ -75,17 +69,29 @@ public class Forest {
                 .collect(Collectors.toList());
     }
 
-    private static List<Class<?>> scanComponentClasses(Class<?> applicationClass) {
+    private static List<Class<?>> scanComponentClasses(Class<?> applicationClass, ForestApplication annotation) {
         String packageName = applicationClass.getPackage().getName();
         try {
-            return from(applicationClass.getClassLoader())
+            LinkedHashSet<Class<?>> componentClasses = from(applicationClass.getClassLoader())
                     .getTopLevelClassesRecursive(packageName)
                     .stream()
                     .map(ClassPath.ClassInfo::load)
                     .filter(Forest::isComponentClass)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+            componentClasses.addAll(Arrays.asList(annotation.include()));
+            Stream.of(annotation.includeName()).map(Forest::loadClass).forEach(componentClasses::add);
+            return new ArrayList<>(componentClasses);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    private static Class<?> loadClass(String name) {
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 

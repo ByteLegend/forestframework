@@ -1,6 +1,5 @@
 package org.forestframework.http;
 
-import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
@@ -54,7 +53,7 @@ public abstract class AbstractRouting implements Routing {
     public Route configure(Router router) {
         Route ret = configurePath(router);
         for (HttpMethod method : methods) {
-            ret = ret.method(method);
+            ret = ret.method(method.toVertxHttpMethod());
         }
         return ret;
     }

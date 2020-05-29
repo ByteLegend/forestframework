@@ -1,6 +1,6 @@
 package org.forestframework.annotation;
 
-import io.vertx.core.http.HttpMethod;
+import org.forestframework.http.HttpMethod;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
