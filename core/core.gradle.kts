@@ -17,6 +17,7 @@ dependencies {
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api("org.apache.commons:commons-math3:3.6.1")
     api("io.vertx:vertx-core:$vertxVersion")
+    api("io.vertx:vertx-redis-client:$vertxVersion")
     api("io.vertx:vertx-web:$vertxVersion")
     api("io.vertx:vertx-web-templ-thymeleaf:$vertxVersion")
     api("javax.inject:javax.inject:1")

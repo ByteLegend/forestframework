@@ -1,9 +1,12 @@
 package org.forestframework.samples.realtimeauctions
 
+import io.vertx.core.buffer.Buffer
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.shareddata.LocalMap
 import io.vertx.core.shareddata.SharedData
 import io.vertx.ext.web.RoutingContext
+import io.vertx.ext.web.handler.sockjs.BridgeEvent
+import io.vertx.ext.web.handler.sockjs.SockJSSocket
 import org.forestframework.Forest
 import org.forestframework.annotation.ForestApplication
 import org.forestframework.annotation.Get
@@ -12,6 +15,9 @@ import org.forestframework.annotation.JsonResponseBody
 import org.forestframework.annotation.Patch
 import org.forestframework.annotation.PathParam
 import org.forestframework.annotation.RequestBody
+import org.forestframework.annotation.Route
+import org.forestframework.annotation.SocketJS
+import org.forestframework.annotation.SocketJSBridge
 import org.forestframework.http.HttpException
 import org.forestframework.http.HttpStatusCode
 import java.math.BigDecimal
@@ -27,8 +33,22 @@ fun main() {
     Forest.run(RealtimeAuctions::class.java)
 }
 
+class EventBusHandler {
+    @Route(("/eventbus/*"))
+    @SocketJSBridge
+    fun bridgeEvent(bridgeEvent: BridgeEvent) {
+    }
+
+    @Route("/eventbus2")
+    @SocketJS
+    fun test(socket: SockJSSocket, buffer: Buffer) {
+    }
+}
+
 @Singleton
+@Route("/api")
 class AuctionHandler(private val repository: AuctionRepository, private val validator: AuctionValidator) {
+
     @Get("/auctions/:id")
     @JsonResponseBody(pretty = true)
     fun handleGetAuction(context: RoutingContext, @PathParam("id") auctionId: String): Auction {
@@ -67,7 +87,7 @@ class AuctionRepository @Inject constructor(private val sharedData: SharedData) 
     fun getById(auctionId: String): Optional<Auction> {
         val auctionSharedData = sharedData.getLocalMap<String, String>(auctionId)
         return Optional.of(auctionSharedData)
-            .filter { m: LocalMap<String?, String?> -> !m.isEmpty() }
+            .filter { m: LocalMap<String, String> -> !m.isEmpty() }
             .map { auction: LocalMap<String, String> -> convertToAuction(auction) }
     }
 
