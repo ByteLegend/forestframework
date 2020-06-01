@@ -27,7 +27,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @ForestApplication(
-    include = arrayOf(JDBCClientExtension::class, RedisClientExtension::class)
+    include = [JDBCClientExtension::class, RedisClientExtension::class]
 )
 class ToDoApplication
 

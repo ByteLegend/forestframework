@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class ComponentScanUtils {
-    public static boolean isGuavaModule(Class<?> klass) {
+    public static boolean isGuiceModule(Class<?> klass) {
         return Module.class.isAssignableFrom(klass);
     }
 
