@@ -33,6 +33,9 @@ forest:
     webSocketAllowServerNoContext: false
   jdbc:
     url: ""
+    user: ""
+    password: ""
+    driverClass: ""
     # https://vertx.io/docs/vertx-jdbc-client/java/#_configuration
     # https://github.com/vert-x3/vertx-jdbc-client/blob/01e9e0f4e74c0a3b4ea2f2d185cd9fc4c8ff4d7a/src/main/java/io/vertx/ext/jdbc/spi/impl/C3P0DataSourceProvider.java#L38-L49
     # https://github.com/swaldman/c3p0/blob/c422ead14de1ca530b72d5e0515880b7ed27df1e/src/java/com/mchange/v2/c3p0/impl/C3P0Defaults.java#L44
@@ -82,13 +85,13 @@ forest:
       reconnectAttempts: 0
       reconnectInterval: 1000
       hostnameVerificationAlgorithm: ""
-    maxWaitingHandlers: 2048;
-    maxNestedArrays: 32;
+    maxWaitingHandlers: 2048
+    maxNestedArrays: 32
     masterName: mymaster
     role: MASTER
     slaves: NEVER
     type: RedisClientType.STANDALONE
-    poolCleanerInterval: -1;
-    maxPoolSize: 6;
-    maxPoolWaiting: 24;
-    poolRecycleTimeout: 15000;
+    poolCleanerInterval: -1
+    maxPoolSize: 6
+    maxPoolWaiting: 24
+    poolRecycleTimeout: 15000
