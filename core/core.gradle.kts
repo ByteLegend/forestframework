@@ -34,6 +34,7 @@ dependencies {
     compileOnly("javax.ws.rs:jsr311-api:1.1.1")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.apache.commons:commons-lang3:3.10")
+    implementation("commons-io:commons-io:2.7")
     implementation(project(":kotlin"))
     implementation(project(":vertx-completable-future"))
     implementation("com.google.guava:guava:$guavaVersion")

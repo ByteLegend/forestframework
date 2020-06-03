@@ -17,8 +17,10 @@ import org.forestframework.RoutingHandlerArgumentResolver;
 import org.forestframework.annotation.ArgumentResolvedBy;
 import org.forestframework.annotation.Blocking;
 import org.forestframework.annotation.ComponentClasses;
+import org.forestframework.annotation.Delete;
 import org.forestframework.annotation.Get;
 import org.forestframework.annotation.Intercept;
+import org.forestframework.annotation.Patch;
 import org.forestframework.annotation.Post;
 import org.forestframework.annotation.ReturnValueProcessedBy;
 import org.forestframework.annotation.Route;
@@ -47,7 +49,9 @@ import static org.forestframework.annotation.RouteType.values;
 
 @Singleton
 public class DefaultRoutingEngine implements RoutingEngine {
+    public static final String PROMISE_TO_END_KEY = "PROMISE_TO_END";
     private static final String ENABLED_STATES_KEY = "FOREST_ROUTING_ENGINE_ENABLED_STATES";
+    // a handler promises to invoke end() in the future so we don't need to do it in finalizing handler, e.g. static resource handler.
     private final Map<RouteType, List<Routing>> routings;
     private final Injector injector;
     private final Vertx vertx;
@@ -83,14 +87,22 @@ public class DefaultRoutingEngine implements RoutingEngine {
         for (HttpMethod method : HttpMethod.values()) {
             route = route.method(method.toVertxHttpMethod());
         }
-        route.handler(RoutingContext::end);
+        route.handler(context -> {
+            if (!context.response().ended()) {
+                context.end();
+            }
+        });
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void configureHandlerRoute(io.vertx.ext.web.Router router, List<Routing> routings) {
         for (Routing routing : routings) {
             routing.configure(router).handler(ctx -> {
-                RoutingContextDecorator context = new RoutingContextDecorator(ctx);
+                if (ctx.response().ended()) {
+                    new RuntimeException().printStackTrace();
+                    return;
+                }
+                RerouteAwareRoutingContextDecorator context = new RerouteAwareRoutingContextDecorator(ctx);
                 if (context.get(ENABLED_STATES_KEY) == null || handlerEnabled(context, HANDLER)) {
                     Object[] arguments = resolveArguments(routing, context);
                     CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
@@ -119,7 +131,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
         }
     }
 
-    private CompletableFuture<Object> processResult(RoutingContextDecorator context, Routing routing, Object returnValue) {
+    private CompletableFuture<Object> processResult(AbstractRoutingContextDecorator context, Routing routing, Object returnValue) {
         List<Pair<ReturnValueProcessedBy, Class<?>>> annoAndResolverClass
                 = findAnnotationWithType(routing.getHandlerMethod().getDeclaredAnnotations(), ReturnValueProcessedBy.class, ReturnValueProcessedBy::value);
 
@@ -344,10 +356,14 @@ public class DefaultRoutingEngine implements RoutingEngine {
             return ((Post) annotation).value();
         } else if (annotation.annotationType() == Route.class) {
             return ((Route) annotation).value();
+        } else if (annotation.annotationType() == Patch.class) {
+            return ((Patch) annotation).value();
+        } else if (annotation.annotationType() == Delete.class) {
+            return ((Delete) annotation).value();
         } else if (annotation.annotationType() == Intercept.class) {
             return ((Intercept) annotation).value();
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("Unrecognized annotation: " + annotation);
     }
 
     private List<HttpMethod> getHttpMethods(Annotation annotation) {
@@ -355,6 +371,10 @@ public class DefaultRoutingEngine implements RoutingEngine {
             return singletonList(HttpMethod.GET);
         } else if (annotation.annotationType() == Post.class) {
             return singletonList(HttpMethod.POST);
+        } else if (annotation.annotationType() == Patch.class) {
+            return singletonList(HttpMethod.PATCH);
+        } else if (annotation.annotationType() == Delete.class) {
+            return singletonList(HttpMethod.DELETE);
         } else if (annotation.annotationType() == Route.class) {
             HttpMethod[] methods = ((Route) annotation).methods();
             return Arrays.asList(methods);
@@ -362,7 +382,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
             HttpMethod[] methods = ((Intercept) annotation).methods();
             return Arrays.asList(methods);
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("Unrecognized annotation: " + annotation);
     }
 
 //    private <T extends Annotation> Optional<T> getRouteAnnotation(Method method) {

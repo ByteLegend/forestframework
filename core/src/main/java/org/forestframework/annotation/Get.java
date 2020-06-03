@@ -12,5 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 @Inherited
 @Route(methods = {HttpMethod.GET})
 public @interface Get {
-    String value();
+    String value() default "";
+
+    String regex() default "";
 }

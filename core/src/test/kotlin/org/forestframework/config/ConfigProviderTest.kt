@@ -2,6 +2,7 @@ package org.forestframework.config
 
 import io.vertx.core.http.Http2Settings
 import io.vertx.core.http.HttpServerOptions
+import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetClientOptions
 import io.vertx.redis.client.RedisClientType
 import io.vertx.redis.client.RedisOptions
@@ -29,8 +30,10 @@ aaa:
     """.trimIndent()
         val provider = ConfigProvider.fromYaml(yaml)
         assertEquals("", provider.getInstance("aaa.bbb.ccc.stringValue1", String::class.java))
+        assertEquals("", provider.getInstance("aaa.bbb.ccc", JsonObject::class.java).getString("stringValue1"))
         assertEquals("This is a string", provider.getInstance("aaa.bbb.ccc.stringValue2", String::class.java))
         assertEquals(42, provider.getInstance("aaa.bbb.ccc.intValue", Integer::class.java))
+        assertEquals(42, provider.getInstance("aaa.bbb.ccc", JsonObject::class.java).getInteger("intValue"))
         assertEquals(null, provider.getInstance("aaa.notexist", Integer::class.java))
         assertEquals(null, provider.getInstance("aaa.notexist.notexist", Boolean::class.java))
         assertEquals(null, provider.getInstance("aaa.notexist.notexist", HttpServerOptions::class.java))
@@ -66,6 +69,10 @@ forest:
     maxPoolSize: 10
 """
         val provider = ConfigProvider.fromYaml(yaml)
+
+        val httpJsonObject = provider.getInstance("forest.http", JsonObject::class.java)
+        assertEquals(12345, httpJsonObject.getInteger("port"))
+
         val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
         assertEquals(12345, httpServerOptions.port)
         assertEquals(12345, provider.getInstance("forest.http.port", Integer::class.java))

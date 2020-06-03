@@ -23,3 +23,21 @@ public @interface Route {
 
     RouteType type() default RouteType.HANDLER;
 }
+
+
+// Known sub-annotations
+//
+// +--- Get/Post/Patch/Delete
+// +--- StaticResource
+// +--- SocketJS
+// +--- SocketJSBridge
+// +--- Intercept
+//   +--- PreHandler
+//   +--- AfterSuccess
+//   +--- AfterFailure
+//   +--- AfterCompletion
+//
+// extension sub-annotations
+// +--- GET
+// +--- POST
+// ...

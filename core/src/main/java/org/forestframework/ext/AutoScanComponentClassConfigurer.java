@@ -2,10 +2,10 @@ package org.forestframework.ext;
 
 import com.google.common.reflect.ClassPath;
 import com.google.inject.Inject;
+import org.forestframework.annotation.ApplicationClass;
 import org.forestframework.annotation.ForestApplication;
 import org.forestframework.ext.api.ComponentClassConfigurer;
 
-import javax.inject.Named;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class AutoScanComponentClassConfigurer implements ComponentClassConfigure
     private final Class<?> applicationClass;
 
     @Inject
-    public AutoScanComponentClassConfigurer(@Named("forest.application.class") Class<?> applicationClass) {
+    public AutoScanComponentClassConfigurer(@ApplicationClass Class applicationClass) {
         this.applicationClass = applicationClass;
     }
 

@@ -9,6 +9,7 @@ import io.vertx.redis.client.RedisOptions;
 import org.apache.commons.beanutils.FluentPropertyBeanIntrospector;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -95,7 +96,6 @@ public class ConfigProvider {
         private Object configValue;
         private Object environmentValue;
 
-
         public ConfigObject(Map<String, Object> rootModel) {
             this("", null, rootModel, null);
         }
@@ -140,6 +140,10 @@ public class ConfigProvider {
         // BeanUtils.copyProperties() is shallow copy, so we filter out non-nested properties, invoke copyProperties,
         // then manually copy nested fields recursively
         private void mergeConfigValueToDefault(Object destBean, Map<String, Object> srcMap) {
+            if (defaultValue == null) {
+                defaultValue = srcMap;
+                return;
+            }
             if (srcMap != null) {
                 srcMap.forEach((String key, Object value) -> {
                     if (isNonNestedPropertyType(value.getClass())) {

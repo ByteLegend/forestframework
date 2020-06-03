@@ -1,6 +1,8 @@
 package org.forestframework.config;
 
 import com.google.common.collect.ImmutableMap;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.Map;
@@ -15,6 +17,7 @@ enum DefaultConverter implements Converter<Object, Object> {
 
     private final Map<Pair<Class, Class>, Converter> converters = ImmutableMap.<Pair<Class, Class>, Converter>builder()
             .put(Pair.create(Object.class, String.class), new ObjectToString())
+            .put(Pair.create(Object.class, JsonObject.class), new ObjectToJsonObject())
             .put(Pair.create(String.class, Enum.class), new StringToEnum())
             .put(Pair.create(Object.class, Integer.class), new ObjectToInteger())
             .put(Pair.create(Object.class, int.class), new ObjectToInteger())
@@ -35,6 +38,13 @@ enum DefaultConverter implements Converter<Object, Object> {
             }
         }
         throw new RuntimeException("Can't find matching converter: in: " + inType + ", out: " + outType);
+    }
+}
+
+class ObjectToJsonObject implements Converter<Object, JsonObject> {
+    @Override
+    public JsonObject convert(Object obj, Class<?> inType, Class<? extends JsonObject> outType) {
+        return new JsonObject(Json.CODEC.toString(obj));
     }
 }
 

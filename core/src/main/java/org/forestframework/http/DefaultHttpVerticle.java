@@ -1,10 +1,12 @@
 package org.forestframework.http;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
+import org.forestframework.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +21,12 @@ public class DefaultHttpVerticle extends AbstractVerticle {
     @Inject
     public DefaultHttpVerticle(Vertx vertx,
                                RoutingEngine routingEngine,
-                               @Named("forest.http") HttpServerOptions httpServerOptions) {
+                               ConfigProvider configProvider
+//                               @Named("forest.http") HttpServerOptions httpServerOptions
+    ) {
         this.vertx = vertx;
         this.routingEngine = routingEngine;
-        this.httpServerOptions = httpServerOptions;
+        this.httpServerOptions = configProvider.getInstance("forest.http", HttpServerOptions.class);
     }
 
     @Override
