@@ -102,7 +102,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
                     new RuntimeException().printStackTrace();
                     return;
                 }
-                RerouteAwareRoutingContextDecorator context = new RerouteAwareRoutingContextDecorator(ctx);
+                RerouteNextAwareRoutingContextDecorator context = new RerouteNextAwareRoutingContextDecorator(ctx);
                 if (context.get(ENABLED_STATES_KEY) == null || handlerEnabled(context, HANDLER)) {
                     Object[] arguments = resolveArguments(routing, context);
                     CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
@@ -110,14 +110,14 @@ public class DefaultRoutingEngine implements RoutingEngine {
                     returnValueFuture.thenAccept(returnValue -> {
                         if (!context.isRerouteInvoked()) {
                             processResult(context, routing, returnValue).thenAccept(ret -> {
-                                context.next();
+                                context.nextIfNotInvoked();
                             }).exceptionally((Throwable failure) -> {
                                 failure.printStackTrace();
                                 context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_SUCCESS, AFTER_HANDLER_COMPLETION));
                                 return null;
                             });
                         } else {
-                            context.next();
+                            context.nextIfNotInvoked();
                         }
                     }).exceptionally((Throwable failure) -> {
                         failure.printStackTrace();
@@ -125,7 +125,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
                         return null;
                     });
                 } else {
-                    context.next();
+                    context.nextIfNotInvoked();
                 }
             });
         }

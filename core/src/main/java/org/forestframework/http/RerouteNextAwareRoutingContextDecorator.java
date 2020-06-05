@@ -3,11 +3,27 @@ package org.forestframework.http;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 
-public class RerouteAwareRoutingContextDecorator extends AbstractRoutingContextDecorator {
+public class RerouteNextAwareRoutingContextDecorator extends AbstractRoutingContextDecorator {
     private boolean rerouteInvoked;
+    private boolean nextInvoked;
 
-    public RerouteAwareRoutingContextDecorator(RoutingContext delegate) {
+    public RerouteNextAwareRoutingContextDecorator(RoutingContext delegate) {
         super(delegate);
+    }
+
+    public void nextIfNotInvoked() {
+        if (!nextInvoked) {
+            next();
+            nextInvoked = true;
+        } else {
+            nextInvoked = false;
+        }
+    }
+
+    @Override
+    public void next() {
+        nextInvoked = true;
+        super.next();
     }
 
     @Override

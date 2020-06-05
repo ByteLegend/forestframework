@@ -22,6 +22,7 @@ dependencies {
     val jacksonVersion = "2.10.3"
     val kotlinVersion = "1.3.72"
     val beanUtilVersion = "1.9.4"
+    val junitVersion = "5.6.2"
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api("org.apache.commons:commons-math3:3.6.1")
     api("io.vertx:vertx-core:$vertxVersion")
@@ -48,8 +49,8 @@ dependencies {
 
     implementation("com.google.guava:guava:$guavaVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 val test by tasks.getting(Test::class) {

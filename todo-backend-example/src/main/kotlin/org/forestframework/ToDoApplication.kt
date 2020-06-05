@@ -36,9 +36,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @ForestApplication(
-    include = [JDBCClientExtension::class, RedisClientExtension::class]
+    include = [
+        JDBCClientExtension::class,
+        RedisClientExtension::class
+    ]
 )
 class ToDoApplication
+
+fun main() {
+    Forest.run(ToDoApplication::class.java)
+}
 
 class ServiceSelector @Inject constructor(val configProvider: ConfigProvider) : AbstractModule() {
     override fun configure() {
@@ -48,10 +55,6 @@ class ServiceSelector @Inject constructor(val configProvider: ConfigProvider) : 
             bind(TodoService::class.java).to(RedisTodoService::class.java);
         }
     }
-}
-
-fun main() {
-    Forest.run(ToDoApplication::class.java)
 }
 
 @Singleton

@@ -22,6 +22,7 @@ dependencies {
     val vertxVersion = "4.0.0-milestone5"
     implementation(project(":jdbc-client-extension"))
     implementation(project(":redis-client-extension"))
+    implementation(project(":cors-extension"))
     implementation("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
     implementation("io.vertx:vertx-lang-kotlin:$vertxVersion")
     implementation("io.vertx:vertx-jdbc-client:$vertxVersion")
