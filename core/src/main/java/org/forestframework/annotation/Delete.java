@@ -1,5 +1,6 @@
 package org.forestframework.annotation;
 
+import org.forestframework.annotationmagic.Extends;
 import org.forestframework.http.HttpMethod;
 
 import java.lang.annotation.Documented;
@@ -10,7 +11,10 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@Route(methods = {HttpMethod.PATCH})
+@Extends(Route.class)
+@Route(methods = {HttpMethod.DELETE})
 public @interface Delete {
-    String value();
+    String value() default "";
+
+    String regex() default "";
 }

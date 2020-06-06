@@ -1,6 +1,6 @@
 package org.forestframework.annotation;
 
-import org.forestframework.StaticResourceProcessor;
+import org.forestframework.annotationmagic.Extends;
 import org.forestframework.http.HttpMethod;
 
 import java.lang.annotation.Documented;
@@ -10,13 +10,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
 @Inherited
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-@ReturnValueProcessedBy(StaticResourceProcessor.class)
-@Route(methods = {HttpMethod.GET})
-public @interface StaticResource {
+@Extends(Intercept.class)
+@Intercept(type = RoutingType.AFTER_HANDLER_FAILURE)
+public @interface AfterFailure {
+    HttpMethod[] methods() default {HttpMethod.GET};
+
     String value() default "";
 
     String regex() default "";

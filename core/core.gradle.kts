@@ -23,6 +23,7 @@ dependencies {
     val kotlinVersion = "1.3.72"
     val beanUtilVersion = "1.9.4"
     val junitVersion = "5.6.2"
+    val mockKVersion = "1.9.3"
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api("org.apache.commons:commons-math3:3.6.1")
     api("io.vertx:vertx-core:$vertxVersion")
@@ -37,6 +38,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.10")
     implementation("commons-io:commons-io:2.7")
     implementation(project(":kotlin"))
+    implementation(project(":annotation-magic"))
     implementation(project(":vertx-completable-future"))
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("commons-beanutils:commons-beanutils:$beanUtilVersion")
@@ -51,6 +53,8 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
+    testImplementation("io.mockk:mockk:$mockKVersion")
 }
 
 val test by tasks.getting(Test::class) {

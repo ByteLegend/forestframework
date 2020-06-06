@@ -1,10 +1,12 @@
 package org.forestframework
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.inject.AbstractModule
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.jdbc.JDBCClient
+import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.ext.sql.executeAwait
 import io.vertx.kotlin.ext.sql.getConnectionAwait
 import io.vertx.kotlin.ext.sql.queryAwait
@@ -17,7 +19,7 @@ import io.vertx.kotlin.redis.client.hgetAwait
 import io.vertx.kotlin.redis.client.hsetAwait
 import io.vertx.kotlin.redis.client.hvalsAwait
 import io.vertx.redis.client.RedisAPI
-import org.forestframework.StaticResourceProcessor.webroot
+import kotlinx.coroutines.runBlocking
 import org.forestframework.annotation.Delete
 import org.forestframework.annotation.ForestApplication
 import org.forestframework.annotation.Get
@@ -26,14 +28,16 @@ import org.forestframework.annotation.Patch
 import org.forestframework.annotation.PathParam
 import org.forestframework.annotation.Post
 import org.forestframework.annotation.RequestBody
-import org.forestframework.annotation.StaticResource
 import org.forestframework.config.ConfigProvider
 import org.forestframework.extensions.jdbc.JDBCClientExtension
 import org.forestframework.extensions.redis.RedisClientExtension
+import org.forestframework.http.staticresource.StaticResource
 import java.util.Optional
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
 
 @ForestApplication(
     include = [
@@ -59,25 +63,37 @@ class ServiceSelector @Inject constructor(val configProvider: ConfigProvider) : 
 
 @Singleton
 class ToDoRouter @Inject constructor(private val service: TodoService) {
-    @StaticResource("/index.html")
-    fun index() = webroot("/index.html")
+    init {
+        runBlocking {
+            service.initData()
+        }
+    }
 
-    @StaticResource(regex = """\/(?<dir>(js|css))\/(?<file>.+)""")
-    fun jsCss(@PathParam("dir") dir: String, @PathParam("file") file: String) = webroot("/$dir/$file")
+    @Get("/index.html")
+    @StaticResource(webroot = "static")
+    fun index() = "/index.html"
+
+    @Get(regex = """\/(?<dir>(js|css))\/(?<file>.+)""")
+    @StaticResource
+    fun jsCss(@PathParam("dir") dir: String, @PathParam("file") file: String) = "/$dir/$file"
 
     @Get("/todos/:todoId")
     @JsonResponseBody(pretty = true)
-    suspend fun handleGetTodo(@PathParam("todoId") todoID: String) = service.getCertain(todoID)
+    suspend fun handleGetTodo(@PathParam("todoId") todoID: String) = service.getCertain(todoID).orElse(null)
 
     @Get("/todos")
     @JsonResponseBody(pretty = true)
     suspend fun handleGetAll() = service.all()
 
     @Post("/todos")
-    suspend fun handleCreateTodo(@RequestBody todo: Todo) = service.insert(todo)
+    @JsonResponseBody(pretty = true)
+    suspend fun handleCreateTodo(@RequestBody todo: Todo, routingContext: RoutingContext) {
+        service.insert(wrapTodo(todo, routingContext))
+    }
 
     @Patch("/todos/:todoId")
-    suspend fun handleUpdateTodo(@PathParam("todoId") todoId: String, @RequestBody todo: Todo) = service.update(todoId, todo)
+    @JsonResponseBody(pretty = true)
+    suspend fun handleUpdateTodo(@PathParam("todoId") todoId: String, @RequestBody todo: Todo) = service.update(todoId, todo).orElse(null)
 
     @Delete("/todos/:todoId")
     suspend fun handleDeleteOne(@PathParam("todoId") todoID: String) = service.delete(todoID)
@@ -99,7 +115,7 @@ interface TodoService {
 class RedisTodoService @Inject constructor(val redis: RedisAPI) : TodoService {
     private val redisToDoKey = "VERT_TODO"
     override suspend fun initData() {
-        val sample = Todo(Math.abs(ThreadLocalRandom.current().nextInt(0, Int.MAX_VALUE)),
+        val sample = Todo(abs(ThreadLocalRandom.current().nextInt(0, Int.MAX_VALUE)),
             "Something to do...", false, 1, "todo/ex")
         insert(sample)
     }
@@ -220,14 +236,37 @@ CREATE TABLE IF NOT EXISTS `todo` (
 
 }
 
-data class Todo(val id: Int, val title: String?, val completed: Boolean?, val order: Int?, val url: String?) {
+val counter = AtomicInteger(0)
+
+fun wrapTodo(todo: Todo, routingContext: RoutingContext): Todo {
+    if (todo.id > counter.get()) {
+        counter.set(todo.id);
+    } else if (todo.id == 0) {
+        todo.id = counter.incrementAndGet();
+    }
+    todo.url = routingContext.request().absoluteURI() + "/" + todo.id
+    return todo
+}
+
+data class Todo(
+    @JsonProperty("id")
+    var id: Int,
+    @JsonProperty("title")
+    val title: String?,
+    @JsonProperty("completed")
+    val completed: Boolean = false,
+    @JsonProperty("order")
+    val order: Int?,
+    @JsonProperty("url")
+    var url: String?
+) {
     constructor(jsonStr: String) : this(JsonObject(jsonStr))
 
     constructor(jsonObject: JsonObject)
         : this(
         jsonObject.getInteger("id"),
         jsonObject.getString("title"),
-        jsonObject.getBoolean("completed"),
+        jsonObject.getBoolean("completed") ?: false,
         jsonObject.getInteger("order"),
         jsonObject.getString("url")
     )

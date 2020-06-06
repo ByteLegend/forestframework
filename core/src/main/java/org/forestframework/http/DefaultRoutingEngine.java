@@ -1,5 +1,6 @@
 package org.forestframework.http;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import io.vertx.core.Future;
@@ -7,74 +8,74 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import kotlin.coroutines.Continuation;
 import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
-import org.apache.commons.math3.util.Pair;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.forestframework.KotlinSuspendFunctionBridge;
-import org.forestframework.ResponseProcessor;
-import org.forestframework.RoutingHandlerArgumentResolver;
-import org.forestframework.annotation.ArgumentResolvedBy;
+import org.forestframework.RoutingResultProcessor;
 import org.forestframework.annotation.Blocking;
 import org.forestframework.annotation.ComponentClasses;
-import org.forestframework.annotation.Delete;
-import org.forestframework.annotation.Get;
-import org.forestframework.annotation.Intercept;
-import org.forestframework.annotation.Patch;
-import org.forestframework.annotation.Post;
-import org.forestframework.annotation.ReturnValueProcessedBy;
 import org.forestframework.annotation.Route;
-import org.forestframework.annotation.RouteType;
+import org.forestframework.annotation.RoutingType;
+import org.forestframework.annotationmagic.AnnotationMagic;
+import org.forestframework.config.ConfigProvider;
 import org.forestframework.utils.ComponentScanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.forestframework.annotation.RouteType.AFTER_HANDLER_COMPLETION;
-import static org.forestframework.annotation.RouteType.AFTER_HANDLER_SUCCESS;
-import static org.forestframework.annotation.RouteType.HANDLER;
-import static org.forestframework.annotation.RouteType.PRE_HANDLER;
-import static org.forestframework.annotation.RouteType.values;
+import static org.forestframework.annotation.RoutingType.AFTER_HANDLER_COMPLETION;
+import static org.forestframework.annotation.RoutingType.AFTER_HANDLER_FAILURE;
+import static org.forestframework.annotation.RoutingType.HANDLER;
+import static org.forestframework.annotation.RoutingType.PRE_HANDLER;
+import static org.forestframework.annotation.RoutingType.values;
 
 @Singleton
 public class DefaultRoutingEngine implements RoutingEngine {
-    public static final String PROMISE_TO_END_KEY = "PROMISE_TO_END";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRoutingEngine.class);
     private static final String ENABLED_STATES_KEY = "FOREST_ROUTING_ENGINE_ENABLED_STATES";
     // a handler promises to invoke end() in the future so we don't need to do it in finalizing handler, e.g. static resource handler.
-    private final Map<RouteType, List<Routing>> routings;
+    private final Map<RoutingType, List<Routing>> routings;
     private final Injector injector;
     private final Vertx vertx;
+    private final boolean devMode;
 
     @Inject
     public DefaultRoutingEngine(Injector injector,
                                 Vertx vertx,
-                                @ComponentClasses List<Class<?>> componentClasses) {
+                                @ComponentClasses List<Class<?>> componentClasses,
+                                ConfigProvider configProvider) {
         this.injector = injector;
         this.vertx = vertx;
         this.routings = createRoutings(componentClasses);
+        this.devMode = "dev".equals(configProvider.getInstance("forest.environment", Boolean.class));
     }
 
-    protected Map<RouteType, List<Routing>> createRoutings(List<Class<?>> componentClasses) {
+    protected Map<RoutingType, List<Routing>> createRoutings(List<Class<?>> componentClasses) {
         return componentClasses.stream()
                 .filter(ComponentScanUtils::isRouter)
                 .flatMap(this::findRoutingHandlers)
-                .collect(Collectors.groupingBy(Routing::getRouteType));
+                .collect(Collectors.groupingBy(Routing::getType));
     }
 
     @Override
     public Handler<HttpServerRequest> createRouter() {
         io.vertx.ext.web.Router router = io.vertx.ext.web.Router.router(vertx);
+        router.errorHandler(500, context -> LOGGER.error("", context.failure()));
 
         configurePreHandlerRoute(router, routings.getOrDefault(PRE_HANDLER, emptyList()));
         configureHandlerRoute(router, routings.getOrDefault(HANDLER, emptyList()));
@@ -94,66 +95,105 @@ public class DefaultRoutingEngine implements RoutingEngine {
         });
     }
 
+    private io.vertx.ext.web.Route configureRouter(Router router, Routing routing) {
+        io.vertx.ext.web.Route route;
+        String path = routing.getPath();
+        String regexPath = routing.getRegexPath();
+        if (StringUtils.isBlank(path) && StringUtils.isBlank(regexPath)) {
+            throw new IllegalArgumentException("Can't configure router: path and regexPath are both empty");
+        } else if (StringUtils.isNoneBlank(path) && StringUtils.isNoneBlank(regexPath)) {
+            throw new IllegalArgumentException("Can't configure router: path and regexPath are both non-empty");
+        } else if (StringUtils.isBlank(path)) {
+            route = router.routeWithRegex(routing.getRegexPath());
+        } else {
+            route = router.route(routing.getPath());
+        }
+
+        for (HttpMethod method : routing.getMethods()) {
+            route = route.method(method.toVertxHttpMethod());
+        }
+        return route;
+
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void configureHandlerRoute(io.vertx.ext.web.Router router, List<Routing> routings) {
         for (Routing routing : routings) {
-            routing.configure(router).handler(ctx -> {
-                if (ctx.response().ended()) {
-                    new RuntimeException().printStackTrace();
-                    return;
-                }
-                RerouteNextAwareRoutingContextDecorator context = new RerouteNextAwareRoutingContextDecorator(ctx);
-                if (context.get(ENABLED_STATES_KEY) == null || handlerEnabled(context, HANDLER)) {
-                    Object[] arguments = resolveArguments(routing, context);
-                    CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
+            configureRouter(router, routing)
+                    .handler(BodyHandler.create())
+                    .handler(ctx -> {
+                        if (ctx.response().ended()) {
+                            new RuntimeException().printStackTrace();
+                            return;
+                        }
+                        RerouteNextAwareRoutingContextDecorator context = new RerouteNextAwareRoutingContextDecorator(ctx);
+                        if (context.get(ENABLED_STATES_KEY) == null || handlerEnabled(context, HANDLER)) {
+                            Object[] arguments = resolveArguments(routing, context);
+                            CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
 
-                    returnValueFuture.thenAccept(returnValue -> {
-                        if (!context.isRerouteInvoked()) {
-                            processResult(context, routing, returnValue).thenAccept(ret -> {
-                                context.nextIfNotInvoked();
+                            returnValueFuture.thenAccept(returnValue -> {
+                                if (!context.isRerouteInvoked()) {
+                                    processResult(context, routing, returnValue).thenAccept(ret -> {
+                                        context.nextIfNotInvoked();
+                                    }).exceptionally((Throwable failure) -> {
+                                        onHandlerFailure(context, failure);
+                                        return null;
+                                    });
+                                } else {
+                                    context.nextIfNotInvoked();
+                                }
                             }).exceptionally((Throwable failure) -> {
-                                failure.printStackTrace();
-                                context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_SUCCESS, AFTER_HANDLER_COMPLETION));
+                                onHandlerFailure(context, failure);
                                 return null;
                             });
                         } else {
                             context.nextIfNotInvoked();
                         }
-                    }).exceptionally((Throwable failure) -> {
-                        failure.printStackTrace();
-                        context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_SUCCESS, AFTER_HANDLER_COMPLETION));
-                        return null;
                     });
-                } else {
-                    context.nextIfNotInvoked();
-                }
-            });
         }
     }
 
-    private CompletableFuture<Object> processResult(AbstractRoutingContextDecorator context, Routing routing, Object returnValue) {
-        List<Pair<ReturnValueProcessedBy, Class<?>>> annoAndResolverClass
-                = findAnnotationWithType(routing.getHandlerMethod().getDeclaredAnnotations(), ReturnValueProcessedBy.class, ReturnValueProcessedBy::value);
-
-        if (annoAndResolverClass.isEmpty()) {
-            // TODO a fallback resolver
-            throw new RuntimeException("processor not found");
+    private void onHandlerFailure(RerouteNextAwareRoutingContextDecorator context, Throwable failure) {
+        LOGGER.error("", failure);
+        context.response().setStatusCode(500);
+        if (devMode) {
+            context.response().putHeader("Context-Type", "text/plain");
+            context.response().write(ExceptionUtils.getStackTrace(failure));
         }
-        if (annoAndResolverClass.size() > 1) {
-            throw new RuntimeException("Found multiple resolvers!");
+        context.nextIfNotInvoked();
+        context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_FAILURE, AFTER_HANDLER_COMPLETION));
+    }
+
+    private CompletableFuture<Object> processResult(RoutingContext context, Routing routing, Object returnValue) {
+        List<RoutingResultProcessor> resultProcessors = routing.getResultProcessors(returnValue)
+                .stream()
+                .map(injector::getInstance)
+                .collect(Collectors.toList());
+        if (resultProcessors.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+        CompletableFuture<Object> current = null;
+        for (RoutingResultProcessor processor : resultProcessors) {
+            if (current == null) {
+                current = adapt(processor.processResponse(context, routing, returnValue));
+            } else {
+                current = current
+                        .thenApply((processReturnValue) -> processor.processResponse(context, routing, processReturnValue))
+                        .exceptionally((Throwable failure) -> {
+                            failure.printStackTrace();
+                            return failedFuture(failure);
+                        });
+            }
         }
 
-        Annotation annotation = annoAndResolverClass.get(0).getFirst();
-        Class<? extends ResponseProcessor> resolverClass = (Class<? extends ResponseProcessor>) annoAndResolverClass.get(0).getSecond();
-
-        return adapt(injector.getInstance(resolverClass).processResponse(context, routing, returnValue, annotation));
+        return current;
     }
 
 
     private void configurePreHandlerRoute(io.vertx.ext.web.Router router, List<Routing> routings) {
         for (Routing routing : routings) {
             validPreHandler(routing);
-            routing.configure(router).handler(context -> {
+            configureRouter(router, routing).handler(context -> {
                 if (context.get(ENABLED_STATES_KEY) == null || handlerEnabled(context, PRE_HANDLER)) {
                     Object[] arguments = resolveArguments(routing, context);
                     CompletableFuture<Boolean> returnValue = invokeHandler(routing, arguments);
@@ -180,8 +220,8 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean handlerEnabled(RoutingContext routingContext, RouteType type) {
-        return ((List<RouteType>) routingContext.data().getOrDefault(ENABLED_STATES_KEY, emptyList())).contains(type);
+    private boolean handlerEnabled(RoutingContext routingContext, RoutingType type) {
+        return ((List<RoutingType>) routingContext.data().getOrDefault(ENABLED_STATES_KEY, emptyList())).contains(type);
     }
 
     private void validPreHandler(Routing routing) {
@@ -214,10 +254,14 @@ public class DefaultRoutingEngine implements RoutingEngine {
         try {
             return adapt(routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments));
         } catch (Throwable e) {
-            CompletableFuture<T> failedFuture = new CompletableFuture<>();
-            failedFuture.completeExceptionally(e);
-            return failedFuture;
+            return failedFuture(e);
         }
+    }
+
+    private <T> CompletableFuture<T> failedFuture(Throwable e) {
+        CompletableFuture<T> failedFuture = new CompletableFuture<>();
+        failedFuture.completeExceptionally(e);
+        return failedFuture;
     }
 
     private <T> CompletableFuture<T> invokeBlockingViaJavaReflection(Routing routing, Object[] arguments) {
@@ -235,7 +279,12 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     private <T> CompletableFuture<T> invokeViaKotlinBridge(Routing routing, Object[] arguments) {
-        return KotlinSuspendFunctionBridge.Companion.invoke(vertx, routing.getHandlerMethod(), routing.getHandlerInstance(), arguments);
+        return KotlinSuspendFunctionBridge.Companion.invoke(
+                vertx,
+                routing.getHandlerMethod(),
+                routing.getHandlerInstance(),
+                Arrays.copyOfRange(arguments, 0, arguments.length - 1)
+        );
     }
 
     private boolean isKotlinSuspendFunction(Routing routing) {
@@ -246,10 +295,9 @@ public class DefaultRoutingEngine implements RoutingEngine {
     private Object[] resolveArguments(Routing routing, RoutingContext context) {
         Class<?>[] argumentsType = routing.getHandlerMethod().getParameterTypes();
         Object[] arguments = new Object[argumentsType.length];
-        Annotation[][] argumentAnnontations = routing.getHandlerMethod().getParameterAnnotations();
         for (int i = 0; i < argumentsType.length; ++i) {
             if (!isContinuation(argumentsType[i])) {
-                arguments[i] = resolveArgument(routing, argumentAnnontations[i], argumentsType[i], context);
+                arguments[i] = resolveArgument(routing, i, argumentsType[i], context);
             }
         }
         return arguments;
@@ -259,157 +307,53 @@ public class DefaultRoutingEngine implements RoutingEngine {
         return argumentType == Continuation.class;
     }
 
-    /*
-     * There're two annotation types involved. Suppose the handler is annontated by @A:
-     *
-     * @A
-     * public void handlerMethod() {}
-     *
-     * And class A is annotated by B:
-     *
-     * @Retention(RUNTIME)
-     * @B(value=XXX.class)
-     * @interface A {}
-     *
-     */
-    @SuppressWarnings({"rawtypes"})
-    private <A extends Annotation, B extends Annotation> List<Pair<A, Class<?>>> findAnnotationWithType(Annotation[] annotations,
-                                                                                                        Class<B> annotationClass,
-                                                                                                        Function<B, Class<?>> function) {
-        return Stream.of(annotations)
-                .map(anno -> {
-                    B targetAnnotation = anno.annotationType().getAnnotation(annotationClass);
-                    if (targetAnnotation == null) {
-                        return null;
-                    } else {
-                        Class<?> resolverClass = function.apply(targetAnnotation);
-                        Pair<A, Class<?>> pair = Pair.create((A) anno, resolverClass);
-                        return pair;
-                    }
-                }).filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private <T> T resolveArgument(Routing routing, Annotation[] annotations, Class<T> argumentType, RoutingContext routingContext) {
+    private <T> T resolveArgument(Routing routing, int index, Class<T> argumentType, RoutingContext routingContext) {
         if (argumentType == RoutingContext.class) {
             return (T) routingContext;
         }
 
-        List<Pair<ArgumentResolvedBy, Class<?>>> annoAndResolverClass = findAnnotationWithType(annotations, ArgumentResolvedBy.class, ArgumentResolvedBy::value);
-
-        if (annoAndResolverClass.isEmpty()) {
-            // TODO a fallback resolver
-            throw new RuntimeException("resolver not found");
-        }
-        if (annoAndResolverClass.size() > 1) {
-            throw new RuntimeException("Found multiple resolvers!");
-        }
-
-        Annotation annotation = annoAndResolverClass.get(0).getFirst();
-        Class<? extends RoutingHandlerArgumentResolver> resolverClass = (Class<? extends RoutingHandlerArgumentResolver>) annoAndResolverClass.get(0).getSecond();
-
-        return (T) injector.getInstance(resolverClass).resolveArgument(routing, argumentType, routingContext, annotation);
+        return (T) injector.getInstance(routing.getParameterResolver(index))
+                .resolveArgument(routing, routingContext, index);
     }
 
     private Stream<Routing> findRoutingHandlers(Class<?> klass) {
-        List<Pair<Method, Annotation>> routingHandlers = Stream.of(klass.getMethods())
-                .map(this::toMethodAnnotationPair)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        if (!routingHandlers.isEmpty()) {
-            Object handlerInstance = injector.getInstance(klass);
-            return routingHandlers.stream()
-                    .map(methodAnnotationPair -> toRouting(klass, handlerInstance, methodAnnotationPair.getFirst(), methodAnnotationPair.getSecond()));
+        return Stream.of(klass.getMethods())
+                .filter(this::isRouteMethod)
+                .map(method -> toRouting(klass, injector.getInstance(klass), method));
+    }
+
+    private boolean isRouteMethod(Method method) {
+        return !AnnotationMagic.getAnnotationsOnMethod(method, Route.class).isEmpty();
+    }
+
+    @VisibleForTesting
+    Routing toRouting(Class<?> klass, Object handlerInstance, Method method) {
+        Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethod(method, Route.class);
+        Route routeOnClass = AnnotationMagic.getOneAnnotationOnClass(klass, Route.class);
+        if (routeOnClass == null && routeOnMethod != null) {
+            return new DefaultRouting(routeOnMethod, klass, method, handlerInstance);
+        }
+        String classPath = getPath(routeOnClass, klass);
+        String methodPath = getPath(routeOnMethod, method);
+        String path = classPath + methodPath;
+        if (StringUtils.isNotBlank(routeOnMethod.regex()) || (routeOnClass != null && StringUtils.isNotBlank(routeOnClass.regex()))) {
+            return new DefaultRouting("", path, Arrays.asList(routeOnMethod.methods()), klass, method, handlerInstance);
         } else {
-            return Stream.empty();
+            return new DefaultRouting(path, "", Arrays.asList(routeOnMethod.methods()), klass, method, handlerInstance);
         }
     }
 
-    private Pair<Method, Annotation> toMethodAnnotationPair(Method method) {
-        Annotation[] annotations = method.getAnnotations();
-        for (Annotation annotation : annotations) {
-            if (annotation.annotationType() == Route.class) {
-                return Pair.create(method, annotation);
-            }
-
-            if (annotation.annotationType().getAnnotation(Route.class) != null) {
-                return Pair.create(method, annotation);
-            }
+    private String getPath(Route route, Object target) {
+        if (route == null) {
+            return "";
         }
-        return null;
-    }
-
-    private Routing toRouting(Class<?> klass, Object handlerInstance, Method method, Annotation annotation) {
-        String classRouterPath = klass.isAnnotationPresent(Route.class) ? klass.getAnnotation(Route.class).value() : "";
-        String methodRoutePath = getPath(annotation);
-        String path = classRouterPath + methodRoutePath;
-        List<HttpMethod> httpMethods = getHttpMethods(annotation);
-        return new PathRouting(path, httpMethods, klass, method, handlerInstance);
-    }
-
-    private String getPath(Annotation annotation) {
-        if (annotation.annotationType() == Get.class) {
-            return ((Get) annotation).value();
-        } else if (annotation.annotationType() == Post.class) {
-            return ((Post) annotation).value();
-        } else if (annotation.annotationType() == Route.class) {
-            return ((Route) annotation).value();
-        } else if (annotation.annotationType() == Patch.class) {
-            return ((Patch) annotation).value();
-        } else if (annotation.annotationType() == Delete.class) {
-            return ((Delete) annotation).value();
-        } else if (annotation.annotationType() == Intercept.class) {
-            return ((Intercept) annotation).value();
+        if (StringUtils.isNotBlank(route.value()) && StringUtils.isNotBlank(route.regex())) {
+            throw new IllegalArgumentException("Path and regexPath are both non-empty: " + target);
+        } else if (StringUtils.isBlank(route.value())) {
+            return route.regex();
+        } else {
+            return route.value();
         }
-        throw new IllegalStateException("Unrecognized annotation: " + annotation);
     }
-
-    private List<HttpMethod> getHttpMethods(Annotation annotation) {
-        if (annotation.annotationType() == Get.class) {
-            return singletonList(HttpMethod.GET);
-        } else if (annotation.annotationType() == Post.class) {
-            return singletonList(HttpMethod.POST);
-        } else if (annotation.annotationType() == Patch.class) {
-            return singletonList(HttpMethod.PATCH);
-        } else if (annotation.annotationType() == Delete.class) {
-            return singletonList(HttpMethod.DELETE);
-        } else if (annotation.annotationType() == Route.class) {
-            HttpMethod[] methods = ((Route) annotation).methods();
-            return Arrays.asList(methods);
-        } else if (annotation.annotationType() == Intercept.class) {
-            HttpMethod[] methods = ((Intercept) annotation).methods();
-            return Arrays.asList(methods);
-        }
-        throw new IllegalStateException("Unrecognized annotation: " + annotation);
-    }
-
-//    private <T extends Annotation> Optional<T> getRouteAnnotation(Method method) {
-//        Annotation[] annotations = method.getAnnotations();
-//        for (Annotation annotation : annotations) {
-//            if (annotation.getClass() == Route.class) {
-//                return (T)annotation;
-//            }
-//
-//            if (annotation.getClass().getAnnotation(Route.class) != null) {
-//                return (T)annotation;
-//            }
-//        }
-//        return false;
-//    }
-
-//    private boolean isRoutingHandler(Method method) {
-//        Annotation[] annotations = method.getAnnotations();
-//        for (Annotation annotation : annotations) {
-//            if (annotation.getClass() == Route.class) {
-//                return true;
-//            }
-//
-//            if (annotation.getClass().getAnnotation(Route.class) != null) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
 }

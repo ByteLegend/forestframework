@@ -1,6 +1,6 @@
 package org.forestframework.annotation;
 
-public enum RouteType {
+public enum RoutingType {
     /**
      * A route before the handler, similar to interceptor.
      * A pre handler route should return boolean or Future[Boolean] which indicates if the routing process should continue.

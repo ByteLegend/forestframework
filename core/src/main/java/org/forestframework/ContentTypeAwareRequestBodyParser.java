@@ -1,31 +1,28 @@
 package org.forestframework;
 
 
+import com.google.common.collect.ImmutableMap;
 import io.vertx.ext.web.RoutingContext;
-import org.forestframework.annotation.RequestBody;
+import io.vertx.ext.web.impl.ParsableMIMEValue;
 import org.forestframework.http.Routing;
 
-public class ContentTypeAwareRequestBodyParser implements RoutingHandlerArgumentResolver<Object, RequestBody> {
+import javax.inject.Singleton;
+import java.util.Map;
+
+@Singleton
+public class ContentTypeAwareRequestBodyParser implements RoutingParameterResolver<Object> {
+    private final Map<String, RoutingParameterResolver> contentTypeToResolver = ImmutableMap.<String, RoutingParameterResolver>builder()
+            .put("application/json", new JsonRequestBodyParser())
+            .build();
+
     @Override
-    public Object resolveArgument(Routing routing, Class<?> argumentType, RoutingContext routingContext, RequestBody annotation) {
-        if(argumentType == String.class) {
-            return routingContext.getBodyAsString();
+    public Object resolveArgument(Routing routing, RoutingContext routingContext, int paramIndex) {
+        ParsableMIMEValue mimeValue = new ParsableMIMEValue(routingContext.request().getHeader("Content-Type")).forceParse();
+        RoutingParameterResolver resolver = contentTypeToResolver.get(mimeValue.value());
+        if (resolver == null) {
+            throw new UnsupportedOperationException("Unsupported content type: " + mimeValue.value());
         }
-        return null;
+        return resolver.resolveArgument(routing, routingContext, paramIndex);
     }
-//    @Override
-//    public Object resolveArgument(Forest.Routing routing, Class<?> argumentType, RoutingContext routingContext, RequestBody requestBody) {
-//        return null;
-//    }
-//    private ImmutableMap<String, RequestBodyParser<?>> contentTypeToRequestBodyParserMap = ImmutableMap.of();
-//
-//    @Override
-//    public Object readRequestBody(RoutingContext context, Class<?> argumentClass) {
-//        String contentType = context.parsedHeaders().contentType().component();
-//        RequestBodyParser<?> parser = contentTypeToRequestBodyParserMap.get((contentType));
-//        if (parser == null) {
-//            throw HttpException.notAcceptable();
-//        }
-//        return parser.readRequestBody(context, argumentClass);
-//    }
 }
+

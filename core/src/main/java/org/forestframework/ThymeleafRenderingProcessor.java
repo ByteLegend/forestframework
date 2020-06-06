@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
-import org.forestframework.annotation.ThymeleafTemplateRendering;
 import org.forestframework.http.Routing;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.linkbuilder.StandardLinkBuilder;
@@ -15,7 +14,7 @@ import javax.inject.Singleton;
 import java.util.Map;
 
 @Singleton
-public class ThymeleafRenderingProcessor implements ResponseProcessor<ThymeleafTemplateRendering> {
+public class ThymeleafRenderingProcessor implements RoutingResultProcessor {
     private final ThymeleafTemplateEngine engine;
 
     @Inject
@@ -37,7 +36,7 @@ public class ThymeleafRenderingProcessor implements ResponseProcessor<ThymeleafT
     }
 
     @Override
-    public Object processResponse(RoutingContext routingContext, Routing routing, Object returnValue, ThymeleafTemplateRendering annotation) {
+    public Object processResponse(RoutingContext routingContext, Routing routing, Object returnValue) {
         if (!(returnValue instanceof String)) {
             throw new IllegalArgumentException();
         }

@@ -1,16 +1,18 @@
 package org.forestframework.annotation;
 
 import org.forestframework.ContentTypeAwareRequestBodyParser;
+import org.forestframework.annotationmagic.Extends;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE_USE;
-
-@Target({ METHOD, FIELD, CONSTRUCTOR, PARAMETER, TYPE_USE })
-//@ArgumentResolvedBy(ContentTypeAwareRequestBodyParser.class)
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Extends(ParameterResolver.class)
+@ParameterResolver(by = ContentTypeAwareRequestBodyParser.class)
 public @interface RequestBody {
 }

@@ -1,4 +1,7 @@
 forest:
+  environment: dev
+  static:
+    webroot: webroot
   http:
     # https://github.com/eclipse-vertx/vert.x/blob/3cfe7dc620fb8bd7acf63b61231cebd5a8d3c62c/src/main/java/io/vertx/core/http/HttpServerOptions.java#L30
     #
@@ -20,8 +23,8 @@ forest:
       maxHeaderListSize: 0x7fffffff
       extraSettings: {}
     alpnVersions:
-      - io.vertx.core.http.HttpVersion.HTTP_2
-      - io.vertx.core.http.HttpVersion.HTTP_1_1
+      - HTTP_2
+      - HTTP_1_1
     http2ConnectionWindowSize: -1
     decompressionSupported: false
     acceptUnmaskedFrames: false

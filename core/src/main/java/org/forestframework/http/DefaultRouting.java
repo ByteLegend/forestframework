@@ -1,13 +1,15 @@
 package org.forestframework.http;
 
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
+import org.forestframework.annotation.Route;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractRouting implements Routing {
+public class DefaultRouting implements Routing {
     private final String path;
+
+    private final String regexPath;
 
     private final List<HttpMethod> methods;
 
@@ -17,8 +19,13 @@ public abstract class AbstractRouting implements Routing {
 
     private final Object handlerInstance;
 
-    public AbstractRouting(String path, List<HttpMethod> methods, Class<?> handlerClass, Method handlerMethod, Object handlerInstance) {
+    public DefaultRouting(Route route, Class<?> handlerClass, Method handlerMethod, Object handlerInstance) {
+        this(route.value(), route.regex(), Arrays.asList(route.methods()), handlerClass, handlerMethod, handlerInstance);
+    }
+
+    public DefaultRouting(String path, String regexPath, List<HttpMethod> methods, Class<?> handlerClass, Method handlerMethod, Object handlerInstance) {
         this.path = path;
+        this.regexPath = regexPath;
         this.methods = methods;
         this.handlerClass = handlerClass;
         this.handlerMethod = handlerMethod;
@@ -28,6 +35,11 @@ public abstract class AbstractRouting implements Routing {
     @Override
     public String getPath() {
         return path;
+    }
+
+    @Override
+    public String getRegexPath() {
+        return regexPath;
     }
 
     @Override
@@ -50,13 +62,4 @@ public abstract class AbstractRouting implements Routing {
         return handlerInstance;
     }
 
-    public Route configure(Router router) {
-        Route ret = configurePath(router);
-        for (HttpMethod method : methods) {
-            ret = ret.method(method.toVertxHttpMethod());
-        }
-        return ret;
-    }
-
-    protected abstract Route configurePath(Router router);
 }

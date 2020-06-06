@@ -1,6 +1,6 @@
 package org.forestframework.annotation;
 
-import org.forestframework.RoutingHandlerArgumentResolver;
+import org.forestframework.RoutingParameterResolver;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -8,9 +8,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@Target({ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
 @Documented
-public @interface ArgumentResolvedBy {
-    Class<? extends RoutingHandlerArgumentResolver<?, ?>> value();
+public @interface ParameterResolver {
+    Class<? extends RoutingParameterResolver<?>> by();
 }

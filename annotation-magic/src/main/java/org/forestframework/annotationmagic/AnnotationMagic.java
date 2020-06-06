@@ -28,18 +28,36 @@ public class AnnotationMagic {
      * Then getAnnotation(Y) returns an instance of X because X extends Y.
      * If more than one Y and Y's subannotation exist, an exception will be thrown.
      */
-    public static <A extends Annotation> A getAnnotation(Class<?> targetClass, Class<A> annotationClass) {
-        Annotation[] annotations = targetClass.getAnnotations();
-        List<A> candidates = Stream.of(annotations)
-                .map(annotation -> examineAnnotation(annotation, annotationClass))
-                .filter(Objects::nonNull)
-                .collect(toList());
-        if (candidates.size() > 1) {
-            throw new IllegalArgumentException("Found more than one annotation on target class: " + targetClass + ":\n"
-                    + candidates.stream().map(Annotation::toString).collect(joining("\n")));
+    public static <A extends Annotation> A getOneAnnotationOnClass(Class<?> targetClass, Class<A> annotationClass) {
+        return assertZeroOrOne(getAnnotations(targetClass.getAnnotations(), annotationClass), targetClass);
+    }
+
+    private static <A extends Annotation> A assertZeroOrOne(List<A> annotations, Object target) {
+        if (annotations.size() > 1) {
+            throw new IllegalArgumentException("Found more than one annotation on " + target + ":\n"
+                    + annotations.stream().map(Annotation::toString).collect(joining("\n")));
         }
 
-        return candidates.isEmpty() ? null : candidates.get(0);
+        return annotations.isEmpty() ? null : annotations.get(0);
+    }
+
+    public static <A extends Annotation> A getOneAnnotationOnMethod(Method method, Class<A> targetAnnotationClass) {
+        return assertZeroOrOne(getAnnotationsOnMethod(method, targetAnnotationClass), method);
+    }
+
+    public static <A extends Annotation> List<A> getAnnotationsOnMethod(Method method, Class<A> targetAnnotationClass) {
+        return getAnnotations(method.getAnnotations(), targetAnnotationClass);
+    }
+
+    public static <A extends Annotation> A getOneAnnotationOnMethodParameter(Method method, int index, Class<A> targetAnnotation) {
+        return assertZeroOrOne(getAnnotations(method.getParameterAnnotations()[index], targetAnnotation), method);
+    }
+
+    public static <A extends Annotation> List<A> getAnnotations(Annotation[] annotations, Class<A> targetClass) {
+        return Stream.of(annotations)
+                .map(annotation -> examineAnnotation(annotation, targetClass))
+                .filter(Objects::nonNull)
+                .collect(toList());
     }
 
     public static boolean instanceOf(Annotation annotation, Class<? extends Annotation> klass) {

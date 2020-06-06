@@ -12,8 +12,8 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Inherited
 @Extends(Route.class)
-@Route(methods = {HttpMethod.GET})
-public @interface Get {
+@Route(methods = {HttpMethod.OPTIONS})
+public @interface Options {
     String value() default "";
 
     String regex() default "";

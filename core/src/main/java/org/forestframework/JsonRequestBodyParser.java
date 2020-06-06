@@ -1,17 +1,29 @@
 package org.forestframework;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.buffer.ByteBufInputStream;
 import io.vertx.ext.web.RoutingContext;
+import org.forestframework.http.Routing;
 
-public class JsonRequestBodyParser implements RequestBodyParser<Object> {
-    private ObjectMapper objectMapper = new ObjectMapper();
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.io.InputStream;
+
+@Singleton
+public class JsonRequestBodyParser implements RoutingParameterResolver<Object> {
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public Object readRequestBody(RoutingContext context, Class<?> argumentClass) {
+    public Object resolveArgument(Routing routing, RoutingContext routingContext, int paramIndex) {
+        Class<?> paramType = routing.getHandlerMethod().getParameterTypes()[paramIndex];
+        if (paramType == String.class) {
+            // TODO respect application/json;charset=XXX
+            return routingContext.getBodyAsString();
+        }
+
         try {
-            return argumentClass.cast(objectMapper.readValue(context.getBodyAsString(), argumentClass));
-        } catch (JsonProcessingException e) {
+            return objectMapper.readValue((InputStream) new ByteBufInputStream(routingContext.getBody().getByteBuf()), paramType);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -12,9 +12,10 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Inherited
 @Extends(Route.class)
-@Route(methods = {HttpMethod.GET})
-public @interface Get {
+@Route(methods = {HttpMethod.HEAD})
+public @interface Head {
     String value() default "";
 
     String regex() default "";
 }
+

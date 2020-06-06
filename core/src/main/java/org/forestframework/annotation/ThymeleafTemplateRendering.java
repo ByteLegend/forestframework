@@ -12,6 +12,6 @@ import java.lang.annotation.RetentionPolicy;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @TemplateRendering(engine = ThymeleafTemplateEngine.class)
-@ReturnValueProcessedBy(ThymeleafRenderingProcessor.class)
+@ResultProcessor(by = ThymeleafRenderingProcessor.class)
 public @interface ThymeleafTemplateRendering {
 }

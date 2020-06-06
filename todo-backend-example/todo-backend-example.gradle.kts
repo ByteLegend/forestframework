@@ -20,6 +20,7 @@ dependencies {
     val javaxValidationVersion = "2.0.1.Final"
     val logbackVersion = "1.2.3"
     val vertxVersion = "4.0.0-milestone5"
+    val jacksonVersion = "2.10.3"
     implementation(project(":jdbc-client-extension"))
     implementation(project(":redis-client-extension"))
     implementation(project(":cors-extension"))
@@ -28,6 +29,7 @@ dependencies {
     implementation("io.vertx:vertx-jdbc-client:$vertxVersion")
     implementation(project(":core"))
     implementation("javax.ws.rs:jsr311-api:1.1.1")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("javax.persistence:javax.persistence-api:$jpaVersion")
     implementation("javax.validation:validation-api:$javaxValidationVersion")

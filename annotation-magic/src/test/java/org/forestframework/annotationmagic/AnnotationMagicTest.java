@@ -12,72 +12,72 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AnnotationMagicTest {
     @Test
     public void catGetAllAnnotationsOfSameBaseAnnotation() {
-        assertEquals("Base", AnnotationMagic.getAnnotation(TestClassWithBase.class, Base.class).value());
-        assertEquals("Mid", AnnotationMagic.getAnnotation(TestClassWithMid.class, Base.class).value());
-        assertEquals("Sub", AnnotationMagic.getAnnotation(TestClassWithSub.class, Base.class).value());
+        assertEquals("Base", AnnotationMagic.getOneAnnotationOnClass(TestClassWithBase.class, Base.class).value());
+        assertEquals("Mid", AnnotationMagic.getOneAnnotationOnClass(TestClassWithMid.class, Base.class).value());
+        assertEquals("Sub", AnnotationMagic.getOneAnnotationOnClass(TestClassWithSub.class, Base.class).value());
     }
 
     @Test
     public void realWorldAnnotationInheritanceTest() {
-        assertEquals(HttpMethod.POST, AnnotationMagic.getAnnotation(TestClassWithRoute.class, Route.class).method());
-        assertEquals("test", AnnotationMagic.getAnnotation(TestClassWithRoute.class, Route.class).path());
+        assertEquals(HttpMethod.POST, AnnotationMagic.getOneAnnotationOnClass(TestClassWithRoute.class, Route.class).method());
+        assertEquals("test", AnnotationMagic.getOneAnnotationOnClass(TestClassWithRoute.class, Route.class).path());
 
-        assertEquals(HttpMethod.GET, AnnotationMagic.getAnnotation(TestClassWithGet.class, Route.class).method());
-        assertEquals("get", AnnotationMagic.getAnnotation(TestClassWithGet.class, Route.class).path());
+        assertEquals(HttpMethod.GET, AnnotationMagic.getOneAnnotationOnClass(TestClassWithGet.class, Route.class).method());
+        assertEquals("get", AnnotationMagic.getOneAnnotationOnClass(TestClassWithGet.class, Route.class).path());
 
-        assertEquals(HttpMethod.POST, AnnotationMagic.getAnnotation(TestClassWithPost.class, Route.class).method());
-        assertEquals("post", AnnotationMagic.getAnnotation(TestClassWithPost.class, Route.class).path());
+        assertEquals(HttpMethod.POST, AnnotationMagic.getOneAnnotationOnClass(TestClassWithPost.class, Route.class).method());
+        assertEquals("post", AnnotationMagic.getOneAnnotationOnClass(TestClassWithPost.class, Route.class).path());
 
-        assertEquals("socketjs", AnnotationMagic.getAnnotation(TestClassWithSocketJS.class, Route.class).path());
+        assertEquals("socketjs", AnnotationMagic.getOneAnnotationOnClass(TestClassWithSocketJS.class, Route.class).path());
 
-        assertEquals("intercept", AnnotationMagic.getAnnotation(TestClassWithIntercept.class, Intercept.class).path());
-        assertEquals("intercept", AnnotationMagic.getAnnotation(TestClassWithIntercept.class, Route.class).path());
-        assertEquals(HttpMethod.POST, AnnotationMagic.getAnnotation(TestClassWithIntercept.class, Intercept.class).method());
-        assertEquals(HttpMethod.POST, AnnotationMagic.getAnnotation(TestClassWithIntercept.class, Route.class).method());
-        assertEquals(InterceptType.AFTER_SUCCESS, AnnotationMagic.getAnnotation(TestClassWithIntercept.class, Intercept.class).type());
+        assertEquals("intercept", AnnotationMagic.getOneAnnotationOnClass(TestClassWithIntercept.class, Intercept.class).path());
+        assertEquals("intercept", AnnotationMagic.getOneAnnotationOnClass(TestClassWithIntercept.class, Route.class).path());
+        assertEquals(HttpMethod.POST, AnnotationMagic.getOneAnnotationOnClass(TestClassWithIntercept.class, Intercept.class).method());
+        assertEquals(HttpMethod.POST, AnnotationMagic.getOneAnnotationOnClass(TestClassWithIntercept.class, Route.class).method());
+        assertEquals(InterceptType.AFTER_SUCCESS, AnnotationMagic.getOneAnnotationOnClass(TestClassWithIntercept.class, Intercept.class).type());
 
-        assertEquals("prehandler", AnnotationMagic.getAnnotation(TestClassWithPreHandler.class, Intercept.class).path());
-        assertEquals("prehandler", AnnotationMagic.getAnnotation(TestClassWithPreHandler.class, Route.class).path());
-        assertEquals(HttpMethod.GET, AnnotationMagic.getAnnotation(TestClassWithPreHandler.class, Intercept.class).method());
-        assertEquals(HttpMethod.GET, AnnotationMagic.getAnnotation(TestClassWithPreHandler.class, Route.class).method());
-        assertEquals(InterceptType.PRE_HANDLER, AnnotationMagic.getAnnotation(TestClassWithPreHandler.class, Intercept.class).type());
+        assertEquals("prehandler", AnnotationMagic.getOneAnnotationOnClass(TestClassWithPreHandler.class, Intercept.class).path());
+        assertEquals("prehandler", AnnotationMagic.getOneAnnotationOnClass(TestClassWithPreHandler.class, Route.class).path());
+        assertEquals(HttpMethod.GET, AnnotationMagic.getOneAnnotationOnClass(TestClassWithPreHandler.class, Intercept.class).method());
+        assertEquals(HttpMethod.GET, AnnotationMagic.getOneAnnotationOnClass(TestClassWithPreHandler.class, Route.class).method());
+        assertEquals(InterceptType.PRE_HANDLER, AnnotationMagic.getOneAnnotationOnClass(TestClassWithPreHandler.class, Intercept.class).type());
 
-        assertEquals("aftersuccess", AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, Intercept.class).path());
-        assertEquals("aftersuccess", AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, Route.class).path());
-        assertEquals(HttpMethod.POST, AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, Intercept.class).method());
-        assertEquals(HttpMethod.POST, AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, Route.class).method());
-        assertEquals(InterceptType.AFTER_SUCCESS, AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, Intercept.class).type());
+        assertEquals("aftersuccess", AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, Intercept.class).path());
+        assertEquals("aftersuccess", AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, Route.class).path());
+        assertEquals(HttpMethod.POST, AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, Intercept.class).method());
+        assertEquals(HttpMethod.POST, AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, Route.class).method());
+        assertEquals(InterceptType.AFTER_SUCCESS, AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, Intercept.class).type());
     }
 
     @Test
     public void reportErrorsWhenCircularInheritanceDetected() {
-        Exception exception = assertThrows(Exception.class, () -> AnnotationMagic.getAnnotation(TestClassWithCircularAnnotation.class, CircularBase.class));
+        Exception exception = assertThrows(Exception.class, () -> AnnotationMagic.getOneAnnotationOnClass(TestClassWithCircularAnnotation.class, CircularBase.class));
         assertTrue(exception.getMessage().contains("circular inheritance detected:"));
         assertTrue(exception.getMessage().contains("CircularMid"));
     }
 
     @Test
     public void reportErrorWhenMultipleAnnotationsWithSameBaseTypeFound() {
-        Exception exception = assertThrows(Exception.class, () -> AnnotationMagic.getAnnotation(TestClassWithSameBaseType.class, Base.class));
+        Exception exception = assertThrows(Exception.class, () -> AnnotationMagic.getOneAnnotationOnClass(TestClassWithSameBaseType.class, Base.class));
         assertTrue(exception.getMessage().contains("Found more than one annotation on target class"));
 
-        AnnotationMagic.getAnnotation(TestClassWithSameBaseType.class, Sub.class);
+        AnnotationMagic.getOneAnnotationOnClass(TestClassWithSameBaseType.class, Sub.class);
     }
 
     @Test
     public void instanceOfTest() {
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithRoute.class, Route.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithRoute.class, Route.class), Route.class));
 
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithGet.class, Route.class), Route.class));
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithGet.class, Get.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithGet.class, Route.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithGet.class, Get.class), Route.class));
 
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithIntercept.class, Route.class), Route.class));
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithIntercept.class, Intercept.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithIntercept.class, Route.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithIntercept.class, Intercept.class), Route.class));
 
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, Route.class), Route.class));
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, Intercept.class), Route.class));
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, AfterSuccess.class), Route.class));
-        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getAnnotation(TestClassWithAfterSuccess.class, AfterSuccess.class), Intercept.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, Route.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, Intercept.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, AfterSuccess.class), Route.class));
+        assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, AfterSuccess.class), Intercept.class));
     }
 }
 

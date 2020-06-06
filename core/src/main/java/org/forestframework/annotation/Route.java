@@ -10,6 +10,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * When Route is annotated on a class, only its path and regexpath can be used.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Documented
@@ -20,8 +23,6 @@ public @interface Route {
     String value() default "";
 
     String regex() default "";
-
-    RouteType type() default RouteType.HANDLER;
 }
 
 
