@@ -37,5 +37,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "org.forestframework.samples.petclinic.PetClinicApplicationKt"
+    mainClassName = "org.forestframework.ToDoApplicationKt"
 }
