@@ -1,6 +1,7 @@
 package org.forestframework.bootstrap;
 
 import com.google.inject.Injector;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import org.forestframework.http.DefaultHttpVerticle;
 

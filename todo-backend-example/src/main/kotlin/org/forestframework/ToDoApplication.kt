@@ -18,6 +18,7 @@ import io.vertx.kotlin.redis.client.hdelAwait
 import io.vertx.kotlin.redis.client.hgetAwait
 import io.vertx.kotlin.redis.client.hsetAwait
 import io.vertx.kotlin.redis.client.hvalsAwait
+import io.vertx.redis.client.Redis
 import io.vertx.redis.client.RedisAPI
 import kotlinx.coroutines.runBlocking
 import org.forestframework.annotation.Delete
@@ -112,7 +113,9 @@ interface TodoService {
     suspend fun deleteAll()
 }
 
-class RedisTodoService @Inject constructor(val redis: RedisAPI) : TodoService {
+@Singleton
+class RedisTodoService @Inject constructor(val client: Redis) : TodoService {
+    private val redis = RedisAPI.api(client)
     private val redisToDoKey = "VERT_TODO"
     override suspend fun initData() {
         val sample = Todo(abs(ThreadLocalRandom.current().nextInt(0, Int.MAX_VALUE)),

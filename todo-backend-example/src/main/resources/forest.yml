@@ -5,7 +5,7 @@ forest:
     port: 8080
   redis:
     endpoints:
-      - redis://localhost:6379
+      - redis://dev111.gradle.org:9999
     maxPoolSize: 400
   jdbc:
     url: jdbc:mysql://localhost/vertx_blueprint?characterEncoding=UTF-8&useSSL=false

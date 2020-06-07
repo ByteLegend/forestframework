@@ -4,19 +4,22 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class AnnotationMagic {
-    // To avoid circular @Extends, walk max 10 super annotations.
+    private static ConcurrentHashMap<List<Object>, Optional<Object>> CACHE = new ConcurrentHashMap<>();
 
     /**
      * Get annotation in the magic way.
@@ -29,16 +32,8 @@ public class AnnotationMagic {
      * If more than one Y and Y's subannotation exist, an exception will be thrown.
      */
     public static <A extends Annotation> A getOneAnnotationOnClass(Class<?> targetClass, Class<A> annotationClass) {
-        return assertZeroOrOne(getAnnotations(targetClass.getAnnotations(), annotationClass), targetClass);
-    }
-
-    private static <A extends Annotation> A assertZeroOrOne(List<A> annotations, Object target) {
-        if (annotations.size() > 1) {
-            throw new IllegalArgumentException("Found more than one annotation on " + target + ":\n"
-                    + annotations.stream().map(Annotation::toString).collect(joining("\n")));
-        }
-
-        return annotations.isEmpty() ? null : annotations.get(0);
+        return getCached(Arrays.asList(targetClass, annotationClass),
+                () -> assertZeroOrOne(getAnnotations(targetClass.getAnnotations(), annotationClass), targetClass));
     }
 
     public static <A extends Annotation> A getOneAnnotationOnMethod(Method method, Class<A> targetAnnotationClass) {
@@ -46,22 +41,33 @@ public class AnnotationMagic {
     }
 
     public static <A extends Annotation> List<A> getAnnotationsOnMethod(Method method, Class<A> targetAnnotationClass) {
-        return getAnnotations(method.getAnnotations(), targetAnnotationClass);
+        return getCached(Arrays.asList(method, targetAnnotationClass),
+                () -> getAnnotations(method.getAnnotations(), targetAnnotationClass));
     }
 
     public static <A extends Annotation> A getOneAnnotationOnMethodParameter(Method method, int index, Class<A> targetAnnotation) {
-        return assertZeroOrOne(getAnnotations(method.getParameterAnnotations()[index], targetAnnotation), method);
-    }
-
-    public static <A extends Annotation> List<A> getAnnotations(Annotation[] annotations, Class<A> targetClass) {
-        return Stream.of(annotations)
-                .map(annotation -> examineAnnotation(annotation, targetClass))
-                .filter(Objects::nonNull)
-                .collect(toList());
+        return getCached(Arrays.asList(method, index, targetAnnotation),
+                () -> assertZeroOrOne(getAnnotations(method.getParameterAnnotations()[index], targetAnnotation), method));
     }
 
     public static boolean instanceOf(Annotation annotation, Class<? extends Annotation> klass) {
         return getAnnotationHierarchy(annotation.annotationType()).contains(klass);
+    }
+
+    private static <T> T getCached(List<Object> keys, Supplier<T> supplier) {
+        Optional<Object> ret = CACHE.get(keys);
+        if (ret == null) {
+            ret = Optional.ofNullable(supplier.get());
+            CACHE.put(keys, ret);
+        }
+        return (T) ret.orElse(null);
+    }
+
+    private static <A extends Annotation> List<A> getAnnotations(Annotation[] annotations, Class<A> targetClass) {
+        return Stream.of(annotations)
+                .map(annotation -> examineAnnotation(annotation, targetClass))
+                .filter(Objects::nonNull)
+                .collect(toList());
     }
 
     private static LinkedHashSet<Class<? extends Annotation>> getAnnotationHierarchy(Class<? extends Annotation> klass) {
@@ -75,6 +81,15 @@ public class AnnotationMagic {
         }
 
         return hierarchy;
+    }
+
+    private static <A extends Annotation> A assertZeroOrOne(List<A> annotations, Object target) {
+        if (annotations.size() > 1) {
+            throw new IllegalArgumentException("Found more than one annotation on " + target + ":\n"
+                    + annotations.stream().map(Annotation::toString).collect(joining("\n")));
+        }
+
+        return annotations.isEmpty() ? null : annotations.get(0);
     }
 
     /*

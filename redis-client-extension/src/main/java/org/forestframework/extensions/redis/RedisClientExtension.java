@@ -5,7 +5,6 @@ import com.google.inject.Inject;
 import com.google.inject.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.redis.client.Redis;
-import io.vertx.redis.client.RedisAPI;
 import io.vertx.redis.client.RedisOptions;
 import org.forestframework.config.ConfigProvider;
 
@@ -23,7 +22,7 @@ public class RedisClientExtension extends AbstractModule {
     }
 
     @Provides
-    public RedisAPI createRedisClient() {
-        return RedisAPI.api(Redis.createClient(vertx, redisOptions));
+    public Redis createRedisClient() {
+        return Redis.createClient(vertx, redisOptions);
     }
 }
