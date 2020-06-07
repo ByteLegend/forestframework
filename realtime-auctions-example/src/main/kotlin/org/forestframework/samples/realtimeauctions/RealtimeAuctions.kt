@@ -35,12 +35,12 @@ fun main() {
 
 class EventBusHandler {
     @Route(("/eventbus/*"))
-    @SocketJSBridge
+//    @SocketJSBridge
     fun bridgeEvent(bridgeEvent: BridgeEvent) {
     }
 
     @Route("/eventbus2")
-    @SocketJS
+//    @SocketJS
     fun test(socket: SockJSSocket, buffer: Buffer) {
     }
 }
