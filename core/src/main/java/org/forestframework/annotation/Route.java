@@ -1,6 +1,7 @@
 package org.forestframework.annotation;
 
 
+import org.forestframework.annotationmagic.AliasFor;
 import org.forestframework.http.HttpMethod;
 
 import java.lang.annotation.Documented;
@@ -20,7 +21,10 @@ import java.lang.annotation.Target;
 public @interface Route {
     HttpMethod[] methods() default {HttpMethod.GET};
 
+    @AliasFor("path")
     String value() default "";
+
+    String path() default "";
 
     String regex() default "";
 }

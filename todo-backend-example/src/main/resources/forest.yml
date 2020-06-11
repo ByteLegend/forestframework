@@ -8,11 +8,10 @@ forest:
       - redis://dev111.gradle.org:9999
     maxPoolSize: 400
   jdbc:
-    url: jdbc:mysql://localhost/vertx_blueprint?characterEncoding=UTF-8&useSSL=false
-    c3p0:
-      driver_class: com.mysql.cj.jdbc.Driver
-      user: root
-      password: root
-      max_pool_size: 30
+    url: jdbc:mysql://localhost/vertx_blueprint?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    driver_class: com.mysql.cj.jdbc.Driver
+    user: root
+    password: root
+    max_pool_size: 30
 
-serviceType: redis
+serviceType: jdbc

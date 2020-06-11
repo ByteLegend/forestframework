@@ -66,7 +66,11 @@ class ServiceSelector @Inject constructor(val configProvider: ConfigProvider) : 
 class ToDoRouter @Inject constructor(private val service: TodoService) {
     init {
         runBlocking {
-            service.initData()
+            try {
+                service.initData()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -88,8 +92,8 @@ class ToDoRouter @Inject constructor(private val service: TodoService) {
 
     @Post("/todos")
     @JsonResponseBody(pretty = true)
-    suspend fun handleCreateTodo(@RequestBody todo: Todo, routingContext: RoutingContext) {
-        service.insert(wrapTodo(todo, routingContext))
+    suspend fun handleCreateTodo(@RequestBody todo: Todo, routingContext: RoutingContext): Todo {
+        return service.insert(wrapTodo(todo, routingContext))
     }
 
     @Patch("/todos/:todoId")
@@ -223,7 +227,7 @@ CREATE TABLE IF NOT EXISTS `todo` (
                 .add(fnTodo.url)
                 .add(todoId)
             jdbcClient.updateWithParamsAwait(SQL_UPDATE, params)
-            target
+            Optional.of(fnTodo)
         } else {
             Optional.empty()
         }

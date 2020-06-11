@@ -16,6 +16,7 @@ public class JsonResultProcessor implements RoutingResultProcessor {
     public Object processResponse(RoutingContext routingContext, Routing routing, Object returnValue) {
         JsonResponseBody anno = AnnotationMagic.getOneAnnotationOnMethod(routing.getHandlerMethod(), JsonResponseBody.class);
         // TODO charset
+        routingContext.response().putHeader("Content-Type", "application/json");
         return routingContext.response().end(getJson(anno, returnValue));
     }
 

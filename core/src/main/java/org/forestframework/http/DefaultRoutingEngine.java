@@ -8,6 +8,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -311,6 +312,10 @@ public class DefaultRoutingEngine implements RoutingEngine {
     private <T> T resolveArgument(Routing routing, int index, Class<T> argumentType, RoutingContext routingContext) {
         if (argumentType == RoutingContext.class) {
             return (T) routingContext;
+        } else if (argumentType == HttpServerRequest.class) {
+            return (T) routingContext.request();
+        } else if (argumentType == HttpServerResponse.class) {
+            return (T) routingContext.response();
         }
 
         return (T) injector.getInstance(routing.getParameterResolver(index))
