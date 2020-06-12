@@ -21,6 +21,7 @@ import io.vertx.kotlin.redis.client.hvalsAwait
 import io.vertx.redis.client.Redis
 import io.vertx.redis.client.RedisAPI
 import kotlinx.coroutines.runBlocking
+import org.forestframework.annotation.Config
 import org.forestframework.annotation.Delete
 import org.forestframework.annotation.ForestApplication
 import org.forestframework.annotation.Get
@@ -52,9 +53,9 @@ fun main() {
     Forest.run(ToDoApplication::class.java)
 }
 
-class ServiceSelector @Inject constructor(val configProvider: ConfigProvider) : AbstractModule() {
+class ServiceSelector @Inject constructor(@Config("serviceType") val serviceType: String) : AbstractModule() {
     override fun configure() {
-        if (configProvider.getInstance("serviceType", String::class.java) == "jdbc") {
+        if (serviceType == "jdbc") {
             bind(TodoService::class.java).to(JdbcTodoService::class.java);
         } else {
             bind(TodoService::class.java).to(RedisTodoService::class.java);

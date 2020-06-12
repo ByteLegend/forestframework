@@ -42,10 +42,11 @@ public class Forest {
 
     public static void run(Class<?> applicationClass) {
         try {
+            Unsafe.instrumentGuice(createConfigProvider());
             Injector injector = createInjector(applicationClass);
             injector.getInstance(HttpServerStarter.class).start();
         } catch (Throwable e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

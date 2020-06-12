@@ -34,6 +34,6 @@ public class PgClientExtension extends AbstractModule {
 
     @Provides
     public PgClient createPgClient() {
-
+        return null;
     }
 }

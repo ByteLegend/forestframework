@@ -5,10 +5,9 @@ import com.google.inject.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
-import org.forestframework.config.ConfigProvider;
+import org.forestframework.annotation.Config;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 public class JDBCClientExtension extends AbstractModule {
     private JsonObject config;
@@ -16,10 +15,9 @@ public class JDBCClientExtension extends AbstractModule {
 
     @Inject
     public JDBCClientExtension(
-//            @Named("forest.jdbc") JsonObject config,
-            ConfigProvider configProvider,
+            @Config("forest.jdbc") JsonObject config,
             Vertx vertx) {
-        this.config = configProvider.getInstance("forest.jdbc", JsonObject.class);
+        this.config = config;
         this.vertx = vertx;
     }
 

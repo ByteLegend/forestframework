@@ -24,6 +24,7 @@ dependencies {
     val beanUtilVersion = "1.9.4"
     val junitVersion = "5.6.2"
     val mockKVersion = "1.9.3"
+    val byteBuddyVersion = "1.10.11"
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     api("org.apache.commons:commons-math3:3.6.1")
     api("io.vertx:vertx-core:$vertxVersion")
@@ -47,7 +48,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
-
+    implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
+    implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
 
     implementation("com.google.guava:guava:$guavaVersion")
 
