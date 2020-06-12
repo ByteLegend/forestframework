@@ -20,10 +20,10 @@ import org.forestframework.KotlinSuspendFunctionBridge;
 import org.forestframework.RoutingResultProcessor;
 import org.forestframework.annotation.Blocking;
 import org.forestframework.annotation.ComponentClasses;
+import org.forestframework.annotation.Config;
 import org.forestframework.annotation.Route;
 import org.forestframework.annotation.RoutingType;
 import org.forestframework.annotationmagic.AnnotationMagic;
-import org.forestframework.config.ConfigProvider;
 import org.forestframework.utils.ComponentScanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,11 +59,11 @@ public class DefaultRoutingEngine implements RoutingEngine {
     public DefaultRoutingEngine(Injector injector,
                                 Vertx vertx,
                                 @ComponentClasses List<Class<?>> componentClasses,
-                                ConfigProvider configProvider) {
+                                @Config("forest.environment") String environment) {
         this.injector = injector;
         this.vertx = vertx;
         this.routings = createRoutings(componentClasses);
-        this.devMode = "dev".equals(configProvider.getInstance("forest.environment", Boolean.class));
+        this.devMode = "dev".equals(environment);
     }
 
     protected Map<RoutingType, List<Routing>> createRoutings(List<Class<?>> componentClasses) {

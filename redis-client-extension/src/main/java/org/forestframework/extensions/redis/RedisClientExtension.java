@@ -6,7 +6,7 @@ import com.google.inject.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.RedisOptions;
-import org.forestframework.config.ConfigProvider;
+import org.forestframework.annotation.Config;
 
 public class RedisClientExtension extends AbstractModule {
     private final RedisOptions redisOptions;
@@ -14,10 +14,9 @@ public class RedisClientExtension extends AbstractModule {
 
     @Inject
     public RedisClientExtension(
-            ConfigProvider configProvider,
-//            @Named("forest.redis") RedisOptions redisOptions,
+            @Config("forest.redis") RedisOptions redisOptions,
             Vertx vertx) {
-        this.redisOptions = configProvider.getInstance("forest.redis", RedisOptions.class);
+        this.redisOptions = redisOptions;
         this.vertx = vertx;
     }
 
