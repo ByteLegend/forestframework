@@ -12,7 +12,7 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.buffer.impl.BufferImpl
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServerResponse
-import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.RoutingContext
 import org.forestframework.Forest
 import org.forestframework.annotation.ForestApplication
 import org.forestframework.annotation.Get
@@ -20,6 +20,7 @@ import org.forestframework.annotation.GetPlainText
 import org.forestframework.annotation.Intercept
 import org.forestframework.annotation.JsonResponseBody
 import org.forestframework.annotation.QueryParam
+import org.forestframework.annotation.TemplateRendering
 import org.forestframework.ext.pgclient.PgClientExtension
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -76,7 +77,6 @@ class App @Inject constructor(private val client: PgClient,
         val iterator = rows.iterator()
         if (!iterator.hasNext()) {
             response.setStatusCode(404).end()
-            return
         }
         val row: Tuple = iterator.next()
         return World(row.getInteger(0), row.getInteger(1))
@@ -109,6 +109,24 @@ class App @Inject constructor(private val client: PgClient,
         return worlds
     }
 
+    @Get("/fortunes")
+//    @TemplateRendering
+    suspend fun getFortunes(response: HttpServerResponse, routingContext: RoutingContext): String {
+        val rows = client.preparedQueryAwait(SELECT_FORTUNE).iterator()
+        if (!rows.hasNext()) {
+            response.setStatusCode(404).end("No results");
+        }
+
+        val fortunes = mutableListOf<Fortune>()
+        while (rows.hasNext()) {
+            val row = rows.next()
+            fortunes.add(Fortune(row.getInteger(0), row.getString(1)))
+        }
+        fortunes.add(Fortune(0, "Additional fortune added at request time."));
+        routingContext.put("fortunes", fortunes.sorted())
+        return "fortunes";
+    }
+
     private
     fun randomWorld(): Int {
         return 1 + ThreadLocalRandom.current().nextInt(10000)
@@ -128,3 +146,8 @@ data class World(val id: Int, val randomNumber: Int) : Comparable<World> {
     }
 }
 
+data class Fortune(val id: Int, val message: String) : Comparable<Fortune> {
+    override fun compareTo(other: Fortune): Int {
+        return message.compareTo(other.message)
+    }
+}

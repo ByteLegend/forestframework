@@ -79,6 +79,15 @@ public class AnnotationMagicTest {
         assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, AfterSuccess.class), Route.class));
         assertTrue(AnnotationMagic.instanceOf(AnnotationMagic.getOneAnnotationOnClass(TestClassWithAfterSuccess.class, AfterSuccess.class), Intercept.class));
     }
+
+    @Test
+    public void compositeOfTest() {
+        assertEquals("test", AnnotationMagic.getOneAnnotationOnClass(TestClassWithGetJson.class, Get.class).path());
+        assertEquals("test", AnnotationMagic.getOneAnnotationOnClass(TestClassWithGetJson.class, Route.class).path());
+        assertTrue(AnnotationMagic.getOneAnnotationOnClass(TestClassWithGetJson.class, Json.class).pretty());
+        Exception exception = assertThrows(Exception.class, () -> AnnotationMagic.getOneAnnotationOnClass(TestClassWithInvalidGetJson.class, Get.class).path());
+        assertTrue(exception.getCause().getCause().getMessage().contains("Not found path in composite annotation @org.forestframework.annotationmagic.InvalidGetJson(path=\"test\", pretty=true)"));
+    }
 }
 
 @Base
@@ -113,6 +122,38 @@ class TestClassWithRoute {
 @Extends(Route.class)
 @interface Get {
     String path() default "";
+}
+
+@Retention(RetentionPolicy.RUNTIME)
+@interface Json {
+    boolean pretty() default false;
+}
+
+@Retention(RetentionPolicy.RUNTIME)
+@CompositeOf({Get.class, Json.class})
+@interface GetJson {
+    @AliasFor(value = "path", target = Get.class)
+    String path() default "";
+
+    @AliasFor(value = "pretty", target = Json.class)
+    boolean pretty() default false;
+}
+
+@Retention(RetentionPolicy.RUNTIME)
+@CompositeOf({Get.class, Json.class})
+@interface InvalidGetJson {
+    String path() default "";
+
+    @AliasFor(value = "pretty", target = Json.class)
+    boolean pretty() default false;
+}
+
+@GetJson(path = "test", pretty = true)
+class TestClassWithGetJson {
+}
+
+@InvalidGetJson(path = "test", pretty = true)
+class TestClassWithInvalidGetJson {
 }
 
 @Get(path = "get")

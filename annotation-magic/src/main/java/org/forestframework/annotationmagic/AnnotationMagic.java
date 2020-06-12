@@ -65,9 +65,41 @@ public class AnnotationMagic {
 
     private static <A extends Annotation> List<A> getAnnotations(Annotation[] annotations, Class<A> targetClass) {
         return Stream.of(annotations)
+                .flatMap(AnnotationMagic::expandAnnotation)
                 .map(annotation -> examineAnnotation(annotation, targetClass))
                 .filter(Objects::nonNull)
                 .collect(toList());
+    }
+
+    private static Stream<Annotation> expandAnnotation(Annotation annotation) {
+        CompositeOf compositeOf = annotation.annotationType().getAnnotation(CompositeOf.class);
+        if (compositeOf == null) {
+            return Stream.of(annotation);
+        }
+        return Stream.of(compositeOf.value()).map(klass -> (Annotation) Proxy.newProxyInstance(klass.getClassLoader(), new Class[]{klass}, new InvocationHandler() {
+            Map<String, Object> cache = new HashMap<>();
+
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if ("annotationType".equals(method.getName())) {
+                    return klass;
+                }
+                Object result = cache.get(method.getName());
+                if (result != null) {
+                    return result;
+                }
+
+                for (Method methodInCompositeAnnotation : annotation.annotationType().getMethods()) {
+                    AliasFor aliasFor = methodInCompositeAnnotation.getAnnotation(AliasFor.class);
+                    if (aliasFor != null && aliasFor.target() == klass && aliasFor.value().equals(method.getName())) {
+                        result = methodInCompositeAnnotation.invoke(annotation);
+                        cache.put(method.getName(), result);
+                        return result;
+                    }
+                }
+                throw new IllegalStateException("Not found " + method.getName() + " in composite annotation " + annotation);
+            }
+        }));
     }
 
     private static LinkedHashSet<Class<? extends Annotation>> getAnnotationHierarchy(Class<? extends Annotation> klass) {
