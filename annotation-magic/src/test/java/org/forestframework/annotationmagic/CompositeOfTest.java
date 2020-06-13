@@ -1,4 +1,4 @@
-package org.forestframework.annotationmagic;
+package io.forestframework.annotationmagic;
 
 public class CompositeOfTest {
 }

@@ -28,5 +28,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "org.forestframework.samples.petclinic.PetClinicApplicationKt"
+    mainClassName = "io.forestframework.samples.petclinic.PetClinicApplicationKt"
 }

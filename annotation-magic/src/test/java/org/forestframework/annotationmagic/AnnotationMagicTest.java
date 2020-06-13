@@ -1,4 +1,4 @@
-package org.forestframework.annotationmagic;
+package io.forestframework.annotationmagic;
 
 import org.junit.jupiter.api.Test;
 
@@ -86,7 +86,7 @@ public class AnnotationMagicTest {
         assertEquals("test", AnnotationMagic.getOneAnnotationOnClass(TestClassWithGetJson.class, Route.class).path());
         assertTrue(AnnotationMagic.getOneAnnotationOnClass(TestClassWithGetJson.class, Json.class).pretty());
         Exception exception = assertThrows(Exception.class, () -> AnnotationMagic.getOneAnnotationOnClass(TestClassWithInvalidGetJson.class, Get.class).path());
-        assertTrue(exception.getCause().getCause().getMessage().contains("Not found path in composite annotation @org.forestframework.annotationmagic.InvalidGetJson(path=\"test\", pretty=true)"));
+        assertTrue(exception.getCause().getCause().getMessage().contains("Not found path in composite annotation @io.forestframework.annotationmagic.InvalidGetJson(path=\"test\", pretty=true)"));
     }
 }
 

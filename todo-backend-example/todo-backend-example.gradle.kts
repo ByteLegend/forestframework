@@ -39,5 +39,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "org.forestframework.ToDoApplicationKt"
+    mainClassName = "io.forestframework.ToDoApplicationKt"
 }

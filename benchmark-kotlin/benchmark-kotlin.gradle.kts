@@ -39,5 +39,5 @@ dependencies {
 }
 
 application {
-    mainClassName = "org.forestframework.benchmark.AppKt"
+    mainClassName = "io.forestframework.benchmark.AppKt"
 }

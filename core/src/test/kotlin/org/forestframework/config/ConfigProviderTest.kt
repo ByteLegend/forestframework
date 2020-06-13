@@ -1,4 +1,4 @@
-package org.forestframework.config
+package io.forestframework.config
 
 import io.vertx.core.http.Http2Settings
 import io.vertx.core.http.HttpServerOptions
