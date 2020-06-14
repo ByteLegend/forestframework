@@ -1,10 +1,8 @@
-package io.forestframework.ext.core;
+package io.forestframework.core;
 
 import com.google.common.reflect.ClassPath;
-import com.google.inject.Inject;
-import io.forestframework.annotation.ApplicationClass;
-import io.forestframework.annotation.ForestApplication;
-import io.forestframework.ext.api.ComponentClassConfigurer;
+import io.forestframework.ext.api.ComponentsConfigurer;
+import io.forestframework.utils.Assert;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -19,20 +17,7 @@ import static com.google.common.reflect.ClassPath.from;
 import static io.forestframework.utils.ComponentScanUtils.isGuiceModule;
 import static io.forestframework.utils.ComponentScanUtils.isRouter;
 
-public class AutoScanComponentClassConfigurer implements ComponentClassConfigurer {
-    private final Class<?> applicationClass;
-
-    @Inject
-    public AutoScanComponentClassConfigurer(@ApplicationClass Class applicationClass) {
-        this.applicationClass = applicationClass;
-    }
-
-    @Override
-    public void configure(List<Class<?>> componentClasses) {
-        ForestApplication annotation = applicationClass.getAnnotation(ForestApplication.class);
-        componentClasses.addAll(scanComponentClasses(applicationClass, annotation));
-    }
-
+public class AutoScanComponentsConfigurer implements ComponentsConfigurer {
     private List<Class<?>> scanComponentClasses(Class<?> applicationClass, ForestApplication annotation) {
         String packageName = applicationClass.getPackage().getName();
         try {
@@ -61,5 +46,11 @@ public class AutoScanComponentClassConfigurer implements ComponentClassConfigure
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void configure(List<Class<?>> componentClasses) {
+        Assert.isTrue(!componentClasses.isEmpty() && componentClasses.get(0).getAnnotation(ForestApplication.class) != null);
+        componentClasses.addAll(scanComponentClasses(componentClasses.get(0), componentClasses.get(0).getAnnotation(ForestApplication.class)));
     }
 }

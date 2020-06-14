@@ -1,7 +1,21 @@
-package io.forestframework
+package io.forestframework.samples.todo
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.inject.AbstractModule
+import com.google.inject.Provides
+import io.forestframework.annotation.Delete
+import io.forestframework.annotation.Get
+import io.forestframework.annotation.JsonResponseBody
+import io.forestframework.annotation.Patch
+import io.forestframework.annotation.PathParam
+import io.forestframework.annotation.Post
+import io.forestframework.annotation.RequestBody
+import io.forestframework.config.Config
+import io.forestframework.core.Forest
+import io.forestframework.core.ForestApplication
+import io.forestframework.extensions.jdbc.JDBCClientExtension
+import io.forestframework.extensions.redis.RedisClientExtension
+import io.forestframework.http.staticresource.StaticResource
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -21,19 +35,6 @@ import io.vertx.kotlin.redis.client.hvalsAwait
 import io.vertx.redis.client.Redis
 import io.vertx.redis.client.RedisAPI
 import kotlinx.coroutines.runBlocking
-import io.forestframework.annotation.Config
-import io.forestframework.annotation.Delete
-import io.forestframework.annotation.ForestApplication
-import io.forestframework.annotation.Get
-import io.forestframework.annotation.JsonResponseBody
-import io.forestframework.annotation.Patch
-import io.forestframework.annotation.PathParam
-import io.forestframework.annotation.Post
-import io.forestframework.annotation.RequestBody
-import io.forestframework.extensions.jdbc.JDBCClientExtension
-import io.forestframework.extensions.redis.RedisClientExtension
-import io.forestframework.http.staticresource.StaticResource
-import io.forestframework.launch.Forest
 import java.util.Optional
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicInteger
@@ -42,7 +43,7 @@ import javax.inject.Singleton
 import kotlin.math.abs
 
 @ForestApplication(
-    include = [
+    extensions = [
         JDBCClientExtension::class,
         RedisClientExtension::class
     ]
@@ -53,12 +54,13 @@ fun main() {
     Forest.run(ToDoApplication::class.java)
 }
 
-class ServiceSelector @Inject constructor(@Config("serviceType") val serviceType: String) : AbstractModule() {
-    override fun configure() {
+class ServiceSelector : AbstractModule() {
+    @Provides
+    fun configure(@Config("serviceType") serviceType: String, jdbcClient: JDBCClient, redis: Redis): TodoService {
         if (serviceType == "jdbc") {
-            bind(TodoService::class.java).to(JdbcTodoService::class.java);
+            return JdbcTodoService(jdbcClient)
         } else {
-            bind(TodoService::class.java).to(RedisTodoService::class.java);
+            return RedisTodoService(redis)
         }
     }
 }

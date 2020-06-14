@@ -13,7 +13,7 @@ import io.vertx.core.buffer.impl.BufferImpl
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.ext.web.RoutingContext
-import io.forestframework.launch.Forest
+import io.forestframework.core.Forest
 import io.forestframework.annotation.ForestApplication
 import io.forestframework.annotation.Get
 import io.forestframework.annotation.GetPlainText

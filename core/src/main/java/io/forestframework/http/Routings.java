@@ -1,4 +1,4 @@
-package io.forestframework.annotation;
+package io.forestframework.http;
 
 import com.google.inject.BindingAnnotation;
 
@@ -7,5 +7,5 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 @BindingAnnotation
-public @interface ComponentClasses {
+public @interface Routings {
 }

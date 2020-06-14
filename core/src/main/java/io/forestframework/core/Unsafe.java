@@ -1,8 +1,8 @@
-package io.forestframework.launch;
+package io.forestframework.core;
 
 import com.google.inject.Key;
 import com.google.inject.internal.UnsafeInstanceBindingImpl;
-import io.forestframework.annotation.Config;
+import io.forestframework.config.Config;
 import io.forestframework.config.ConfigProvider;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;

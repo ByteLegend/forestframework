@@ -1,6 +1,6 @@
 package io.forestframework.samples.petclinic
 
-import io.forestframework.launch.Forest
+import io.forestframework.core.Forest
 import io.forestframework.annotation.ForestApplication
 import io.forestframework.annotation.Get
 import io.forestframework.annotation.ThymeleafTemplateRendering

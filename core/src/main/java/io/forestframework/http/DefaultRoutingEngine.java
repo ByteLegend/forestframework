@@ -1,8 +1,12 @@
 package io.forestframework.http;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import io.forestframework.KotlinSuspendFunctionBridge;
+import io.forestframework.RoutingResultProcessor;
+import io.forestframework.annotation.Blocking;
+import io.forestframework.annotation.RoutingType;
+import io.forestframework.config.Config;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -16,34 +20,23 @@ import kotlin.coroutines.Continuation;
 import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import io.forestframework.KotlinSuspendFunctionBridge;
-import io.forestframework.RoutingResultProcessor;
-import io.forestframework.annotation.Blocking;
-import io.forestframework.annotation.ComponentClasses;
-import io.forestframework.annotation.Config;
-import io.forestframework.annotation.Route;
-import io.forestframework.annotation.RoutingType;
-import io.forestframework.annotationmagic.AnnotationMagic;
-import io.forestframework.utils.ComponentScanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static io.forestframework.annotation.RoutingType.AFTER_HANDLER_COMPLETION;
 import static io.forestframework.annotation.RoutingType.AFTER_HANDLER_FAILURE;
 import static io.forestframework.annotation.RoutingType.HANDLER;
 import static io.forestframework.annotation.RoutingType.PRE_HANDLER;
 import static io.forestframework.annotation.RoutingType.values;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 @Singleton
 public class DefaultRoutingEngine implements RoutingEngine {
@@ -58,20 +51,14 @@ public class DefaultRoutingEngine implements RoutingEngine {
     @Inject
     public DefaultRoutingEngine(Injector injector,
                                 Vertx vertx,
-                                @ComponentClasses List<Class<?>> componentClasses,
+                                @Routings Map<RoutingType, List<Routing>> routings,
                                 @Config("forest.environment") String environment) {
         this.injector = injector;
+        this.routings = routings;
         this.vertx = vertx;
-        this.routings = createRoutings(componentClasses);
         this.devMode = "dev".equals(environment);
     }
 
-    protected Map<RoutingType, List<Routing>> createRoutings(List<Class<?>> componentClasses) {
-        return componentClasses.stream()
-                .filter(ComponentScanUtils::isRouter)
-                .flatMap(this::findRoutingHandlers)
-                .collect(Collectors.groupingBy(Routing::getType));
-    }
 
     @Override
     public Handler<HttpServerRequest> createRouter() {
@@ -320,45 +307,5 @@ public class DefaultRoutingEngine implements RoutingEngine {
 
         return (T) injector.getInstance(routing.getParameterResolver(index))
                 .resolveArgument(routing, routingContext, index);
-    }
-
-    private Stream<Routing> findRoutingHandlers(Class<?> klass) {
-        return Stream.of(klass.getMethods())
-                .filter(this::isRouteMethod)
-                .map(method -> toRouting(klass, injector.getInstance(klass), method));
-    }
-
-    private boolean isRouteMethod(Method method) {
-        return !AnnotationMagic.getAnnotationsOnMethod(method, Route.class).isEmpty();
-    }
-
-    @VisibleForTesting
-    Routing toRouting(Class<?> klass, Object handlerInstance, Method method) {
-        Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethod(method, Route.class);
-        Route routeOnClass = AnnotationMagic.getOneAnnotationOnClass(klass, Route.class);
-        if (routeOnClass == null && routeOnMethod != null) {
-            return new DefaultRouting(routeOnMethod, klass, method, handlerInstance);
-        }
-        String classPath = getPath(routeOnClass, klass);
-        String methodPath = getPath(routeOnMethod, method);
-        String path = classPath + methodPath;
-        if (StringUtils.isNotBlank(routeOnMethod.regex()) || (routeOnClass != null && StringUtils.isNotBlank(routeOnClass.regex()))) {
-            return new DefaultRouting("", path, Arrays.asList(routeOnMethod.methods()), klass, method, handlerInstance);
-        } else {
-            return new DefaultRouting(path, "", Arrays.asList(routeOnMethod.methods()), klass, method, handlerInstance);
-        }
-    }
-
-    private String getPath(Route route, Object target) {
-        if (route == null) {
-            return "";
-        }
-        if (StringUtils.isNotBlank(route.value()) && StringUtils.isNotBlank(route.regex())) {
-            throw new IllegalArgumentException("Path and regexPath are both non-empty: " + target);
-        } else if (StringUtils.isBlank(route.value())) {
-            return route.regex();
-        } else {
-            return route.value();
-        }
     }
 }
