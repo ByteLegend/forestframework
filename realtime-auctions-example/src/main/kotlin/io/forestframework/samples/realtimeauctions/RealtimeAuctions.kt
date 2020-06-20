@@ -11,7 +11,7 @@ import io.forestframework.core.Forest
 import io.forestframework.annotation.ForestApplication
 import io.forestframework.annotation.Get
 import io.forestframework.annotation.Intercept
-import io.forestframework.annotation.JsonResponseBody
+import io.forestframework.http.JsonResponseBody
 import io.forestframework.annotation.Patch
 import io.forestframework.annotation.PathParam
 import io.forestframework.annotation.RequestBody

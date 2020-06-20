@@ -100,6 +100,16 @@ class PropertyUtils {
         return Stream.of(bean.getClass().getMethods())
                 .filter(method -> methodName.equals(method.getName()))
                 .filter(method -> method.getParameters().length == 1)
+                .findFirst()
+                // fallback to ignoreCase
+                // for example setHaEnabled -> setHAEnabled
+                .or(() -> getPropertyAdderOrSetterIgnoreCase(bean, methodName));
+    }
+
+    private static Optional<Method> getPropertyAdderOrSetterIgnoreCase(Object bean, String methodName) {
+        return Stream.of(bean.getClass().getMethods())
+                .filter(method -> methodName.equalsIgnoreCase(method.getName()))
+                .filter(method -> method.getParameters().length == 1)
                 .findFirst();
     }
 

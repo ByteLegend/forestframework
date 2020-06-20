@@ -3,17 +3,17 @@ package io.forestframework.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.collect.ImmutableMap;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.redis.client.RedisOptions;
-import org.apache.commons.beanutils.FluentPropertyBeanIntrospector;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
+import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides a Vertx options instance from a key.
@@ -44,36 +44,21 @@ import java.util.Map;
  * if the property name can be located to a default option, return that default option or value
  * else return null
  */
+@Singleton
 public class ConfigProvider {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
-    private static final Map<String, Class<?>> SUPPORTED_DEFAULT_OPTIONS = ImmutableMap.<String, Class<?>>builder()
-            .put("forest.http", HttpServerOptions.class)
-            .put("forest.redis", RedisOptions.class)
-            .build();
-    private static final FluentPropertyBeanIntrospector FLUENT_PROPERTY_BEAN_INTROSPECTOR = new FluentPropertyBeanIntrospector();
+    private final Map<String, Class<?>> defaultOptions = new ConcurrentHashMap<>();
     private final Map<String, Object> model;
 
-//    static BeanUtilsBean getUtils() {
-//        BeanUtilsBean beanUtilsBean = new BeanUtilsBean();
-//        beanUtilsBean.getPropertyUtils().addBeanIntrospector(FLUENT_PROPERTY_BEAN_INTROSPECTOR);
-//        Converter stringToIntLongConverter = new org.apache.commons.beanutils.Converter() {
-//            @Override
-//            public <T> T convert(Class<T> type, Object value) {
-//                String valueString = value.toString();
-//                if (type == Long.class || type == long.class) {
-//                    return (T) DefaultConverter.INSTANCE.convert(valueString, String.class, Long.class);
-//                } else {
-//                    return (T) DefaultConverter.INSTANCE.convert(valueString, String.class, Integer.class);
-//                }
-//            }
-//        };
-//        beanUtilsBean.getConvertUtils().register(stringToIntLongConverter, Integer.class);
-//        beanUtilsBean.getConvertUtils().register(stringToIntLongConverter, Long.class);
-//        beanUtilsBean.getConvertUtils().register(stringToIntLongConverter, int.class);
-//        beanUtilsBean.getConvertUtils().register(stringToIntLongConverter, long.class);
-//        return beanUtilsBean;
-//    }
+    private void init() {
+        defaultOptions.put("forest.http", HttpServerOptions.class);
+        defaultOptions.put("forest.vertx", VertxOptions.class);
+        defaultOptions.put("forest.deploy", DeploymentOptions.class);
+    }
 
+    public void addDefaultOptions(String key, Class<?> optionsClass) {
+        defaultOptions.put(key, optionsClass);
+    }
 
     @SuppressWarnings("unchecked")
     public static ConfigProvider fromYaml(String yaml) {
@@ -87,10 +72,11 @@ public class ConfigProvider {
     }
 
     public ConfigProvider(Map<String, Object> model) {
+        init();
         this.model = model;
     }
 
-    private static class ConfigObject {
+    private class ConfigObject {
         private String path;
         private Object defaultValue;
         private Object configValue;
@@ -109,7 +95,7 @@ public class ConfigProvider {
 
         public ConfigObject getObject(String key) {
             String childPath = path.isEmpty() ? key : path + "." + key;
-            Class<?> klass = SUPPORTED_DEFAULT_OPTIONS.get(childPath);
+            Class<?> klass = defaultOptions.get(childPath);
             Object childDefaultValue = klass == null ? PropertyUtils.getProperty(defaultValue, key) : newInstance(klass);
             Object childConfigValue = PropertyUtils.getProperty(configValue, key);
             Object childEnvironmentValue = PropertyUtils.getProperty(environmentValue, key);
@@ -146,7 +132,7 @@ public class ConfigProvider {
             }
             if (srcMap != null) {
                 srcMap.forEach((String key, Object value) -> {
-                    if (isNonNestedPropertyType(value.getClass())) {
+                    if (value == null || isNonNestedPropertyType(value.getClass())) {
                         PropertyUtils.setProperty(destBean, key, value);
                     } else {
                         mergeConfigValueToDefault(PropertyUtils.getProperty(destBean, key), (Map<String, Object>) value);

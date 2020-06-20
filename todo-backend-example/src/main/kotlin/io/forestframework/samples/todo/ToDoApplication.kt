@@ -5,7 +5,7 @@ import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import io.forestframework.annotation.Delete
 import io.forestframework.annotation.Get
-import io.forestframework.annotation.JsonResponseBody
+import io.forestframework.http.JsonResponseBody
 import io.forestframework.annotation.Patch
 import io.forestframework.annotation.PathParam
 import io.forestframework.annotation.Post

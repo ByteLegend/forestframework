@@ -1,5 +1,6 @@
-package io.forestframework.annotation;
+package io.forestframework.http;
 
+import io.forestframework.annotation.ResultProcessor;
 import io.forestframework.annotationmagic.Extends;
 import io.forestframework.http.JsonResultProcessor;
 

@@ -1,7 +1,7 @@
-package io.forestframework.annotation;
+package io.forestframework.http.template;
 
-import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
 import io.forestframework.ThymeleafRenderingProcessor;
+import io.forestframework.annotation.ResultProcessor;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Inherited;
@@ -11,7 +11,6 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@TemplateRendering(engine = ThymeleafTemplateEngine.class)
 @ResultProcessor(by = ThymeleafRenderingProcessor.class)
 public @interface ThymeleafTemplateRendering {
 }

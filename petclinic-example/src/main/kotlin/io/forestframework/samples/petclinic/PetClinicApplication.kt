@@ -3,7 +3,7 @@ package io.forestframework.samples.petclinic
 import io.forestframework.core.Forest
 import io.forestframework.annotation.ForestApplication
 import io.forestframework.annotation.Get
-import io.forestframework.annotation.ThymeleafTemplateRendering
+import io.forestframework.http.template.ThymeleafTemplateRendering
 import javax.inject.Singleton
 
 

@@ -19,12 +19,12 @@ enum DefaultConverter implements Converter<Object, Object> {
             .put(Pair.create(Object.class, String.class), new ObjectToString())
             .put(Pair.create(Object.class, JsonObject.class), new ObjectToJsonObject())
             .put(Pair.create(String.class, Enum.class), new StringToEnum())
+            .put(Pair.create(Object.class, long.class), new ObjectToLong())
+            .put(Pair.create(String.class, Long.class), new ObjectToLong())
             .put(Pair.create(Object.class, Integer.class), new ObjectToInteger())
             .put(Pair.create(Object.class, int.class), new ObjectToInteger())
-            .put(Pair.create(Object.class, long.class), new ObjectToInteger())
             .put(Pair.create(Object.class, Boolean.class), new ObjectToBoolean())
             .put(Pair.create(Object.class, boolean.class), new ObjectToBoolean())
-            .put(Pair.create(String.class, Long.class), new ObjectToLong())
             .build();
 
     @Override

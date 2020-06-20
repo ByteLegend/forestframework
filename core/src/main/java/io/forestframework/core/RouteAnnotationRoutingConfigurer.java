@@ -7,7 +7,7 @@ import com.google.inject.TypeLiteral;
 import io.forestframework.annotation.Route;
 import io.forestframework.annotation.RoutingType;
 import io.forestframework.annotationmagic.AnnotationMagic;
-import io.forestframework.ext.api.ApplicationConfigurer;
+import io.forestframework.ext.api.Extension;
 import io.forestframework.http.DefaultRouting;
 import io.forestframework.http.Routing;
 import io.forestframework.http.Routings;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class RouteAnnotationRoutingConfigurer implements ApplicationConfigurer {
+public class RouteAnnotationRoutingConfigurer implements Extension {
     @Override
     public void configure(Injector injector) {
         Map<RoutingType, List<Routing>> routings = injector.getInstance(Key.get(new TypeLiteral<Map<RoutingType, List<Routing>>>() {

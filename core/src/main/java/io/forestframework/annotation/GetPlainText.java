@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @CompositeOf({Get.class, PlainText.class})
 public @interface GetPlainText {
-    @AliasFor(target = Get.class, value = "path")
+    @AliasFor(target = Get.class, value = "value")
     String value() default "";
 
     @AliasFor(target = Get.class, value = "path")

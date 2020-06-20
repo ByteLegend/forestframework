@@ -18,11 +18,15 @@ public interface Routing {
 
     List<HttpMethod> getMethods();
 
-    Class<?> getHandlerClass();
+    default Class<?> getHandlerClass() {
+        return getHandlerMethod().getClass();
+    }
 
     Method getHandlerMethod();
 
-    Object getHandlerInstance();
+    default Object getHandlerInstance() {
+        return null;
+    }
 
     default String getPath() {
         return "";

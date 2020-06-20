@@ -3,7 +3,6 @@ package io.forestframework.http;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.ext.web.RoutingContext;
 import io.forestframework.RoutingResultProcessor;
-import io.forestframework.annotation.JsonResponseBody;
 import io.forestframework.annotationmagic.AnnotationMagic;
 
 import javax.inject.Singleton;

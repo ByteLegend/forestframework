@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
+
 }
 
 tasks.withType<KotlinCompile>() {
@@ -33,13 +34,13 @@ dependencies {
     api("io.vertx:vertx-web-templ-thymeleaf:$vertxVersion")
     api("javax.inject:javax.inject:1")
     api("com.google.inject:guice:$guiceVersion")
+    api(project(":annotation-magic"))
     // https://mvnrepository.com/artifact/javax.ws.rs/jsr311-api
     compileOnly("javax.ws.rs:jsr311-api:1.1.1")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.apache.commons:commons-lang3:3.10")
     implementation("commons-io:commons-io:2.7")
     implementation(project(":kotlin"))
-    implementation(project(":annotation-magic"))
     implementation(project(":vertx-completable-future"))
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("commons-beanutils:commons-beanutils:$beanUtilVersion")

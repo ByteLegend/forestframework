@@ -1,10 +1,10 @@
 package io.forestframework;
 
+import io.forestframework.http.Routing;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
-import io.forestframework.http.Routing;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.linkbuilder.StandardLinkBuilder;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
@@ -38,13 +38,13 @@ public class ThymeleafRenderingProcessor implements RoutingResultProcessor {
     @Override
     public Object processResponse(RoutingContext routingContext, Routing routing, Object returnValue) {
         if (!(returnValue instanceof String)) {
-            throw new IllegalArgumentException();
+            throw new RuntimeException("Return value processed by ThymeleafRenderingProcessor must be string!");
         }
         return engine.render(routingContext.data(), (String) returnValue)
                 .compose(buffer -> {
                     routingContext.response().setChunked(true);
                     routingContext.response().write(buffer);
-                    return Future.succeededFuture(new Object());
+                    return Future.succeededFuture();
                 });
     }
 }

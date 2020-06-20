@@ -6,9 +6,10 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import io.forestframework.bootstrap.HttpServerStarter;
 import io.forestframework.config.ConfigProvider;
-import io.forestframework.ext.api.ApplicationConfigurer;
-import io.forestframework.ext.api.ComponentsConfigurer;
+import io.forestframework.ext.api.Extension;
+import io.forestframework.ext.api.ExtensionContext;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,44 +65,57 @@ public class Forest {
         if (annotation == null) {
             throw new RuntimeException("@ForestApplication not found on application class " + applicationClass);
         } else {
-            Vertx vertx = Vertx.vertx();
-
+            Vertx vertx = Vertx.vertx(configProvider.getInstance("forest.vertx", VertxOptions.class));
 
             // 1. Start, component classes are empty at the beginning.
-            List<Class<?>> componentClasses = new ArrayList<>();
+            List<Class<?>> componentClasses = getInitialComponentClasses(applicationClass, annotation);
 
-            // class annotated with @ForestApplication is guaranteed to be the first component class
-            componentClasses.add(applicationClass);
-            componentClasses.addAll(Arrays.asList(annotation.include()));
+            ExtensionContext extensionContext = new ExtensionContext(vertx, applicationClass, configProvider, componentClasses);
 
             // 2. Instantiate all extensions and configure components.
-            List<Class<?>> extensionClasses = new ArrayList<>(CORE_EXTENSION_CLASSES);
-            extensionClasses.addAll(Arrays.asList(annotation.extensions()));
-            extensionClasses.stream().filter(extensionClass -> ComponentsConfigurer.class.isAssignableFrom(extensionClass))
-                    .map(extensionClass -> (ComponentsConfigurer) instantiateWithDefaultConstructor(extensionClass))
-                    .forEach(configuer -> configuer.configure(componentClasses));
+            List<Extension> extensions = instantiateExtensions(annotation);
+            extensions.forEach(extension -> extension.beforeInjector(extensionContext));
 
             // 3. Filter out all Module classes, instantiate them and create the injector
             List<Module> modules = componentClasses.stream().filter(componentClass -> Module.class.isAssignableFrom(componentClass))
                     .map(componentClass -> (Module) instantiateWithDefaultConstructor(componentClass))
                     .collect(Collectors.toList());
 
-            Module current = new CoreModule(vertx, applicationClass, configProvider, componentClasses);
-            for (Module module : modules) {
-                current = Modules.override(current).with(module);
-            }
-            Injector injector = Guice.createInjector(current);
+            Injector injector = createInjector(extensionContext, modules);
 
             // 4. Inject members to modules because they're created by us, not Guice.
             modules.forEach(injector::injectMembers);
 
             // 5. Configure the application
-            extensionClasses.stream().filter(extensionClass -> ApplicationConfigurer.class.isAssignableFrom(extensionClass))
-                    .map(extensionClass -> (ApplicationConfigurer) instantiateWithDefaultConstructor(extensionClass))
-                    .forEach(configuer -> configuer.configure(injector));
+            extensions.forEach(extension -> extension.configure(injector));
 
             return injector;
         }
+    }
+
+    private static Injector createInjector(ExtensionContext extensionContext, List<Module> modules) {
+        Module current = new CoreModule(extensionContext);
+        for (Module module : modules) {
+            current = Modules.override(current).with(module);
+        }
+        return Guice.createInjector(current);
+    }
+
+    private static List<Extension> instantiateExtensions(ForestApplication annotation) {
+        List<Class<?>> extensionClasses = new ArrayList<>(CORE_EXTENSION_CLASSES);
+        extensionClasses.addAll(Arrays.asList(annotation.extensions()));
+        return extensionClasses.stream()
+                .map(extensionClass -> (Extension) instantiateWithDefaultConstructor(extensionClass))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Class<?>> getInitialComponentClasses(Class<?> applicationClass, ForestApplication annotation) {
+        List<Class<?>> componentClasses = new ArrayList<>();
+        // class annotated with @ForestApplication is guaranteed to be the first component class
+        componentClasses.add(applicationClass);
+        componentClasses.addAll(Arrays.asList(annotation.include()));
+
+        return componentClasses;
     }
 }
 
