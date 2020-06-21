@@ -1,6 +1,5 @@
 include("petclinic-example")
 include("core")
-include("kotlin")
 include("jdbc-client-extension")
 include("redis-client-extension")
 include("pg-client-extension")

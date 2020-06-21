@@ -7,17 +7,18 @@ import com.google.inject.Singleton;
 import io.forestframework.config.Config;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.ExtensionContext;
-import io.reactiverse.pgclient.PgClient;
-import io.reactiverse.pgclient.PgPool;
-import io.reactiverse.pgclient.PgPoolOptions;
 import io.vertx.core.Vertx;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.PoolOptions;
 
 @Singleton
 public class PgClientExtension implements Extension {
     @Override
     public void beforeInjector(ExtensionContext extensionContext) {
         extensionContext.getComponentClasses().add(PgClientModule.class);
-        extensionContext.getConfigProvider().addDefaultOptions("forest.pg", PgPoolOptions.class);
+        extensionContext.getConfigProvider().addDefaultOptions("forest.pg.connect", PgConnectOptions.class);
+        extensionContext.getConfigProvider().addDefaultOptions("forest.pg.pool", PoolOptions.class);
     }
 
     public static class PgClientModule extends AbstractModule {
@@ -25,17 +26,16 @@ public class PgClientExtension implements Extension {
         private Vertx vertx;
 
         @Inject
-        @Config("forest.pg")
-        private PgPoolOptions poolOptions;
+        @Config("forest.pg.connect")
+        private PgConnectOptions pgConnectOptions;
+
+        @Inject
+        @Config("forest.pg.pool")
+        private PoolOptions poolOptions;
 
         @Provides
         public PgPool createClient() {
-            return PgClient.pool(vertx, new PgPoolOptions(poolOptions).setMaxSize(4));
-        }
-
-        @Provides
-        public PgClient createPgClient() {
-            return PgClient.pool(vertx, new PgPoolOptions(poolOptions).setMaxSize(1));
+            return PgPool.pool(vertx, pgConnectOptions, poolOptions);
         }
     }
 }

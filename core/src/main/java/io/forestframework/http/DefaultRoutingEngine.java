@@ -7,6 +7,7 @@ import io.forestframework.RoutingResultProcessor;
 import io.forestframework.annotation.Blocking;
 import io.forestframework.annotation.RoutingType;
 import io.forestframework.config.Config;
+import io.forestframework.utils.ReflectionUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -24,7 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -40,6 +43,7 @@ import static java.util.Collections.singletonList;
 
 @Singleton
 public class DefaultRoutingEngine implements RoutingEngine {
+    private static final EnumSet<HttpMethod> METHODS_WITHOUT_BODY = EnumSet.of(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.TRACE, HttpMethod.OPTIONS);
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRoutingEngine.class);
     private static final String ENABLED_STATES_KEY = "FOREST_ROUTING_ENGINE_ENABLED_STATES";
     // a handler promises to invoke end() in the future so we don't need to do it in finalizing handler, e.g. static resource handler.
@@ -100,15 +104,23 @@ public class DefaultRoutingEngine implements RoutingEngine {
         for (HttpMethod method : routing.getMethods()) {
             route = route.method(method.toVertxHttpMethod());
         }
+        if (hasBody(routing.getMethods())) {
+            route.handler(BodyHandler.create());
+        }
         return route;
 
+    }
+
+    private boolean hasBody(List<HttpMethod> methods) {
+        List<HttpMethod> copy = new ArrayList<>(methods);
+        copy.removeAll(METHODS_WITHOUT_BODY);
+        return !copy.isEmpty();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void configureHandlerRoute(io.vertx.ext.web.Router router, List<Routing> routings) {
         for (Routing routing : routings) {
             configureRouter(router, routing)
-                    .handler(BodyHandler.create())
                     .handler(ctx -> {
                         if (ctx.response().ended()) {
                             new RuntimeException().printStackTrace();
@@ -240,7 +252,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
 
     private <T> CompletableFuture<T> invokeViaJavaReflection(Routing routing, Object[] arguments) {
         try {
-            return adapt(routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments));
+            return adapt(ReflectionUtils.invoke(routing.getHandlerMethod(), routing.getHandlerInstance(), arguments));
         } catch (Throwable e) {
             return failedFuture(e);
         }
@@ -255,7 +267,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
     private <T> CompletableFuture<T> invokeBlockingViaJavaReflection(Routing routing, Object[] arguments) {
         return VertxCompletableFuture.from(vertx.executeBlocking((Promise<T> promise) -> {
             try {
-                promise.complete((T) routing.getHandlerMethod().invoke(routing.getHandlerInstance(), arguments));
+                promise.complete(ReflectionUtils.invoke(routing.getHandlerMethod(), routing.getHandlerInstance(), arguments));
             } catch (Throwable e) {
                 promise.fail(e);
             }

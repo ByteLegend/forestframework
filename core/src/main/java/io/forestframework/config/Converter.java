@@ -8,8 +8,12 @@ import org.apache.commons.math3.util.Pair;
 import java.util.Map;
 import java.util.Objects;
 
-interface Converter<IN, OUT> {
+public interface Converter<IN, OUT> {
     OUT convert(IN in, Class<? extends IN> inType, Class<? extends OUT> outType);
+
+    static Converter getDefaultConverter() {
+        return DefaultConverter.INSTANCE;
+    }
 }
 
 enum DefaultConverter implements Converter<Object, Object> {

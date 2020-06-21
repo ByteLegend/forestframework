@@ -2,6 +2,7 @@ package io.forestframework.annotation;
 
 import io.forestframework.annotationmagic.AliasFor;
 import io.forestframework.annotationmagic.CompositeOf;
+import io.forestframework.http.result.PlainText;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

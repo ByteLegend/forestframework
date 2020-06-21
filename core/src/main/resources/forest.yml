@@ -134,14 +134,16 @@ forest:
     maxPoolWaiting: 24
     poolRecycleTimeout: 15000
   pg:
-    host: localhost
-    port: 5432
-    database: db
-    user: user
-    password: pass
-    cachePreparedStatements: false
-    pipeliningLimit: 256
-    sslMode: DISABLE
-    maxSize: 4
-    maxWaitQueueSize: -1
+    connect:
+      host: localhost
+      port: 5432
+      database: db
+      user: user
+      password: pass
+      cachePreparedStatements: false
+      pipeliningLimit: 256
+      sslMode: DISABLE
+    pool:
+      maxSize: 4
+      maxWaitQueueSize: -1
 

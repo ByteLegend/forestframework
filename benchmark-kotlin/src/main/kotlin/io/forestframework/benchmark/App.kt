@@ -3,26 +3,26 @@ package io.forestframework.benchmark
 import io.forestframework.annotation.Get
 import io.forestframework.annotation.GetPlainText
 import io.forestframework.annotation.Intercept
-import io.forestframework.annotation.QueryParam
 import io.forestframework.benchmark.model.Fortune
+import io.forestframework.benchmark.model.Message
 import io.forestframework.benchmark.model.World
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
 import io.forestframework.ext.pgclient.PgClientExtension
 import io.forestframework.http.JsonResponseBody
-import io.reactiverse.kotlin.pgclient.getConnectionAwait
-import io.reactiverse.kotlin.pgclient.preparedBatchAwait
-import io.reactiverse.kotlin.pgclient.preparedQueryAwait
-import io.reactiverse.pgclient.PgClient
-import io.reactiverse.pgclient.PgConnection
-import io.reactiverse.pgclient.PgPool
-import io.reactiverse.pgclient.PgRowSet
-import io.reactiverse.pgclient.Tuple
+import io.vertx.core.Handler
+import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.buffer.impl.BufferImpl
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.sqlclient.executeAwait
+import io.vertx.kotlin.sqlclient.executeBatchAwait
+import io.vertx.pgclient.PgPool
+import io.vertx.sqlclient.Row
+import io.vertx.sqlclient.RowSet
+import io.vertx.sqlclient.Tuple
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.ThreadLocalRandom
@@ -48,25 +48,44 @@ val HELLO_WORLD = "Hello, world!"
 val HELLO_WORLD_LENGTH = HttpHeaders.createOptimized("" + HELLO_WORLD.length)
 val SERVER = HttpHeaders.createOptimized("forest")
 val HELLO_WORLD_BUFFER: Buffer = BufferImpl.directBuffer(HELLO_WORLD, "UTF-8")
-val dateString = HttpHeaders.createOptimized(DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()))
-val plaintextHeaders = arrayOf<CharSequence>(
-    HEADER_CONTENT_TYPE, RESPONSE_TYPE_PLAIN,
-    HEADER_SERVER, SERVER,
-    HEADER_DATE, dateString,
-    HEADER_CONTENT_LENGTH, HELLO_WORLD_LENGTH)
 
 @ForestApplication(extensions = [PgClientExtension::class])
 @Singleton
-class App @Inject constructor(private val client: PgClient,
-                              private val pool: PgPool) {
+class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
+    var dateString = createDateHeader()
+    val plaintextHeaders = arrayOf<CharSequence>(
+        HEADER_CONTENT_TYPE, RESPONSE_TYPE_PLAIN,
+        HEADER_SERVER, SERVER,
+        HEADER_DATE, dateString,
+        HEADER_CONTENT_LENGTH, HELLO_WORLD_LENGTH)
+
+    init {
+        vertx.setPeriodic(1000, Handler<Long> { id: Long? -> plaintextHeaders[5] = createDateHeader().also { dateString = it } })
+
+//        runBlocking {
+//            val sqls = javaClass.classLoader.getResourceAsStream("create-postgres.sql").bufferedReader().readText()
+//            for (sql in sqls.split(";")) {
+//                if (sql.isNotBlank()) {
+//                    client.query(sql).executeAwait()
+//                }
+//            }
+//        }
+    }
+
     private val UPDATE_WORLD = "UPDATE world SET randomnumber=$1 WHERE id=$2"
     private val SELECT_WORLD = "SELECT id, randomnumber from WORLD where id=$1"
     private val SELECT_FORTUNE = "SELECT id, message from FORTUNE"
+
+    private fun createDateHeader() = HttpHeaders.createOptimized(DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()))
 
     @Intercept("/*")
     fun addServerAndDateHeader(response: HttpServerResponse) {
         response.headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
     }
+
+    @Get("/json")
+    @JsonResponseBody
+    fun json() = Message("Hello, World!").toBuffer()
 
     @GetPlainText("/plaintext")
     fun plaintext() = HELLO_WORLD_BUFFER
@@ -74,7 +93,7 @@ class App @Inject constructor(private val client: PgClient,
     @Get("/db")
     @JsonResponseBody
     suspend fun singleDatabaseQuery(response: HttpServerResponse): World {
-        val rows: PgRowSet = client.preparedQueryAwait(SELECT_WORLD, Tuple.of(randomWorld()))
+        val rows: RowSet<Row> = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(randomWorld()))
         val iterator = rows.iterator()
         if (!iterator.hasNext()) {
             response.setStatusCode(404).end()
@@ -85,37 +104,44 @@ class App @Inject constructor(private val client: PgClient,
 
     @Get("/queries")
     @JsonResponseBody
-    suspend fun multipleDatabaseQuery(@QueryParam("queries", defaultValue = "1") param: Int): List<World> {
-        val queries = min(500, max(1, param))
+    suspend fun multipleDatabaseQuery(routingContext: RoutingContext): List<World> {
+        val queries = parseParam(routingContext)
         return (1..queries).map {
-            val result = client.preparedQueryAwait(SELECT_WORLD, Tuple.of(randomWorld()))
+            val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(randomWorld()))
             val row: Tuple = result.iterator().next()
             World(row.getInteger(0), row.getInteger(1))
         }
     }
 
+    private fun parseParam(routingContext: RoutingContext): Int {
+        return try {
+            min(500, max(1, routingContext.request().getParam("queries").toInt()))
+        } catch (e: Exception) {
+            1
+        }
+    }
+
     @Get("/updates")
     @JsonResponseBody
-    suspend fun updateDatabase(@QueryParam("queries", defaultValue = "1") param: Int): List<World> {
-        val queries = min(500, max(1, param))
-        val connection: PgConnection = pool.getConnectionAwait()
+    suspend fun updateDatabase(routingContext: RoutingContext): List<World> {
+        val queries = parseParam(routingContext)
         val worlds = (1..queries).map {
             val id = randomWorld()
-            val result = connection.preparedQueryAwait(SELECT_WORLD, Tuple.of(id))
+            val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(id))
             World(result.iterator().next().getInteger(0), randomWorld())
         }.sorted()
 
         val worldsToUpdate = worlds.map { Tuple.of(it.randomNumber, it.id) }
-        connection.preparedBatchAwait(UPDATE_WORLD, worldsToUpdate)
+        client.preparedQuery(UPDATE_WORLD).executeBatchAwait(worldsToUpdate)
         return worlds
     }
 
     @Get("/fortunes")
     @RockerTemplateRendering
-    suspend fun getFortunes(response: HttpServerResponse, routingContext: RoutingContext): String {
-        val rows = client.preparedQueryAwait(SELECT_FORTUNE).iterator()
+    suspend fun getFortunes(response: HttpServerResponse): List<Fortune> {
+        val rows = client.preparedQuery(SELECT_FORTUNE).executeAwait().iterator()
         if (!rows.hasNext()) {
-            response.setStatusCode(404).end("No results");
+            response.setStatusCode(404).end("No results")
         }
 
         val fortunes = mutableListOf<Fortune>()
@@ -124,8 +150,7 @@ class App @Inject constructor(private val client: PgClient,
             fortunes.add(Fortune(row.getInteger(0), row.getString(1)))
         }
         fortunes.add(Fortune(0, "Additional fortune added at request time."));
-        routingContext.put("fortunes", fortunes.sorted())
-        return "fortunes";
+        return fortunes.sorted()
     }
 
     private

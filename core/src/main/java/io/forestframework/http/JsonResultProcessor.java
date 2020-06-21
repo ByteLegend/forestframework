@@ -1,6 +1,7 @@
 package io.forestframework.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
 import io.forestframework.RoutingResultProcessor;
 import io.forestframework.annotationmagic.AnnotationMagic;
@@ -16,7 +17,11 @@ public class JsonResultProcessor implements RoutingResultProcessor {
         JsonResponseBody anno = AnnotationMagic.getOneAnnotationOnMethod(routing.getHandlerMethod(), JsonResponseBody.class);
         // TODO charset
         routingContext.response().putHeader("Content-Type", "application/json");
-        return routingContext.response().end(getJson(anno, returnValue));
+        if (returnValue instanceof Buffer) {
+            return routingContext.response().end((Buffer) returnValue);
+        } else {
+            return routingContext.response().end(getJson(anno, returnValue));
+        }
     }
 
     private String getJson(JsonResponseBody anno, Object returnValue) {

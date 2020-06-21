@@ -45,6 +45,7 @@ dependencies {
 
     val nettyVersion = "4.1.50.Final"
     val rockerVersion = "1.3.0"
+//    implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("io.netty:netty-transport-native-kqueue:$nettyVersion:osx-x86_64")
     implementation("io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64")
     implementation("com.fizzed:rocker-compiler:$rockerVersion")

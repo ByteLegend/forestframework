@@ -8,7 +8,7 @@ import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.sockjs.BridgeEvent
 import io.vertx.ext.web.handler.sockjs.SockJSSocket
 import io.forestframework.core.Forest
-import io.forestframework.annotation.ForestApplication
+import io.forestframework.core.ForestApplication
 import io.forestframework.annotation.Get
 import io.forestframework.annotation.Intercept
 import io.forestframework.http.JsonResponseBody

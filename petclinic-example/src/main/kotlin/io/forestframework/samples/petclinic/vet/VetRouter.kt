@@ -4,7 +4,7 @@ import io.vertx.core.Vertx
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.forestframework.annotation.Get
-import io.forestframework.annotation.TemplateRendering
+//import io.forestframework.annotation.TemplateRendering
 import io.forestframework.http.template.ThymeleafTemplateRendering
 import javax.inject.Inject
 import javax.ws.rs.GET
@@ -13,7 +13,7 @@ import javax.ws.rs.Produces
 
 class VetRouter @Inject constructor(private val vets: VetRepository) {
     @Get("/vets.html")
-    @TemplateRendering(engine = ThymeleafTemplateEngine::class)
+//    @TemplateRendering(engine = ThymeleafTemplateEngine::class)
     suspend fun showVetList(routingContext: RoutingContext): String {
         ThymeleafTemplateEngine.create(Vertx.vertx());
 

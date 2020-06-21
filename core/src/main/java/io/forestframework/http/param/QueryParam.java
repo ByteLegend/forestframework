@@ -1,5 +1,6 @@
-package io.forestframework.annotation;
+package io.forestframework.http.param;
 
+import io.forestframework.annotation.ParameterResolver;
 import io.forestframework.annotationmagic.Extends;
 
 import java.lang.annotation.ElementType;
@@ -10,6 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 @Extends(ParameterResolver.class)
+@ParameterResolver(by = QueryParamResolver.class)
 public @interface QueryParam {
     String value();
 
