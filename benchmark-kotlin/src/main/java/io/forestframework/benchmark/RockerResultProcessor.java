@@ -9,8 +9,10 @@ import io.forestframework.http.Routing;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 
+import javax.inject.Singleton;
 import java.util.List;
 
+@Singleton
 public class RockerResultProcessor implements RoutingResultProcessor {
     private static final CharSequence HEADER_CONTENT_TYPE = HttpHeaders.createOptimized("content-type");
     private static final CharSequence RESPONSE_TYPE_HTML = HttpHeaders.createOptimized("text/html; charset=UTF-8");

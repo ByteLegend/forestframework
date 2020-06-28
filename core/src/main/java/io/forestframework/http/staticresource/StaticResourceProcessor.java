@@ -9,7 +9,9 @@ import io.forestframework.http.EndAwareRoutingCouontextDecorator;
 import io.forestframework.http.Routing;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class StaticResourceProcessor implements RoutingResultProcessor {
     private final ForkedStaticHandlerImpl staticHandler;
     private final String webroot;

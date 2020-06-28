@@ -29,6 +29,7 @@ dependencies {
     val kotlinxVersion = "1.3.7"
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
     implementation("com.esotericsoftware:reflectasm:$reflectasmVersion")
     api("org.apache.commons:commons-math3:3.6.1")
     api("io.vertx:vertx-core:$vertxVersion")

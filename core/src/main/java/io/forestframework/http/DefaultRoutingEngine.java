@@ -28,6 +28,7 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -44,7 +45,7 @@ import static java.util.Collections.singletonList;
 @Singleton
 public class DefaultRoutingEngine implements RoutingEngine {
     private static final EnumSet<HttpMethod> METHODS_WITHOUT_BODY = EnumSet.of(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.TRACE, HttpMethod.OPTIONS);
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRoutingEngine.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(DefaultRoutingEngine.class);
     private static final String ENABLED_STATES_KEY = "FOREST_ROUTING_ENGINE_ENABLED_STATES";
     // a handler promises to invoke end() in the future so we don't need to do it in finalizing handler, e.g. static resource handler.
     private final Map<RoutingType, List<Routing>> routings;
@@ -76,15 +77,15 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
     private void configureFinalizingRoute(io.vertx.ext.web.Router router) {
-        io.vertx.ext.web.Route route = router.route("/*");
-        for (HttpMethod method : HttpMethod.values()) {
-            route = route.method(method.toVertxHttpMethod());
-        }
-        route.handler(context -> {
-            if (!context.response().ended()) {
-                context.end();
-            }
-        });
+//        io.vertx.ext.web.Route route = router.route("/*");
+//        for (HttpMethod method : HttpMethod.values()) {
+//            route = route.method(method.toVertxHttpMethod());
+//        }
+//        route.handler(context -> {
+//            if (!context.response().ended()) {
+//                context.end();
+//            }
+//        });
     }
 
     private io.vertx.ext.web.Route configureRouter(Router router, Routing routing) {
@@ -134,23 +135,30 @@ public class DefaultRoutingEngine implements RoutingEngine {
                             returnValueFuture.thenAccept(returnValue -> {
                                 if (!context.isRerouteInvoked()) {
                                     processResult(context, routing, returnValue).thenAccept(ret -> {
-                                        context.nextIfNotInvoked();
+                                        nextIfNecessary(context);
                                     }).exceptionally((Throwable failure) -> {
                                         onHandlerFailure(context, failure);
                                         return null;
                                     });
                                 } else {
-                                    context.nextIfNotInvoked();
+                                    nextIfNecessary(context);
                                 }
                             }).exceptionally((Throwable failure) -> {
                                 onHandlerFailure(context, failure);
                                 return null;
                             });
                         } else {
-                            context.nextIfNotInvoked();
+                            nextIfNecessary(context);
                         }
                     });
         }
+    }
+
+    private void nextIfNecessary(RerouteNextAwareRoutingContextDecorator context) {
+        if (!context.response().ended()) {
+            context.end();
+        }
+//        context.nextIfNotInvoked();
     }
 
     private void onHandlerFailure(RerouteNextAwareRoutingContextDecorator context, Throwable failure) {
@@ -164,10 +172,16 @@ public class DefaultRoutingEngine implements RoutingEngine {
         context.put(ENABLED_STATES_KEY, Arrays.asList(AFTER_HANDLER_FAILURE, AFTER_HANDLER_COMPLETION));
     }
 
-    private CompletableFuture<Object> processResult(RoutingContext context, Routing routing, Object returnValue) {
+    private static final Map<Class<? extends RoutingResultProcessor>, RoutingResultProcessor> cache = new HashMap<>();
+
+    private RoutingResultProcessor getResultProcessor(Class<? extends RoutingResultProcessor> klass) {
+        return cache.computeIfAbsent(klass, injector::getInstance);
+    }
+
+    CompletableFuture<Object> processResult(RoutingContext context, Routing routing, Object returnValue) {
         List<RoutingResultProcessor> resultProcessors = routing.getResultProcessors(returnValue)
                 .stream()
-                .map(injector::getInstance)
+                .map(this::getResultProcessor)
                 .collect(Collectors.toList());
         if (resultProcessors.isEmpty()) {
             return CompletableFuture.completedFuture(null);
@@ -229,7 +243,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
     }
 
 
-    private <T> CompletableFuture<T> invokeHandler(Routing routing, Object[] arguments) {
+    <T> CompletableFuture<T> invokeHandler(Routing routing, Object[] arguments) {
         if (isKotlinSuspendFunction(routing)) {
             return invokeViaKotlinBridge(routing, arguments);
         } else if (isBlockingMethod(routing)) {
@@ -292,7 +306,7 @@ public class DefaultRoutingEngine implements RoutingEngine {
         return parameterTypes.length != 0 && isContinuation(parameterTypes[parameterTypes.length - 1]);
     }
 
-    private Object[] resolveArguments(Routing routing, RoutingContext context) {
+    Object[] resolveArguments(Routing routing, RoutingContext context) {
         Class<?>[] argumentsType = routing.getHandlerMethod().getParameterTypes();
         Object[] arguments = new Object[argumentsType.length];
         for (int i = 0; i < argumentsType.length; ++i) {
@@ -303,12 +317,12 @@ public class DefaultRoutingEngine implements RoutingEngine {
         return arguments;
     }
 
-    private boolean isContinuation(Class<?> argumentType) {
+    boolean isContinuation(Class<?> argumentType) {
         return argumentType == Continuation.class;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private <T> T resolveArgument(Routing routing, int index, Class<T> argumentType, RoutingContext routingContext) {
+     <T> T resolveArgument(Routing routing, int index, Class<T> argumentType, RoutingContext routingContext) {
         if (argumentType == RoutingContext.class) {
             return (T) routingContext;
         } else if (argumentType == HttpServerRequest.class) {

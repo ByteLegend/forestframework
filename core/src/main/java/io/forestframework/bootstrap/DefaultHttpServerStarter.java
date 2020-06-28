@@ -2,12 +2,14 @@ package io.forestframework.bootstrap;
 
 import com.google.inject.Injector;
 import io.forestframework.config.Config;
+import io.forestframework.http.DefaultHttpVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
-import io.forestframework.http.DefaultHttpVerticle;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class DefaultHttpServerStarter implements HttpServerStarter {
     private final Vertx vertx;
     private final Injector injector;
@@ -24,6 +26,6 @@ public class DefaultHttpServerStarter implements HttpServerStarter {
 
     @Override
     public void start() {
-        vertx.deployVerticle(injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
+        vertx.deployVerticle(() -> injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
     }
 }

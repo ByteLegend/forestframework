@@ -17,7 +17,7 @@ public class DefaultHttpVerticle extends AbstractVerticle {
 
     @Inject
     public DefaultHttpVerticle(Vertx vertx,
-                               RoutingEngine routingEngine,
+                               FastRoutingEngine routingEngine,
                                @Config("forest.http") HttpServerOptions httpServerOptions
     ) {
         this.vertx = vertx;

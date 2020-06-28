@@ -15,6 +15,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.buffer.impl.BufferImpl
 import io.vertx.core.http.HttpHeaders
+import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.sqlclient.executeAwait
@@ -53,14 +54,9 @@ val HELLO_WORLD_BUFFER: Buffer = BufferImpl.directBuffer(HELLO_WORLD, "UTF-8")
 @Singleton
 class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     var dateString = createDateHeader()
-    val plaintextHeaders = arrayOf<CharSequence>(
-        HEADER_CONTENT_TYPE, RESPONSE_TYPE_PLAIN,
-        HEADER_SERVER, SERVER,
-        HEADER_DATE, dateString,
-        HEADER_CONTENT_LENGTH, HELLO_WORLD_LENGTH)
 
     init {
-        vertx.setPeriodic(1000, Handler<Long> { id: Long? -> plaintextHeaders[5] = createDateHeader().also { dateString = it } })
+        vertx.setPeriodic(1000) { _ -> createDateHeader().also { dateString = it } }
 
 //        runBlocking {
 //            val sqls = javaClass.classLoader.getResourceAsStream("create-postgres.sql").bufferedReader().readText()
@@ -78,17 +74,18 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
 
     private fun createDateHeader() = HttpHeaders.createOptimized(DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()))
 
-    @Intercept("/*")
-    fun addServerAndDateHeader(response: HttpServerResponse) {
-        response.headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
-    }
-
     @Get("/json")
     @JsonResponseBody
-    fun json() = Message("Hello, World!").toBuffer()
+    fun json(response: HttpServerResponse): Buffer {
+        response.headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
+        return Message("Hello, World!").toBuffer()
+    }
 
     @GetPlainText("/plaintext")
-    fun plaintext() = HELLO_WORLD_BUFFER
+    fun plaintext(response: HttpServerResponse): Buffer {
+        response.headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
+        return HELLO_WORLD_BUFFER
+    }
 
     @Get("/db")
     @JsonResponseBody
@@ -99,6 +96,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
             response.setStatusCode(404).end()
         }
         val row: Tuple = iterator.next()
+        response.headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         return World(row.getInteger(0), row.getInteger(1))
     }
 
@@ -106,6 +104,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     @JsonResponseBody
     suspend fun multipleDatabaseQuery(routingContext: RoutingContext): List<World> {
         val queries = parseParam(routingContext)
+        routingContext.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         return (1..queries).map {
             val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(randomWorld()))
             val row: Tuple = result.iterator().next()
@@ -125,6 +124,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     @JsonResponseBody
     suspend fun updateDatabase(routingContext: RoutingContext): List<World> {
         val queries = parseParam(routingContext)
+        routingContext.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         val worlds = (1..queries).map {
             val id = randomWorld()
             val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(id))
@@ -140,6 +140,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     @RockerTemplateRendering
     suspend fun getFortunes(response: HttpServerResponse): List<Fortune> {
         val rows = client.preparedQuery(SELECT_FORTUNE).executeAwait().iterator()
+        response.headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         if (!rows.hasNext()) {
             response.setStatusCode(404).end("No results")
         }

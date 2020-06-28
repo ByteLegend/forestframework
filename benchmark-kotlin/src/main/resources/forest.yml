@@ -1,6 +1,6 @@
 forest:
   http:
-    port: 8080
+    port: 8081
   pg:
     connect:
       host: localhost
@@ -10,5 +10,9 @@ forest:
       password: benchmarkdbpass
       cachePreparedStatements: true
     pool:
-      maxSize: 4
+      maxSize: 48
       maxWaitQueueSize: -1
+  vertx:
+    preferNativeTransport: true
+  deploy:
+    instances: 16
