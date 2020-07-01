@@ -2,12 +2,11 @@ package io.forestframework.core;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
-import io.forestframework.annotation.RoutingType;
-import io.forestframework.config.ConfigProvider;
-import io.forestframework.ext.api.Extension;
+import io.forestframework.core.http.routing.RoutingType;
+import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.ext.api.ExtensionContext;
-import io.forestframework.http.Routing;
-import io.forestframework.http.Routings;
+import io.forestframework.core.http.routing.Routing;
+import io.forestframework.core.http.routing.Routings;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;

@@ -1,9 +1,9 @@
 package io.forestframework.samples.petclinic
 
 import io.forestframework.core.Forest
-import io.forestframework.annotation.Get
+import io.forestframework.core.http.routing.Get
 import io.forestframework.core.ForestApplication
-import io.forestframework.http.template.ThymeleafTemplateRendering
+import io.forestframework.core.http.result.ThymeleafTemplateRendering
 import javax.inject.Singleton
 
 

@@ -2,7 +2,7 @@ package io.forestframework.extensions.jdbc;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import io.forestframework.config.Config;
+import io.forestframework.core.config.Config;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;

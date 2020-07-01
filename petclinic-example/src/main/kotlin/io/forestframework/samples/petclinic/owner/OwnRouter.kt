@@ -1,10 +1,10 @@
 package io.forestframework.samples.petclinic.owner
 
 import io.vertx.ext.web.RoutingContext
-import io.forestframework.Form
-import io.forestframework.annotation.Get
-import io.forestframework.annotation.PathParam
-import io.forestframework.annotation.Post
+import io.forestframework.core.http.param.Form
+import io.forestframework.core.http.routing.Get
+import io.forestframework.core.http.param.PathParam
+import io.forestframework.core.http.routing.Post
 import io.forestframework.samples.petclinic.visit.VisitRepository
 import javax.inject.Inject
 import javax.validation.Valid

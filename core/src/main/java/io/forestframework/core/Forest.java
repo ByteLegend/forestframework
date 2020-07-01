@@ -4,10 +4,12 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-import io.forestframework.bootstrap.HttpServerStarter;
-import io.forestframework.config.ConfigProvider;
+import io.forestframework.core.http.HttpServerStarter;
+import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.ExtensionContext;
+import io.forestframework.ext.core.AutoScanComponentsConfigurer;
+import io.forestframework.ext.core.RouteAnnotationRoutingConfigurer;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import org.apache.commons.io.IOUtils;
@@ -26,13 +28,14 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 public class Forest {
-    private static final List<Class<?>> CORE_EXTENSION_CLASSES = unmodifiableList(asList(AutoScanComponentsConfigurer.class, RouteAnnotationRoutingConfigurer.class));
+    private static final List<Class<?>> CORE_EXTENSION_CLASSES = unmodifiableList(asList(AutoScanComponentsConfigurer.class,
+            RouteAnnotationRoutingConfigurer.class));
     private static final Logger LOGGER = LoggerFactory.getLogger(Forest.class);
 
     public static void run(Class<?> applicationClass) {
         try {
             ConfigProvider configProvider = createConfigProvider();
-            Unsafe.instrumentGuice(configProvider);
+            UnsafeHack.instrumentGuice(configProvider);
             createInjector(applicationClass, configProvider).getInstance(HttpServerStarter.class).start();
         } catch (Throwable e) {
             throw new RuntimeException(e);
@@ -87,7 +90,7 @@ public class Forest {
             modules.forEach(injector::injectMembers);
 
             // 5. Configure the application
-            extensions.forEach(extension -> extension.configure(injector));
+            extensions.forEach(extension -> extension.afterInjector(injector));
 
             return injector;
         }

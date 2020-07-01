@@ -3,9 +3,10 @@ package io.forestframework
 import io.mockk.every
 import io.mockk.mockk
 import io.vertx.ext.web.RoutingContext
-import io.forestframework.annotation.PathParam
-import io.forestframework.annotation.Route
-import io.forestframework.http.DefaultRouting
+import io.forestframework.core.http.param.PathParam
+import io.forestframework.core.http.routing.Route
+import io.forestframework.core.http.DefaultRouting
+import io.forestframework.core.http.param.PathParamResolver
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource

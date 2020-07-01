@@ -3,9 +3,9 @@ package io.forestframework.samples.petclinic.vet
 import io.vertx.core.Vertx
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
-import io.forestframework.annotation.Get
+import io.forestframework.core.http.routing.Get
 //import io.forestframework.annotation.TemplateRendering
-import io.forestframework.http.template.ThymeleafTemplateRendering
+import io.forestframework.core.http.result.ThymeleafTemplateRendering
 import javax.inject.Inject
 import javax.ws.rs.GET
 import javax.ws.rs.Path

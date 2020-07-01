@@ -1,15 +1,5 @@
 package io.forestframework.extensions;
 
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.CorsHandler;
-import io.forestframework.annotation.Route;
-import io.forestframework.http.HttpMethod;
-
-import javax.inject.Singleton;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Stream;
-
 ///**
 // * A thin-layer encapsulation of {@link CorsHandler} for
 // * http://www.w3.org/TR/cors/[CORS] support.

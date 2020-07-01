@@ -1,23 +1,24 @@
 package io.forestframework.samples.realtimeauctions
 
-import io.vertx.core.buffer.Buffer
+import io.forestframework.core.http.routing.Get
+import io.forestframework.core.http.routing.Intercept
+import io.forestframework.core.http.routing.Patch
+import io.forestframework.core.http.param.PathParam
+import io.forestframework.core.http.param.RequestBody
+import io.forestframework.core.http.routing.Route
+import io.forestframework.core.http.socketjs.SocketJSBridge
+import io.forestframework.core.Forest
+import io.forestframework.core.ForestApplication
+import io.forestframework.ext.core.HttpException
+import io.forestframework.core.http.HttpStatusCode
+import io.forestframework.core.http.result.JsonResponseBody
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.shareddata.LocalMap
 import io.vertx.core.shareddata.SharedData
+import io.vertx.ext.bridge.BridgeEventType
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.sockjs.BridgeEvent
 import io.vertx.ext.web.handler.sockjs.SockJSSocket
-import io.forestframework.core.Forest
-import io.forestframework.core.ForestApplication
-import io.forestframework.annotation.Get
-import io.forestframework.annotation.Intercept
-import io.forestframework.http.JsonResponseBody
-import io.forestframework.annotation.Patch
-import io.forestframework.annotation.PathParam
-import io.forestframework.annotation.RequestBody
-import io.forestframework.annotation.Route
-import io.forestframework.http.HttpException
-import io.forestframework.http.HttpStatusCode
 import java.math.BigDecimal
 import java.util.Optional
 import javax.inject.Inject
@@ -31,16 +32,21 @@ fun main() {
     Forest.run(RealtimeAuctions::class.java)
 }
 
+@Singleton
 class EventBusHandler {
-    @Route(("/eventbus/*"))
-//    @SocketJSBridge
-    fun bridgeEvent(bridgeEvent: BridgeEvent) {
+    @SocketJSBridge("/eventbus/*")
+    fun bridgeEvent(event: BridgeEvent, socket: SockJSSocket) {
+        if (event.type() == BridgeEventType.SOCKET_CREATED) {
+            println("A socket was created")
+        }
+
+        event.complete(true)
     }
 
-    @Route("/eventbus2")
-//    @SocketJS
-    fun test(socket: SockJSSocket, buffer: Buffer) {
-    }
+//    @SocketJS("")
+//    suspend fun test(socket: SockJSSocket) {
+//        socket.writeAwait("hello")
+//    }
 }
 
 @Singleton
@@ -99,7 +105,6 @@ class AuctionRepository @Inject constructor(private val sharedData: SharedData) 
         auction.getValue("id"),
         BigDecimal(auction["price"])
     )
-
 }
 
 data class Auction(val id: String, val price: BigDecimal) {

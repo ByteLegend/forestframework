@@ -3,9 +3,9 @@ package io.forestframework.benchmark;
 import com.fizzed.rocker.ContentType;
 import com.fizzed.rocker.RockerOutputFactory;
 import generated.FortunesTemplate;
-import io.forestframework.RoutingResultProcessor;
+import io.forestframework.core.http.result.RoutingResultProcessor;
 import io.forestframework.benchmark.model.Fortune;
-import io.forestframework.http.Routing;
+import io.forestframework.core.http.routing.Routing;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 

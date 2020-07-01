@@ -1,8 +1,8 @@
 package io.forestframework.utils;
 
 import com.google.inject.Module;
-import io.forestframework.annotation.Get;
-import io.forestframework.annotation.Route;
+import io.forestframework.core.http.routing.Get;
+import io.forestframework.core.http.routing.Route;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

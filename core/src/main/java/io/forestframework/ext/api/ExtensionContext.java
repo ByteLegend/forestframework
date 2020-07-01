@@ -1,6 +1,6 @@
 package io.forestframework.ext.api;
 
-import io.forestframework.config.ConfigProvider;
+import io.forestframework.core.config.ConfigProvider;
 import io.vertx.core.Vertx;
 
 import java.util.List;

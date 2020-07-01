@@ -1,21 +1,18 @@
 package io.forestframework.benchmark
 
-import io.forestframework.annotation.Get
-import io.forestframework.annotation.GetPlainText
-import io.forestframework.annotation.Intercept
+import io.forestframework.core.http.routing.Get
+import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.benchmark.model.Fortune
 import io.forestframework.benchmark.model.Message
 import io.forestframework.benchmark.model.World
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
 import io.forestframework.ext.pgclient.PgClientExtension
-import io.forestframework.http.JsonResponseBody
-import io.vertx.core.Handler
+import io.forestframework.core.http.result.JsonResponseBody
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.buffer.impl.BufferImpl
 import io.vertx.core.http.HttpHeaders
-import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.sqlclient.executeAwait

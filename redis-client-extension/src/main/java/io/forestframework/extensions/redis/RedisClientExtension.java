@@ -2,7 +2,7 @@ package io.forestframework.extensions.redis;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import io.forestframework.config.Config;
+import io.forestframework.core.config.Config;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.ExtensionContext;
 import io.vertx.core.Vertx;

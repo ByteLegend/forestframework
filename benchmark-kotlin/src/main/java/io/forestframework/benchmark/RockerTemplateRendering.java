@@ -1,6 +1,6 @@
 package io.forestframework.benchmark;
 
-import io.forestframework.annotation.ResultProcessor;
+import io.forestframework.core.http.result.ResultProcessor;
 import io.forestframework.annotationmagic.Extends;
 
 import java.lang.annotation.Inherited;
