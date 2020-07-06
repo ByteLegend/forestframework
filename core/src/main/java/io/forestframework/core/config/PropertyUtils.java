@@ -97,13 +97,17 @@ class PropertyUtils {
     }
 
     private static Optional<Method> getPropertyAdderOrSetter(Object bean, String methodName) {
-        return Stream.of(bean.getClass().getMethods())
+        Optional<Method> result = Stream.of(bean.getClass().getMethods())
                 .filter(method -> methodName.equals(method.getName()))
                 .filter(method -> method.getParameters().length == 1)
-                .findFirst()
-                // fallback to ignoreCase
-                // for example setHaEnabled -> setHAEnabled
-                .or(() -> getPropertyAdderOrSetterIgnoreCase(bean, methodName));
+                .findFirst();
+        // fallback to ignoreCase
+        // for example setHaEnabled -> setHAEnabled
+        if (!result.isPresent()) {
+            return getPropertyAdderOrSetterIgnoreCase(bean, methodName);
+        } else {
+            return result;
+        }
     }
 
     private static Optional<Method> getPropertyAdderOrSetterIgnoreCase(Object bean, String methodName) {

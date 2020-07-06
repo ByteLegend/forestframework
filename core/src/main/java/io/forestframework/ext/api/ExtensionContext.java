@@ -2,9 +2,11 @@ package io.forestframework.ext.api;
 
 import io.forestframework.core.config.ConfigProvider;
 import io.vertx.core.Vertx;
+import org.apiguardian.api.API;
 
 import java.util.List;
 
+@API(status = API.Status.STABLE, since = "1.0")
 public class ExtensionContext {
     private final Vertx vertx;
     private final Class<?> applicationClass;

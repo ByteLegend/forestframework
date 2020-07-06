@@ -14,23 +14,17 @@ public class DefaultRouting implements Routing {
 
     private final List<HttpMethod> methods;
 
-    private final Class<?> handlerClass;
-
     private final Method handlerMethod;
 
-    private final Object handlerInstance;
-
-    public DefaultRouting(Route route, Class<?> handlerClass, Method handlerMethod, Object handlerInstance) {
-        this(route.value(), route.regex(), Arrays.asList(route.methods()), handlerClass, handlerMethod, handlerInstance);
+    public DefaultRouting(Route route, Method handlerMethod) {
+        this(route.value(), route.regex(), Arrays.asList(route.methods()), handlerMethod);
     }
 
-    public DefaultRouting(String path, String regexPath, List<HttpMethod> methods, Class<?> handlerClass, Method handlerMethod, Object handlerInstance) {
+    public DefaultRouting(String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
         this.path = path;
         this.regexPath = regexPath;
         this.methods = methods;
-        this.handlerClass = handlerClass;
         this.handlerMethod = handlerMethod;
-        this.handlerInstance = handlerInstance;
     }
 
     @Override
@@ -49,18 +43,17 @@ public class DefaultRouting implements Routing {
     }
 
     @Override
-    public Class<?> getHandlerClass() {
-        return handlerClass;
-    }
-
-    @Override
     public Method getHandlerMethod() {
         return handlerMethod;
     }
 
     @Override
-    public Object getHandlerInstance() {
-        return handlerInstance;
+    public String toString() {
+        return "DefaultRouting{" +
+                "path='" + path + '\'' +
+                ", regexPath='" + regexPath + '\'' +
+                ", methods=" + methods +
+                ", handlerMethod=" + handlerMethod +
+                '}';
     }
-
 }

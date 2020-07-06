@@ -1,6 +1,5 @@
 package io.forestframework.samples.petclinic.owner
 
-import com.google.inject.Inject
 import io.vertx.ext.web.RoutingContext
 import io.forestframework.core.http.param.Form
 import io.forestframework.core.http.param.ContextData

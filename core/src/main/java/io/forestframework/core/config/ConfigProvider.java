@@ -7,6 +7,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
 import org.apache.commons.lang3.StringUtils;
+import org.apiguardian.api.API;
 
 import javax.inject.Singleton;
 import java.util.Arrays;
@@ -44,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * if the property name can be located to a default option, return that default option or value
  * else return null
  */
+@API(status = API.Status.STABLE, since = "1.0")
 @Singleton
 public class ConfigProvider {
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());

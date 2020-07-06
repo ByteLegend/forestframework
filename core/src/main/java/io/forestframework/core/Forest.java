@@ -8,8 +8,8 @@ import io.forestframework.core.http.HttpServerStarter;
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.ExtensionContext;
-import io.forestframework.ext.core.AutoScanComponentsConfigurer;
-import io.forestframework.ext.core.RouteAnnotationRoutingConfigurer;
+import io.forestframework.ext.core.AutoScanComponentsExtension;
+import io.forestframework.ext.core.RoutingExtension;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import org.apache.commons.io.IOUtils;
@@ -28,8 +28,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 public class Forest {
-    private static final List<Class<?>> CORE_EXTENSION_CLASSES = unmodifiableList(asList(AutoScanComponentsConfigurer.class,
-            RouteAnnotationRoutingConfigurer.class));
+    private static final List<Class<?>> CORE_EXTENSION_CLASSES = unmodifiableList(asList(
+            AutoScanComponentsExtension.class,
+            RoutingExtension.class));
     private static final Logger LOGGER = LoggerFactory.getLogger(Forest.class);
 
     public static void run(Class<?> applicationClass) {

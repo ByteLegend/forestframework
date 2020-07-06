@@ -27,6 +27,7 @@ dependencies {
     val byteBuddyVersion = "1.10.11"
     val reflectasmVersion = "1.11.9"
     val kotlinxVersion = "1.3.7"
+    val apiGuadianVersion = "1.1.0"
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
@@ -54,6 +55,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
     implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
     implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
+    implementation("org.apiguardian:apiguardian-api:$apiGuadianVersion")
 
     implementation("com.google.guava:guava:$guavaVersion")
 

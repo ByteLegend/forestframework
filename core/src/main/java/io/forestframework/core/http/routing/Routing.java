@@ -1,13 +1,16 @@
 package io.forestframework.core.http.routing;
 
-import io.forestframework.core.http.param.RoutingParameterResolver;
-import io.forestframework.core.http.result.RoutingResultProcessor;
-import io.forestframework.core.http.param.ParameterResolver;
-import io.forestframework.core.http.result.ResultProcessor;
+import com.google.inject.Injector;
 import io.forestframework.annotationmagic.AnnotationMagic;
 import io.forestframework.core.http.HttpMethod;
+import io.forestframework.core.http.param.ParameterResolver;
+import io.forestframework.core.http.param.RoutingParameterResolver;
+import io.forestframework.core.http.result.ResultProcessor;
+import io.forestframework.core.http.result.RoutingResultProcessor;
+import org.apiguardian.api.API;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,21 +25,20 @@ import java.util.stream.Collectors;
  *     <li>4. Process the return value in various ways.</li>
  * </ol>
  */
+@API(status = API.Status.EXPERIMENTAL, since = "0.1")
 public interface Routing {
+    Method getHandlerMethod();
+
     default RoutingType getType() {
         return RoutingType.HANDLER;
     }
 
-    List<HttpMethod> getMethods();
-
-    default Class<?> getHandlerClass() {
-        return getHandlerMethod().getClass();
+    default List<HttpMethod> getMethods() {
+        return Collections.singletonList(HttpMethod.GET);
     }
 
-    Method getHandlerMethod();
-
-    default Object getHandlerInstance() {
-        return null;
+    default Object getHandlerInstance(Injector injector) {
+        return injector.getInstance(getHandlerMethod().getDeclaringClass());
     }
 
     default String getPath() {
@@ -47,18 +49,19 @@ public interface Routing {
         return "";
     }
 
-    default Class<? extends RoutingParameterResolver<?>> getParameterResolver(int index) {
+    default RoutingParameterResolver<?> getParameterResolver(Injector injector, int index) {
         ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameter(getHandlerMethod(), index, ParameterResolver.class);
         if (resolver == null) {
             throw new IllegalArgumentException("Don't know how to resolve param " + index + " of " + getHandlerMethod());
         }
-        return resolver.by();
+        return injector.getInstance(resolver.by());
     }
 
-    default List<Class<? extends RoutingResultProcessor>> getResultProcessors(Object returnValue) {
+    default List<RoutingResultProcessor> getResultProcessors(Injector injector, Object returnValue) {
         return AnnotationMagic.getAnnotationsOnMethod(getHandlerMethod(), ResultProcessor.class)
                 .stream()
                 .map(ResultProcessor::by)
+                .map(injector::getInstance)
                 .collect(Collectors.toList());
     }
 }

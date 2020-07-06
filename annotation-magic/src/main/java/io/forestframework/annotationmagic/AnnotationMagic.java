@@ -19,8 +19,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class AnnotationMagic {
-    private static ConcurrentHashMap<List<Object>, Optional<Object>> CACHE = new ConcurrentHashMap<>();
-
     /**
      * Get annotation in the magic way.
      * For example, we have annotation X extends annotation Y,
@@ -32,8 +30,7 @@ public class AnnotationMagic {
      * If more than one Y and Y's subannotation exist, an exception will be thrown.
      */
     public static <A extends Annotation> A getOneAnnotationOnClass(Class<?> targetClass, Class<A> annotationClass) {
-        return getCached(Arrays.asList(targetClass, annotationClass),
-                () -> assertZeroOrOne(getAnnotations(targetClass.getAnnotations(), annotationClass), targetClass));
+        return assertZeroOrOne(getAnnotations(targetClass.getAnnotations(), annotationClass), targetClass);
     }
 
     public static <A extends Annotation> A getOneAnnotationOnMethod(Method method, Class<A> targetAnnotationClass) {
@@ -41,26 +38,15 @@ public class AnnotationMagic {
     }
 
     public static <A extends Annotation> List<A> getAnnotationsOnMethod(Method method, Class<A> targetAnnotationClass) {
-        return getCached(Arrays.asList(method, targetAnnotationClass),
-                () -> getAnnotations(method.getAnnotations(), targetAnnotationClass));
+        return getAnnotations(method.getAnnotations(), targetAnnotationClass);
     }
 
     public static <A extends Annotation> A getOneAnnotationOnMethodParameter(Method method, int index, Class<A> targetAnnotation) {
-        return getCached(Arrays.asList(method, index, targetAnnotation),
-                () -> assertZeroOrOne(getAnnotations(method.getParameterAnnotations()[index], targetAnnotation), method));
+        return assertZeroOrOne(getAnnotations(method.getParameterAnnotations()[index], targetAnnotation), method);
     }
 
     public static boolean instanceOf(Annotation annotation, Class<? extends Annotation> klass) {
         return getAnnotationHierarchy(annotation.annotationType()).contains(klass);
-    }
-
-    private static <T> T getCached(List<Object> keys, Supplier<T> supplier) {
-        Optional<Object> ret = CACHE.get(keys);
-        if (ret == null) {
-            ret = Optional.ofNullable(supplier.get());
-            CACHE.put(keys, ret);
-        }
-        return (T) ret.orElse(null);
     }
 
     private static <A extends Annotation> List<A> getAnnotations(Annotation[] annotations, Class<A> targetClass) {

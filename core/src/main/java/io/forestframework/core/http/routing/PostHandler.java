@@ -15,8 +15,8 @@ import java.lang.annotation.Target;
 @Documented
 @Inherited
 @Extends(Intercept.class)
-@Intercept(type = RoutingType.AFTER_HANDLER_COMPLETION)
-public @interface AfterCompletion {
+@Intercept(type = RoutingType.POST_HANDLER)
+public @interface PostHandler {
     HttpMethod[] methods() default {HttpMethod.GET};
 
     String value() default "";

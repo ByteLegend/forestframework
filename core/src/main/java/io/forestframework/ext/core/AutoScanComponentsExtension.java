@@ -17,7 +17,7 @@ import static com.google.common.reflect.ClassPath.from;
 import static io.forestframework.utils.ComponentScanUtils.isGuiceModule;
 import static io.forestframework.utils.ComponentScanUtils.isRouter;
 
-public class AutoScanComponentsConfigurer implements Extension {
+public class AutoScanComponentsExtension implements Extension {
     private LinkedHashSet<Class<?>> scanComponentClasses(Class<?> applicationClass, ForestApplication annotation) {
         String packageName = applicationClass.getPackage().getName();
         try {

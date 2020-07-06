@@ -1,8 +1,7 @@
 package io.forestframework.core.http;
 
-import com.google.inject.Inject;
 import io.forestframework.core.config.Config;
-import io.forestframework.core.http.routing.RoutingEngine;
+import io.forestframework.core.http.routing.RequestHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -10,15 +9,17 @@ import io.vertx.core.http.HttpServerOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+
 public class DefaultHttpVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHttpVerticle.class);
     private final Vertx vertx;
-    private final RoutingEngine routingEngine;
+    private final RequestHandler routingEngine;
     private final HttpServerOptions httpServerOptions;
 
     @Inject
     public DefaultHttpVerticle(Vertx vertx,
-                               FastRoutingEngine routingEngine,
+                               RequestHandler routingEngine,
                                @Config("forest.http") HttpServerOptions httpServerOptions
     ) {
         this.vertx = vertx;
@@ -30,7 +31,7 @@ public class DefaultHttpVerticle extends AbstractVerticle {
     public void start(Promise<Void> startPromise) {
         try {
             vertx.createHttpServer(httpServerOptions)
-                    .requestHandler(routingEngine.createRouter())
+                    .requestHandler(routingEngine)
                     .exceptionHandler(e -> LOGGER.error("", e))
                     .listen(result -> {
                         if (result.succeeded()) {
