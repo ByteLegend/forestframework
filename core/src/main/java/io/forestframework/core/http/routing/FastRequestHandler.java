@@ -1,9 +1,13 @@
 package io.forestframework.core.http.routing;
 
 import com.google.inject.Injector;
+import io.forestframework.annotationmagic.AnnotationMagic;
 import io.forestframework.core.config.Config;
+import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.OptimizedHeaders;
+import io.forestframework.core.http.param.ParameterResolver;
+import io.forestframework.core.http.result.ResultProcessor;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
@@ -59,7 +63,7 @@ public class FastRequestHandler extends AbstractRequestHandler {
     }
 
     public void doHandle(Routing routing, HttpServerRequest request) {
-        RoutingContext context = new FastRoutingContext(request);
+        RoutingContext context = new FastRoutingContext(vertx, request);
         Object[] arguments = resolveArguments(routing, context);
         CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
         returnValueFuture
@@ -86,11 +90,21 @@ public class FastRequestHandler extends AbstractRequestHandler {
     }
 
     private boolean isFastRouting(Routing routing) {
-        return routing.getRegexPath().isEmpty() && noPrefixMatchingInterceptors(routing)  && noSlowParamResolverOrResultProcessor(routing);
+        return routing.getRegexPath().isEmpty() && noPrefixMatchingInterceptors(routing) && noSlowParamResolverOrResultProcessor(routing);
     }
 
     private boolean noSlowParamResolverOrResultProcessor(Routing routing) {
-        return false;
+        for (int i = 0; i < routing.getHandlerMethod().getParameters().length; ++i) {
+            ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameter(routing.getHandlerMethod(), i, ParameterResolver.class);
+            if (resolver != null && !resolver.by().isAnnotationPresent(FastRoutingCompatible.class)) {
+                return true;
+            }
+        }
+
+        return AnnotationMagic.getAnnotationsOnMethod(routing.getHandlerMethod(), ResultProcessor.class)
+                .stream()
+                .map(ResultProcessor::by)
+                .allMatch(klass -> klass.isAnnotationPresent(FastRoutingCompatible.class));
     }
 
     private boolean noPrefixMatchingInterceptors(Routing routing) {

@@ -1,6 +1,7 @@
 package io.forestframework.core.http.result;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
@@ -9,6 +10,7 @@ import io.forestframework.annotationmagic.AnnotationMagic;
 import javax.inject.Singleton;
 
 @Singleton
+@FastRoutingCompatible
 public class JsonResultProcessor implements RoutingResultProcessor {
     private final ObjectMapper objectMapper = new ObjectMapper();
 

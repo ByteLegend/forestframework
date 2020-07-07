@@ -1,9 +1,9 @@
 package io.forestframework.core.http.param;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.forestframework.core.http.routing.Routing;
 import io.netty.buffer.ByteBufInputStream;
 import io.vertx.ext.web.RoutingContext;
-import io.forestframework.core.http.routing.Routing;
 
 import javax.inject.Singleton;
 import java.io.IOException;

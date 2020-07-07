@@ -1,7 +1,5 @@
 package io.forestframework.core.http.result;
 
-import io.forestframework.core.http.result.JsonResultProcessor;
-import io.forestframework.core.http.result.ResultProcessor;
 import io.forestframework.annotationmagic.Extends;
 
 import java.lang.annotation.Documented;

@@ -1,10 +1,12 @@
 package io.forestframework.core.http.param;
 
+import io.forestframework.annotationmagic.AnnotationMagic;
+import io.forestframework.core.http.FastRoutingCompatible;
+import io.forestframework.core.http.routing.Routing;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;
-import io.forestframework.annotationmagic.AnnotationMagic;
-import io.forestframework.core.http.routing.Routing;
 
+import javax.inject.Singleton;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -16,6 +18,8 @@ import java.util.regex.Pattern;
  * 2. Regex path: \/js\/(?<file>.+) -> @PathParam("file")
  * 3. Wildcard path: /static/* -> @PathParam("*")
  */
+@Singleton
+@FastRoutingCompatible
 public class PathParamResolver implements RoutingParameterResolver<Object> {
     private Map<String, Pattern> wildcardPatternCache = new ConcurrentHashMap<>();
 

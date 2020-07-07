@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * <ol>
  *     <li>1. Locate the routing handler (a {@link Method} instance).</li>
  *     <li>2. Resolve all parameters from the routing handler's parameters.</li>
- *     <li>3. Invoke the hander and get return value.</li>
+ *     <li>3. Invoke the handler and get return value.</li>
  *     <li>4. Process the return value in various ways.</li>
  * </ol>
  */

@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * A routing engine return 404 upon the urls which is sure to be "NotFound" (by prefix matching)
  *
- * For example, you have an interceptor handler "/*" and handler "/user/:id", then url "/unknown" is sure to be 404
+ * For example, you have an interceptor handler "/*" and handler "/user/:id", then url "/unknown" is sure to be 404.
  */
 @Singleton
 public class Http404RequestHandler extends AbstractRequestHandler {

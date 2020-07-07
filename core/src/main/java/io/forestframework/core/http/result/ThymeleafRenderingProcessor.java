@@ -1,5 +1,6 @@
 package io.forestframework.core.http.result;
 
+import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -14,6 +15,7 @@ import javax.inject.Singleton;
 import java.util.Map;
 
 @Singleton
+@FastRoutingCompatible
 public class ThymeleafRenderingProcessor implements RoutingResultProcessor {
     private final ThymeleafTemplateEngine engine;
 
@@ -42,8 +44,7 @@ public class ThymeleafRenderingProcessor implements RoutingResultProcessor {
         }
         return engine.render(routingContext.data(), (String) returnValue)
                 .compose(buffer -> {
-                    routingContext.response().setChunked(true);
-                    routingContext.response().write(buffer);
+                    routingContext.response().end(buffer);
                     return Future.succeededFuture();
                 });
     }

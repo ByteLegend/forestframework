@@ -1,6 +1,5 @@
 package io.forestframework.core.http.routing;
 
-import io.forestframework.core.http.AbstractRoutingContextDecorator;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -22,12 +21,16 @@ import io.vertx.ext.web.Session;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FastRoutingContext implements RoutingContext {
     private final HttpServerRequest request;
     private final HttpServerResponse response;
+    private final ConcurrentHashMap<String, Object> data = new ConcurrentHashMap<>();
+    private final Vertx vertx;
 
-    public FastRoutingContext(HttpServerRequest request) {
+    public FastRoutingContext(Vertx vertx, HttpServerRequest request) {
+        this.vertx = vertx;
         this.request = request;
         this.response = request.response();
     }
@@ -64,27 +67,28 @@ public class FastRoutingContext implements RoutingContext {
 
     @Override
     public RoutingContext put(String key, Object obj) {
-        throw new UnsupportedOperationException();
+        data.put(key, obj);
+        return this;
     }
 
     @Override
     public <T> T get(String key) {
-        throw new UnsupportedOperationException();
+        return (T) data.get(key);
     }
 
     @Override
     public <T> T remove(String key) {
-        throw new UnsupportedOperationException();
+        return (T) data.remove(key);
     }
 
     @Override
     public Map<String, Object> data() {
-        throw new UnsupportedOperationException();
+        return data;
     }
 
     @Override
     public Vertx vertx() {
-        throw new UnsupportedOperationException();
+        return vertx;
     }
 
     @Override
