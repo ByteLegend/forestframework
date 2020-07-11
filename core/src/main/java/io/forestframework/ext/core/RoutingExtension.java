@@ -7,7 +7,7 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.ComponentClasses;
 import io.forestframework.core.http.DefaultRouting;
 import io.forestframework.core.http.routing.DefaultRoutings;
@@ -18,7 +18,7 @@ import io.forestframework.core.http.routing.RouterRequestHandler;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.Routings;
 import io.forestframework.ext.api.Extension;
-import io.forestframework.ext.api.ExtensionContext;
+import io.forestframework.ext.api.StartupContext;
 import io.forestframework.utils.ComponentScanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,8 +42,8 @@ import java.util.stream.Stream;
  */
 public class RoutingExtension implements Extension {
     @Override
-    public void beforeInjector(ExtensionContext extensionContext) {
-        extensionContext.getComponentClasses().add(RoutingModule.class);
+    public void beforeInjector(StartupContext startupContext) {
+        startupContext.getComponentClasses().add(RoutingModule.class);
     }
 
     @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
@@ -94,8 +94,8 @@ public class RoutingExtension implements Extension {
 
     @VisibleForTesting
     Routing toRouting(Class<?> klass, Method method) {
-        Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethod(method, Route.class);
-        Route routeOnClass = AnnotationMagic.getOneAnnotationOnClass(klass, Route.class);
+        Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethodOrNull(method, Route.class);
+        Route routeOnClass = AnnotationMagic.getOneAnnotationOnClassOrNull(klass, Route.class);
         if (routeOnClass == null && routeOnMethod != null) {
             return new DefaultRouting(routeOnMethod, method);
         }

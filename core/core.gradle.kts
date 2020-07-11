@@ -39,7 +39,7 @@ dependencies {
     api("io.vertx:vertx-web-templ-thymeleaf:$vertxVersion")
     api("javax.inject:javax.inject:1")
     api("com.google.inject:guice:$guiceVersion")
-    api(project(":annotation-magic"))
+    api("com.github.blindpirate:annotation-magic:0.1")
     // https://mvnrepository.com/artifact/javax.ws.rs/jsr311-api
     compileOnly("javax.ws.rs:jsr311-api:1.1.1")
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")

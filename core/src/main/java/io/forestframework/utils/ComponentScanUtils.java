@@ -1,6 +1,7 @@
 package io.forestframework.utils;
 
 import com.google.inject.Module;
+import io.forestframework.core.Component;
 import io.forestframework.core.http.routing.Get;
 import io.forestframework.core.http.routing.Route;
 
@@ -8,6 +9,10 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class ComponentScanUtils {
+    public static boolean isComponentClass(Class<?> klass) {
+        return klass.isAnnotationPresent(Component.class) || isRouter(klass);
+    }
+
     public static boolean isGuiceModule(Class<?> klass) {
         return Module.class.isAssignableFrom(klass);
     }

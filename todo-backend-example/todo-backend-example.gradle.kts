@@ -22,6 +22,7 @@ dependencies {
     val vertxVersion = "4.0.0-milestone5"
     val jacksonVersion = "2.10.3"
     val mysqlDriverVersion = "8.0.20"
+    val junitVersion = "5.6.2"
     implementation(project(":jdbc-client-extension"))
     implementation(project(":redis-client-extension"))
     implementation(project(":cors-extension"))
@@ -36,8 +37,15 @@ dependencies {
     implementation("javax.validation:validation-api:$javaxValidationVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("mysql:mysql-connector-java:$mysqlDriverVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("se.svt.oss.junit5:junit5-redis-extension:1.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 application {
     mainClassName = "io.forestframework.ToDoApplicationKt"
+}
+
+val test by tasks.getting(Test::class) {
+    useJUnitPlatform()
 }

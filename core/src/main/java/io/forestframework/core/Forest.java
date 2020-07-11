@@ -7,7 +7,7 @@ import com.google.inject.util.Modules;
 import io.forestframework.core.http.HttpServerStarter;
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.ext.api.Extension;
-import io.forestframework.ext.api.ExtensionContext;
+import io.forestframework.ext.api.StartupContext;
 import io.forestframework.ext.core.AutoScanComponentsExtension;
 import io.forestframework.ext.core.RoutingExtension;
 import io.vertx.core.Vertx;
@@ -74,18 +74,18 @@ public class Forest {
             // 1. Start, component classes are empty at the beginning.
             List<Class<?>> componentClasses = getInitialComponentClasses(applicationClass, annotation);
 
-            ExtensionContext extensionContext = new ExtensionContext(vertx, applicationClass, configProvider, componentClasses);
+            StartupContext startupContext = new StartupContext(vertx, applicationClass, configProvider, componentClasses);
 
             // 2. Instantiate all extensions and configure components.
             List<Extension> extensions = instantiateExtensions(annotation);
-            extensions.forEach(extension -> extension.beforeInjector(extensionContext));
+            extensions.forEach(extension -> extension.beforeInjector(startupContext));
 
             // 3. Filter out all Module classes, instantiate them and create the injector
             List<Module> modules = componentClasses.stream().filter(componentClass -> Module.class.isAssignableFrom(componentClass))
                     .map(componentClass -> (Module) instantiateWithDefaultConstructor(componentClass))
                     .collect(Collectors.toList());
 
-            Injector injector = createInjector(extensionContext, modules);
+            Injector injector = createInjector(startupContext, modules);
 
             // 4. Inject members to modules because they're created by us, not Guice.
             modules.forEach(injector::injectMembers);
@@ -97,8 +97,8 @@ public class Forest {
         }
     }
 
-    private static Injector createInjector(ExtensionContext extensionContext, List<Module> modules) {
-        Module current = new CoreModule(extensionContext);
+    private static Injector createInjector(StartupContext startupContext, List<Module> modules) {
+        Module current = new CoreModule(startupContext);
         for (Module module : modules) {
             current = Modules.override(current).with(module);
         }

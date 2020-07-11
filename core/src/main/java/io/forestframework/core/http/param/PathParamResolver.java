@@ -1,6 +1,6 @@
 package io.forestframework.core.http.param;
 
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.ext.web.RoutingContext;
@@ -25,7 +25,7 @@ public class PathParamResolver implements RoutingParameterResolver<Object> {
 
     @Override
     public Object resolveArgument(Routing routing, RoutingContext routingContext, int paramIndex) {
-        PathParam pathParam = AnnotationMagic.getOneAnnotationOnMethodParameter(routing.getHandlerMethod(), paramIndex, PathParam.class);
+        PathParam pathParam = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), paramIndex, PathParam.class);
 
         if ("*".equals(pathParam.value())) {
             return resolveWildcardFromUrl(routing, routingContext);

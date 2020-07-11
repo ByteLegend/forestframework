@@ -2,7 +2,7 @@ package io.forestframework.core.http.routing;
 
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;
@@ -95,7 +95,7 @@ public class CachingRoutingDecorator implements Routing {
     private Object[] initCachedParameterResolvers(Injector injector) {
         Object[] ret = new Object[delegate.getHandlerMethod().getParameters().length];
         for (int i = 0; i < ret.length; ++i) {
-            ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameter(delegate.getHandlerMethod(), i, ParameterResolver.class);
+            ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(delegate.getHandlerMethod(), i, ParameterResolver.class);
             if (resolver != null) {
                 Class<? extends RoutingParameterResolver<?>> resolverClass = resolver.by();
                 ret[i] = isSingleton(resolverClass) ? injector.getInstance(resolverClass) : resolverClass;
@@ -109,7 +109,7 @@ public class CachingRoutingDecorator implements Routing {
         if (cachedResultProcessors == UNINITIALIZED) {
             cachedResultProcessors = initCachedResultProcessors(injector);
         }
-        return Stream.of(cachedParameterResolvers)
+        return Stream.of(cachedResultProcessors)
                 .map(obj -> (obj instanceof RoutingResultProcessor) ? (RoutingResultProcessor) obj : (RoutingResultProcessor) injector.getInstance((Class<?>) obj))
                 .collect(Collectors.toList());
     }

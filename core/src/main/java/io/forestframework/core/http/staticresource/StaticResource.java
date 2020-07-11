@@ -1,7 +1,7 @@
 package io.forestframework.core.http.staticresource;
 
 import io.forestframework.core.http.result.ResultProcessor;
-import io.forestframework.annotationmagic.Extends;
+import com.github.blindpirate.annotationmagic.Extends;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

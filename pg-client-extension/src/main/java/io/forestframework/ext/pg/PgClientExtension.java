@@ -1,15 +1,15 @@
 package io.forestframework.ext.pg;
 
 import io.forestframework.ext.api.Extension;
-import io.forestframework.ext.api.ExtensionContext;
+import io.forestframework.ext.api.StartupContext;
 import io.vertx.pgclient.PgConnectOptions;
 
 public class PgClientExtension implements Extension {
     @Override
-    public void beforeInjector(ExtensionContext extensionContext) {
-        extensionContext.getComponentClasses().add(PgClientModule.class);
-        extensionContext.getConfigProvider().addDefaultOptions("forest.pg.connect", PgConnectOptions.class);
-        extensionContext.getConfigProvider().addDefaultOptions("forest.pg.pool", PoolOptions.class);
+    public void beforeInjector(StartupContext startupContext) {
+        startupContext.getComponentClasses().add(PgClientModule.class);
+        startupContext.getConfigProvider().addDefaultOptions("forest.pg.connect", PgConnectOptions.class);
+        startupContext.getConfigProvider().addDefaultOptions("forest.pg.pool", PoolOptions.class);
     }
 
     public static class PgClientModule extends AbstractModule {

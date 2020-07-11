@@ -1,7 +1,7 @@
 package io.forestframework.core.http.routing;
 
 
-import io.forestframework.annotationmagic.AliasFor;
+import com.github.blindpirate.annotationmagic.AliasFor;
 import io.forestframework.core.http.HttpMethod;
 
 import java.lang.annotation.Documented;

@@ -5,7 +5,7 @@ import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 
 import javax.inject.Singleton;
 
@@ -16,7 +16,7 @@ public class JsonResultProcessor implements RoutingResultProcessor {
 
     @Override
     public Object processResponse(RoutingContext routingContext, Routing routing, Object returnValue) {
-        JsonResponseBody anno = AnnotationMagic.getOneAnnotationOnMethod(routing.getHandlerMethod(), JsonResponseBody.class);
+        JsonResponseBody anno = AnnotationMagic.getOneAnnotationOnMethodOrNull(routing.getHandlerMethod(), JsonResponseBody.class);
         // TODO charset
         routingContext.response().putHeader("Content-Type", "application/json");
         if (returnValue instanceof Buffer) {

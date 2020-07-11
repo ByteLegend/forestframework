@@ -2,20 +2,22 @@ package io.forestframework.samples.todo
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.inject.AbstractModule
+import com.google.inject.Injector
 import com.google.inject.Provides
-import io.forestframework.core.http.routing.Delete
-import io.forestframework.core.http.routing.Get
-import io.forestframework.core.http.result.JsonResponseBody
-import io.forestframework.core.http.routing.Patch
-import io.forestframework.core.http.param.PathParam
-import io.forestframework.core.http.routing.Post
-import io.forestframework.core.http.param.RequestBody
-import io.forestframework.core.config.Config
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
+import io.forestframework.core.http.param.JsonRequestBody
+import io.forestframework.core.http.param.PathParam
+import io.forestframework.core.http.result.JsonResponseBody
+import io.forestframework.core.http.routing.Delete
+import io.forestframework.core.http.routing.Get
+import io.forestframework.core.http.routing.Patch
+import io.forestframework.core.http.routing.Post
+import io.forestframework.core.http.staticresource.StaticResource
+import io.forestframework.ext.api.Extension
+import io.forestframework.ext.api.StartupContext
 import io.forestframework.extensions.jdbc.JDBCClientExtension
 import io.forestframework.extensions.redis.RedisClientExtension
-import io.forestframework.core.http.staticresource.StaticResource
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -32,7 +34,6 @@ import io.vertx.kotlin.redis.client.hdelAwait
 import io.vertx.kotlin.redis.client.hgetAwait
 import io.vertx.kotlin.redis.client.hsetAwait
 import io.vertx.kotlin.redis.client.hvalsAwait
-import io.vertx.redis.client.Redis
 import io.vertx.redis.client.RedisAPI
 import kotlinx.coroutines.runBlocking
 import java.util.Optional
@@ -42,41 +43,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.abs
 
+@Singleton
 @ForestApplication(
     extensions = [
-        JDBCClientExtension::class,
-        RedisClientExtension::class
+        ServiceSelectorExtension::class
     ]
 )
-class ToDoApplication
-
-fun main() {
-    Forest.run(ToDoApplication::class.java)
-}
-
-class ServiceSelector : AbstractModule() {
-    @Provides
-    fun configure(@Config("serviceType") serviceType: String, jdbcClient: JDBCClient, redis: Redis): TodoService {
-        if (serviceType == "jdbc") {
-            return JdbcTodoService(jdbcClient)
-        } else {
-            return RedisTodoService(redis)
-        }
-    }
-}
-
-@Singleton
-class ToDoRouter @Inject constructor(private val service: TodoService) {
-    init {
-        runBlocking {
-            try {
-                service.initData()
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
-        }
-    }
-
+class ToDoApplication @Inject constructor(private val service: TodoService) {
     @Get("/index.html")
     @StaticResource(webroot = "static")
     fun index() = "/index.html"
@@ -95,19 +68,59 @@ class ToDoRouter @Inject constructor(private val service: TodoService) {
 
     @Post("/todos")
     @JsonResponseBody(pretty = true)
-    suspend fun handleCreateTodo(@RequestBody todo: Todo, routingContext: RoutingContext): Todo {
-        return service.insert(wrapTodo(todo, routingContext))
-    }
+    suspend fun handleCreateTodo(@JsonRequestBody todo: Todo, routingContext: RoutingContext): Todo = service.insert(wrapTodo(todo, routingContext))
 
     @Patch("/todos/:todoId")
     @JsonResponseBody(pretty = true)
-    suspend fun handleUpdateTodo(@PathParam("todoId") todoId: String, @RequestBody todo: Todo) = service.update(todoId, todo).orElse(null)
+    suspend fun handleUpdateTodo(@PathParam("todoId") todoId: String, @JsonRequestBody todo: Todo) = service.update(todoId, todo).orElse(null)
 
     @Delete("/todos/:todoId")
     suspend fun handleDeleteOne(@PathParam("todoId") todoID: String) = service.delete(todoID)
 
     @Delete("/todos")
     suspend fun handleDeleteAll() = service.deleteAll()
+}
+
+fun main() {
+    Forest.run(ToDoApplication::class.java)
+}
+
+class ServiceSelectorExtension : Extension {
+    lateinit var extension: Extension
+
+    override fun afterInjector(injector: Injector) {
+        extension.afterInjector(injector)
+        runBlocking {
+            try {
+                injector.getInstance(TodoService::class.java).initData()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    override fun beforeInjector(startupContext: StartupContext) {
+        if (startupContext.configProvider.getInstance("serviceType", String::class.java) == "jdbc") {
+            extension = JDBCClientExtension()
+            startupContext.componentClasses.add(JDBCModule::class.java)
+        } else {
+            extension = RedisClientExtension()
+            startupContext.componentClasses.add(RedisModule::class.java)
+        }
+        extension.beforeInjector(startupContext)
+    }
+}
+
+class JDBCModule : AbstractModule() {
+    @Provides
+    @Singleton
+    fun configure(jdbcClient: JDBCClient): TodoService = JdbcTodoService(jdbcClient)
+}
+
+class RedisModule : AbstractModule() {
+    @Provides
+    @Singleton
+    fun configure(redisClient: RedisAPI): TodoService = RedisTodoService(redisClient)
 }
 
 interface TodoService {
@@ -121,8 +134,7 @@ interface TodoService {
 }
 
 @Singleton
-class RedisTodoService @Inject constructor(val client: Redis) : TodoService {
-    private val redis = RedisAPI.api(client)
+class RedisTodoService @Inject constructor(private val client: RedisAPI) : TodoService {
     private val redisToDoKey = "VERT_TODO"
     override suspend fun initData() {
         val sample = Todo(abs(ThreadLocalRandom.current().nextInt(0, Int.MAX_VALUE)),
@@ -132,16 +144,14 @@ class RedisTodoService @Inject constructor(val client: Redis) : TodoService {
 
     override suspend fun insert(todo: Todo): Todo {
         val encoded = Json.encodePrettily(todo)
-        redis.hsetAwait(listOf(redisToDoKey, todo.id.toString(), encoded))
+        client.hsetAwait(listOf(redisToDoKey, todo.id.toString(), encoded))
         return todo
     }
 
-    override suspend fun all(): List<Todo> {
-        return redis.hvalsAwait(redisToDoKey)?.map { Todo(it.toString()) } ?: emptyList()
-    }
+    override suspend fun all(): List<Todo> = client.hvalsAwait(redisToDoKey)?.map { Todo(it.toString()) } ?: emptyList()
 
     override suspend fun getCertain(todoID: String): Optional<Todo> {
-        val jsonStr = redis.hgetAwait(redisToDoKey, todoID)?.toString()
+        val jsonStr = client.hgetAwait(redisToDoKey, todoID)?.toString()
         val todo = if (jsonStr == null) null else Todo(jsonStr)
         return Optional.ofNullable(todo)
     }
@@ -158,11 +168,11 @@ class RedisTodoService @Inject constructor(val client: Redis) : TodoService {
     }
 
     override suspend fun delete(todoId: String) {
-        redis.hdelAwait(listOf(redisToDoKey, todoId))
+        client.hdelAwait(listOf(redisToDoKey, todoId))
     }
 
     override suspend fun deleteAll() {
-        redis.delAwait(listOf(redisToDoKey))
+        client.delAwait(listOf(redisToDoKey))
     }
 }
 

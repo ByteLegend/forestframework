@@ -11,7 +11,7 @@ public interface Extension {
     /**
      * Configure the context which is used to create the injector.
      */
-    default void beforeInjector(ExtensionContext extensionContext) {
+    default void beforeInjector(StartupContext startupContext) {
     }
 
     /**

@@ -1,7 +1,7 @@
 package io.forestframework.core.http.routing;
 
 import com.google.inject.Injector;
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;
@@ -50,7 +50,7 @@ public interface Routing {
     }
 
     default RoutingParameterResolver<?> getParameterResolver(Injector injector, int index) {
-        ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameter(getHandlerMethod(), index, ParameterResolver.class);
+        ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(getHandlerMethod(), index, ParameterResolver.class);
         if (resolver == null) {
             throw new IllegalArgumentException("Don't know how to resolve param " + index + " of " + getHandlerMethod());
         }

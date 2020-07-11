@@ -1,6 +1,6 @@
 package io.forestframework.core.http.param;
 
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.config.Converter;
 import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.routing.Routing;
@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 public class QueryParamResolver implements RoutingParameterResolver<Object> {
     @Override
     public Object resolveArgument(Routing routing, RoutingContext routingContext, int paramIndex) {
-        QueryParam anno = AnnotationMagic.getOneAnnotationOnMethodParameter(routing.getHandlerMethod(), paramIndex, QueryParam.class);
+        QueryParam anno = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), paramIndex, QueryParam.class);
         Class<?> paramType = routing.getHandlerMethod().getParameterTypes()[paramIndex];
 
         String param = routingContext.request().getParam(anno.value());

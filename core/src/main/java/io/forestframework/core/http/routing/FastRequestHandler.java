@@ -1,7 +1,7 @@
 package io.forestframework.core.http.routing;
 
 import com.google.inject.Injector;
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.config.Config;
 import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.HttpStatusCode;
@@ -95,7 +95,7 @@ public class FastRequestHandler extends AbstractRequestHandler {
 
     private boolean noSlowParamResolverOrResultProcessor(Routing routing) {
         for (int i = 0; i < routing.getHandlerMethod().getParameters().length; ++i) {
-            ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameter(routing.getHandlerMethod(), i, ParameterResolver.class);
+            ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), i, ParameterResolver.class);
             if (resolver != null && !resolver.by().isAnnotationPresent(FastRoutingCompatible.class)) {
                 return true;
             }

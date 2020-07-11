@@ -3,7 +3,7 @@ package io.forestframework.core.http.staticresource;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;
 import io.forestframework.core.http.result.RoutingResultProcessor;
-import io.forestframework.annotationmagic.AnnotationMagic;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.EndAwareRoutingCouontextDecorator;
 import io.forestframework.core.http.routing.Routing;

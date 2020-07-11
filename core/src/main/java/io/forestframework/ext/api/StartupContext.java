@@ -6,14 +6,14 @@ import org.apiguardian.api.API;
 
 import java.util.List;
 
-@API(status = API.Status.STABLE, since = "1.0")
-public class ExtensionContext {
+@API(status = API.Status.EXPERIMENTAL, since = "0.1")
+public class StartupContext {
     private final Vertx vertx;
     private final Class<?> applicationClass;
     private final ConfigProvider configProvider;
     private final List<Class<?>> componentClasses;
 
-    public ExtensionContext(Vertx vertx, Class<?> applicationClass, ConfigProvider configProvider, List<Class<?>> componentClasses) {
+    public StartupContext(Vertx vertx, Class<?> applicationClass, ConfigProvider configProvider, List<Class<?>> componentClasses) {
         this.vertx = vertx;
         this.applicationClass = applicationClass;
         this.configProvider = configProvider;

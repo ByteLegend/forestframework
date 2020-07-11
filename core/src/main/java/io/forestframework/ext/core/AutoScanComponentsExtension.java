@@ -3,7 +3,8 @@ package io.forestframework.ext.core;
 import com.google.common.reflect.ClassPath;
 import io.forestframework.core.ForestApplication;
 import io.forestframework.ext.api.Extension;
-import io.forestframework.ext.api.ExtensionContext;
+import io.forestframework.ext.api.StartupContext;
+import io.forestframework.utils.ComponentScanUtils;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -14,8 +15,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.reflect.ClassPath.from;
-import static io.forestframework.utils.ComponentScanUtils.isGuiceModule;
-import static io.forestframework.utils.ComponentScanUtils.isRouter;
 
 public class AutoScanComponentsExtension implements Extension {
     private LinkedHashSet<Class<?>> scanComponentClasses(Class<?> applicationClass, ForestApplication annotation) {
@@ -25,7 +24,7 @@ public class AutoScanComponentsExtension implements Extension {
                     .getTopLevelClassesRecursive(packageName)
                     .stream()
                     .map(ClassPath.ClassInfo::load)
-                    .filter(this::isComponentClass)
+                    .filter(ComponentScanUtils::isComponentClass)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
 
             componentClasses.addAll(Arrays.asList(annotation.include()));
@@ -36,9 +35,7 @@ public class AutoScanComponentsExtension implements Extension {
         }
     }
 
-    private boolean isComponentClass(Class<?> klass) {
-        return isGuiceModule(klass) || isRouter(klass);
-    }
+
 
     private Class<?> loadClass(String name) {
         try {
@@ -49,9 +46,9 @@ public class AutoScanComponentsExtension implements Extension {
     }
 
     @Override
-    public void beforeInjector(ExtensionContext extensionContext) {
-        LinkedHashSet<Class<?>> scannedClasses = scanComponentClasses(extensionContext.getApplicationClass(), extensionContext.getApplicationClass().getAnnotation(ForestApplication.class));
-        List<Class<?>> componentClasses = extensionContext.getComponentClasses();
+    public void beforeInjector(StartupContext startupContext) {
+        LinkedHashSet<Class<?>> scannedClasses = scanComponentClasses(startupContext.getApplicationClass(), startupContext.getApplicationClass().getAnnotation(ForestApplication.class));
+        List<Class<?>> componentClasses = startupContext.getComponentClasses();
         scannedClasses.removeAll(componentClasses);
         componentClasses.addAll(scannedClasses);
     }

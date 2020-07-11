@@ -64,7 +64,8 @@ public class RouterRequestHandler extends AbstractRequestHandler {
     private RoutingPath getOrCreatePath(RerouteNextAwareRoutingContextDecorator context) {
         RoutingPath ret = context.get(ROUTING_PATH_KEY);
         if (ret == null) {
-            context.put(ROUTING_PATH_KEY, new RoutingPath(context));
+            ret = new RoutingPath(context);
+            context.put(ROUTING_PATH_KEY, ret);
         }
         return ret;
     }
