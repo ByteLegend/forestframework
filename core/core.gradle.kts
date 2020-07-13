@@ -37,6 +37,8 @@ dependencies {
     api("io.vertx:vertx-redis-client:$vertxVersion")
     api("io.vertx:vertx-web:$vertxVersion")
     api("io.vertx:vertx-web-templ-thymeleaf:$vertxVersion")
+    api("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
+    api("io.vertx:vertx-codegen:$vertxVersion")
     api("javax.inject:javax.inject:1")
     api("com.google.inject:guice:$guiceVersion")
     api("com.github.blindpirate:annotation-magic:0.1")
@@ -45,7 +47,6 @@ dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.apache.commons:commons-lang3:3.10")
     implementation("commons-io:commons-io:2.7")
-    implementation(project(":vertx-completable-future"))
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("commons-beanutils:commons-beanutils:$beanUtilVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
@@ -59,12 +60,21 @@ dependencies {
 
     implementation("com.google.guava:guava:$guavaVersion")
 
+    testImplementation("io.vertx:vertx-unit:$vertxVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testImplementation("io.mockk:mockk:$mockKVersion")
+    testImplementation("io.github.glytching:junit-extensions:2.4.0")
 }
 
 val test by tasks.getting(Test::class) {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        includeEngines("junit-jupiter", "junit-vintage")
+    }
+}
+
+tasks.withType<KotlinCompile>() {
+    kotlinOptions.jvmTarget = "1.8"
 }

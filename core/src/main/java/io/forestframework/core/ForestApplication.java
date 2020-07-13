@@ -1,6 +1,7 @@
 package io.forestframework.core;
 
 import com.google.inject.BindingAnnotation;
+import io.forestframework.ext.api.Extension;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,7 +10,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
@@ -17,12 +18,9 @@ import java.lang.annotation.Target;
 public @interface ForestApplication {
     Class<?>[] include() default {};
 
-    /**
-     * The package/class names to be auto-scanned
-     */
     String[] includeName() default {};
 
-    Class<?>[] extensions() default {};
+    Class<? extends Extension>[] extensions() default {};
 }
 
 

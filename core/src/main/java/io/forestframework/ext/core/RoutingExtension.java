@@ -1,5 +1,6 @@
 package io.forestframework.ext.core;
 
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
@@ -7,7 +8,6 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
-import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.ComponentClasses;
 import io.forestframework.core.http.DefaultRouting;
 import io.forestframework.core.http.routing.DefaultRoutings;
@@ -19,7 +19,6 @@ import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.Routings;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
-import io.forestframework.utils.ComponentScanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.ElementType;
@@ -67,28 +66,32 @@ public class RoutingExtension implements Extension {
         }
     }
 
-
     @Override
     public void afterInjector(Injector injector) {
         Routings routings = injector.getInstance(Routings.class);
 
-        List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() {
-        }, ComponentClasses.class));
+        // @formatter:off
+        List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() { }, ComponentClasses.class));
+        // @formatter:on
 
         componentClasses.stream()
-                .filter(ComponentScanUtils::isRouter)
+                .filter(RoutingExtension::isRouter)
                 .flatMap(componentClass -> findRoutingHandlers(injector, componentClass))
                 .forEach(routing -> routings.getRouting(routing.getType()).add(routing));
+    }
 
+    private static boolean isRouter(Class<?> klass) {
+        return klass.isAnnotationPresent(Route.class)
+                || Arrays.stream(klass.getMethods()).anyMatch(RoutingExtension::isRouteMethod);
     }
 
     private Stream<Routing> findRoutingHandlers(Injector injector, Class<?> klass) {
         return Stream.of(klass.getMethods())
-                .filter(this::isRouteMethod)
+                .filter(RoutingExtension::isRouteMethod)
                 .map(method -> toRouting(klass, method));
     }
 
-    private boolean isRouteMethod(Method method) {
+    private static boolean isRouteMethod(Method method) {
         return !AnnotationMagic.getAnnotationsOnMethod(method, Route.class).isEmpty();
     }
 

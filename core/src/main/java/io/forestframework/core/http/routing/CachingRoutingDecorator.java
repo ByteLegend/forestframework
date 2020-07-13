@@ -1,14 +1,14 @@
 package io.forestframework.core.http.routing;
 
-import com.google.inject.Injector;
-import com.google.inject.Singleton;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
+import com.google.inject.Injector;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.result.ResultProcessor;
 import io.forestframework.core.http.result.RoutingResultProcessor;
 
+import javax.inject.Singleton;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,7 +58,8 @@ public class CachingRoutingDecorator implements Routing {
     }
 
     private boolean isSingleton(Class<?> klass) {
-        return klass.isAnnotationPresent(Singleton.class) || klass.isAnnotationPresent(javax.inject.Singleton.class);
+        return AnnotationMagic.isAnnotationPresent(klass, Singleton.class)
+                || AnnotationMagic.isAnnotationPresent(klass, com.google.inject.Singleton.class);
     }
 
     private Object initSingletonHandlerInstance(Injector injector) {

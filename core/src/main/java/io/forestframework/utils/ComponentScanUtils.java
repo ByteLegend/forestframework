@@ -1,29 +1,25 @@
 package io.forestframework.utils;
 
-import com.google.inject.Module;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.Component;
-import io.forestframework.core.http.routing.Get;
+import io.forestframework.core.ForestApplication;
 import io.forestframework.core.http.routing.Route;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
+/**
+ * For internal use only.
+ */
 public class ComponentScanUtils {
     public static boolean isComponentClass(Class<?> klass) {
-        return klass.isAnnotationPresent(Component.class) || isRouter(klass);
+        return AnnotationMagic.isAnnotationPresent(klass, Component.class)
+                || AnnotationMagic.isAnnotationPresent(klass, Route.class);
     }
 
-    public static boolean isGuiceModule(Class<?> klass) {
-        return Module.class.isAssignableFrom(klass);
-    }
-
-    public static boolean isRouter(Class<?> klass) {
-        return klass.isAnnotationPresent(Route.class)
-                || Arrays.stream(klass.getMethods()).anyMatch(ComponentScanUtils::isRouteMethod);
-    }
-
-    private static boolean isRouteMethod(Method method) {
-        return method.isAnnotationPresent(Route.class)
-                || method.isAnnotationPresent(Get.class);
+    public static ForestApplication getApplicationAnnotation(Class<?> appClass) {
+        ForestApplication forestApplication = AnnotationMagic.getOneAnnotationOnClassOrNull(appClass, ForestApplication.class);
+        if (forestApplication == null) {
+            throw new RuntimeException("@ForestApplication not found on application class " + appClass);
+        } else {
+            return forestApplication;
+        }
     }
 }

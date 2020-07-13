@@ -1,0 +1,14 @@
+forest:
+  static:
+    webroot: static
+  http:
+    port: 8080
+  redis:
+    endpoints:
+      - redis://localhost:6379
+  jdbc:
+    url: jdbc:mysql://localhost/vertx_blueprint?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    driver_class: com.mysql.cj.jdbc.Driver
+    user: root
+    password: root
+    max_pool_size: 30

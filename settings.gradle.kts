@@ -1,4 +1,3 @@
-include("petclinic-example")
 include("core")
 include("junit5-extension")
 include("jdbc-client-extension")
@@ -8,11 +7,16 @@ include("jsr311-extension")
 include("jsr303-extension")
 include("cors-extension")
 include("thymeleaf-extension")
-include("vertx-completable-future")
+include("petclinic-example")
 include("realtime-auctions-example")
-include("todo-backend-example")
+include(":examples:todo-kotlin")
+include(":examples:todo")
 include("benchmark-kotlin")
 
-rootProject.children.forEach { project ->
-    project.buildFileName = "${project.name}.gradle.kts"
+rootProject.children.forEach {
+    it.buildFileName = "${it.name}.gradle.kts"
+}
+
+project(":examples").children.forEach {
+    it.buildFileName = "${it.name}.gradle.kts"
 }

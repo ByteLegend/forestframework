@@ -11,5 +11,4 @@ dependencies {
     val vertxVersion = "4.0.0-milestone5"
     api("io.vertx:vertx-redis-client:$vertxVersion")
     implementation(project(":core"))
-    implementation(project(":vertx-completable-future"))
 }

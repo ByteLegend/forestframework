@@ -5,6 +5,7 @@ import io.forestframework.KotlinSuspendFunctionBridge;
 import io.forestframework.core.http.Blocking;
 import io.forestframework.core.http.result.RoutingResultProcessor;
 import io.forestframework.utils.ReflectionUtils;
+import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -12,7 +13,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import kotlin.coroutines.Continuation;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 import java.util.Arrays;
 import java.util.HashMap;

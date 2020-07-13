@@ -35,8 +35,6 @@ public class AutoScanComponentsExtension implements Extension {
         }
     }
 
-
-
     private Class<?> loadClass(String name) {
         try {
             return Class.forName(name);
@@ -47,7 +45,7 @@ public class AutoScanComponentsExtension implements Extension {
 
     @Override
     public void beforeInjector(StartupContext startupContext) {
-        LinkedHashSet<Class<?>> scannedClasses = scanComponentClasses(startupContext.getApplicationClass(), startupContext.getApplicationClass().getAnnotation(ForestApplication.class));
+        LinkedHashSet<Class<?>> scannedClasses = scanComponentClasses(startupContext.getAppClass(), startupContext.getAppClass().getAnnotation(ForestApplication.class));
         List<Class<?>> componentClasses = startupContext.getComponentClasses();
         scannedClasses.removeAll(componentClasses);
         componentClasses.addAll(scannedClasses);

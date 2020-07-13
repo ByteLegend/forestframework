@@ -1,8 +1,16 @@
 package io.forestframework.ext.pg;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import io.forestframework.core.config.Config;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
+import io.vertx.core.Vertx;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.PoolOptions;
+
+import javax.inject.Inject;
 
 public class PgClientExtension implements Extension {
     @Override

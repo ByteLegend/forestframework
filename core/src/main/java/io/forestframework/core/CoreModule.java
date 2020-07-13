@@ -26,7 +26,7 @@ final class CoreModule extends AbstractModule {
         bind(EventBus.class).toInstance(startupContext.getVertx().eventBus());
         bind(SharedData.class).toInstance(startupContext.getVertx().sharedData());
         bind(FileSystem.class).toInstance(startupContext.getVertx().fileSystem());
-        bind(Class.class).annotatedWith(ForestApplication.class).toInstance(startupContext.getApplicationClass());
+        bind(Class.class).annotatedWith(ForestApplication.class).toInstance(startupContext.getAppClass());
         // @formatter:off
         // components are unmodifiable after injector is created
         bind(new TypeLiteral<List<Class<?>>>() {}).annotatedWith(ComponentClasses.class).toInstance(Collections.unmodifiableList(startupContext.getComponentClasses()));
