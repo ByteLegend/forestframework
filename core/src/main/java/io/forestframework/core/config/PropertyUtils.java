@@ -53,7 +53,7 @@ class PropertyUtils {
                 }
             }
         } catch (Throwable e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(String.format("Can't set property %s=%s for %s.", key, value, bean), e);
         }
     }
 

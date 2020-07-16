@@ -1,14 +1,14 @@
 package io.forestframework.benchmark
 
-import io.forestframework.core.http.routing.Get
-import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.benchmark.model.Fortune
 import io.forestframework.benchmark.model.Message
 import io.forestframework.benchmark.model.World
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
-import io.forestframework.ext.pgclient.PgClientExtension
+import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.core.http.result.JsonResponseBody
+import io.forestframework.core.http.routing.Get
+import io.forestframework.ext.pg.PgClientExtension
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.buffer.impl.BufferImpl

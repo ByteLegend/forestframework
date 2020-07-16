@@ -1,6 +1,7 @@
 package io.forestframework.example.todo.kotlin
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.inject.Injector
 import io.forestframework.SingletonComponent
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
@@ -10,8 +11,10 @@ import io.forestframework.core.http.routing.Get
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.Post
 import io.forestframework.core.http.staticresource.StaticResource
+import io.forestframework.ext.api.Extension
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
+import kotlinx.coroutines.runBlocking
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -24,6 +27,14 @@ interface TodoService {
     suspend fun update(todoId: String, newTodo: Todo): Optional<Todo>
     suspend fun delete(todoId: String)
     suspend fun deleteAll()
+}
+
+class InitDataExtension : Extension {
+    override fun afterInjector(injector: Injector) {
+        runBlocking {
+            injector.getInstance(TodoService::class.java).initData()
+        }
+    }
 }
 
 @SingletonComponent

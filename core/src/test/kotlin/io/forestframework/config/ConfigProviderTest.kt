@@ -113,7 +113,7 @@ forest:
         assertEquals(0x7ffffffe, httpServerOptions.initialSettings.maxHeaderListSize)
         assertEquals(0x7ffffffe, provider.getInstance("forest.http.initialSettings.maxHeaderListSize", Integer::class.java))
 
-        provider.addDefaultOptions("forest.redis", RedisOptions::class.java)
+        provider.addOptionsClass("forest.redis", RedisOptions::class.java)
 
         val redisOptions: RedisOptions = provider.getInstance("forest.redis", RedisOptions::class.java)
 
@@ -155,7 +155,7 @@ forest:
         assertEquals(Http2Settings.DEFAULT_MAX_HEADER_LIST_SIZE.toLong(), httpServerOptions.initialSettings.maxHeaderListSize)
         assertEquals(null, httpServerOptions.initialSettings.extraSettings)
 
-        provider.addDefaultOptions("forest.redis", RedisOptions::class.java)
+        provider.addOptionsClass("forest.redis", RedisOptions::class.java)
         val redisOptions: RedisOptions = provider.getInstance("forest.redis", RedisOptions::class.java)
 
         assertEquals(NetClientOptions.DEFAULT_SSL_HANDSHAKE_TIMEOUT, redisOptions.netClientOptions.sslHandshakeTimeout)
@@ -217,6 +217,8 @@ forest:
         } finally {
             if (originalConfig != null) {
                 System.setProperty("forest.config.file", originalConfig)
+            } else {
+                System.clearProperty("forest.config.file")
             }
         }
     }
@@ -250,7 +252,19 @@ forest:
         } finally {
             if (originalConfig != null) {
                 System.setProperty("forest.config.file", originalConfig)
+            } else {
+                System.clearProperty("forest.config.file")
             }
         }
+    }
+
+    @Test
+    @SystemProperty(name = "forest.redis.endpoints", value = "[\"redis://localhost:6380\"]")
+    fun `can parse JSON array`() {
+        val provider = ConfigProvider.load()
+        provider.addOptionsClass("forest.redis", RedisOptions::class.java)
+
+        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis.endpoints", List::class.java))
+        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis", RedisOptions::class.java).endpoints)
     }
 }

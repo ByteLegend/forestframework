@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * Provides a "Vertx-domain-specific" configuration value instance based on the configuration key for the Forest
@@ -67,9 +69,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 @Singleton
 public class ConfigProvider {
+    private static final Pattern ENVIRONMENT_CONFIG_PATTERN = Pattern.compile("forest(\\.[\\w-])+");
     private static final ObjectMapper YAML_PARSER = new ObjectMapper(new YAMLFactory());
     private static final ObjectMapper JSON_PARSER = new ObjectMapper();
-    private final Map<String, Class<?>> defaultOptions = new ConcurrentHashMap<>();
+    private final Map<String, Supplier<?>> defaultOptions = new ConcurrentHashMap<>();
     /**
      * The config data in config file. It's created by JSON or Yaml parser directly.
      */
@@ -84,9 +87,9 @@ public class ConfigProvider {
     private final Map<String, Object> environmentModel;
 
     {
-        defaultOptions.put("forest.http", HttpServerOptions.class);
-        defaultOptions.put("forest.vertx", VertxOptions.class);
-        defaultOptions.put("forest.deploy", DeploymentOptions.class);
+        defaultOptions.put("forest.http", HttpServerOptions::new);
+        defaultOptions.put("forest.vertx", VertxOptions::new);
+        defaultOptions.put("forest.deploy", DeploymentOptions::new);
     }
 
     public ConfigProvider(Map<String, Object> configFileModel, Map<String, Object> environmentModel) {
@@ -105,12 +108,14 @@ public class ConfigProvider {
      *   </ul>
      *   <li>System properties (this overwrites the corresponding value in config file):</li>
      *   <ul>
-     *       <li>All system properties starting with "forest.", if the value isn't JSON string (starting with '{'),
+     *       <li>All system properties starting with "forest.", if the value isn't JSON string (starting with '{' or '['),
      *       store the value as it is.</li>
-     *       <li>All system properties starting with "forest.", if the value is JSON string (starting with '{'),
+     *       <li>All system properties starting with "forest.", if the value is JSON string (starting with '{' or '['),
      *       let JSON parser parse the value then store the deserialized result.</li>
      *   </ul>
      * </ul>
+     *
+     * See {@link ConfigProvider#ENVIRONMENT_CONFIG_PATTERN}
      */
     public static ConfigProvider load() {
         try {
@@ -120,10 +125,17 @@ public class ConfigProvider {
         }
     }
 
-    public void addDefaultOptions(String key, Class<?> optionsClass) {
-        defaultOptions.put(key, optionsClass);
+    public void addDefaultOptions(String key, Supplier<?> supplier) {
+        defaultOptions.put(key, supplier);
     }
 
+    public void addConfig(String key, String value) {
+        if (ENVIRONMENT_CONFIG_PATTERN.matcher(key).find()) {
+            addConfigTo(key, value, configFileModel);
+        } else {
+            throw new IllegalArgumentException("Config key must match pattern x.y.z!");
+        }
+    }
 
     public <T> T getInstance(String key, Class<T> klass) {
         List<String> paths = Arrays.asList(key.split("\\."));
@@ -136,27 +148,36 @@ public class ConfigProvider {
         return (T) current.getResult(klass);
     }
 
-    private static Map<String, Object> loadEnvironmentConfig() throws JsonProcessingException {
+    private static Map<String, Object> loadEnvironmentConfig() {
         Map<String, Object> resultMap = new HashMap<>();
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();
-            if (key.startsWith("forest.")) {
-                String[] path = key.split("\\.");
-
-                Map<String, Object> current = resultMap;
-                for (int i = 0; i < path.length - 1; ++i) {
-                    current = (Map<String, Object>) current.computeIfAbsent(path[i], __ -> new HashMap<>());
-                }
-
-                if (isJson(value)) {
-                    current.put(path[path.length - 1], JSON_PARSER.readValue(value, Object.class));
-                } else {
-                    current.put(path[path.length - 1], value);
-                }
+            if (ENVIRONMENT_CONFIG_PATTERN.matcher(key).find()) {
+                addConfigTo(key, value, resultMap);
             }
         }
-        return Collections.unmodifiableMap(resultMap);
+        return resultMap;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addConfigTo(String key, String value, Map<String, Object> resultMap) {
+        String[] path = key.split("\\.");
+
+        Map<String, Object> current = resultMap;
+        for (int i = 0; i < path.length - 1; ++i) {
+            current = (Map<String, Object>) current.computeIfAbsent(path[i], __ -> new HashMap<>());
+        }
+
+        if (isJson(value)) {
+            try {
+                current.put(path[path.length - 1], JSON_PARSER.readValue(value, Object.class));
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException(String.format("Can't deserialize %s=%s", key, value));
+            }
+        } else {
+            current.put(path[path.length - 1], value);
+        }
     }
 
     private static Map<String, Object> loadConfigFile() throws IOException {
@@ -193,7 +214,7 @@ public class ConfigProvider {
     private static boolean isJson(String content) {
         for (int i = 0; i < content.length(); ++i) {
             if (!Character.isWhitespace(content.charAt(i))) {
-                return content.charAt(i) == '{';
+                return content.charAt(i) == '{' || content.charAt(i) == '[';
             }
         }
         return false;
@@ -218,19 +239,11 @@ public class ConfigProvider {
 
         public ConfigObject getObject(String key) {
             String childPath = path.isEmpty() ? key : path + "." + key;
-            Class<?> klass = defaultOptions.get(childPath);
-            Object childDefaultValue = klass == null ? PropertyUtils.getProperty(defaultValue, key) : newInstance(klass);
+            Supplier<?> defaultOptionsSupplier = defaultOptions.get(childPath);
+            Object childDefaultValue = defaultOptionsSupplier == null ? PropertyUtils.getProperty(defaultValue, key) : defaultOptionsSupplier.get();
             Object childConfigValue = PropertyUtils.getProperty(configValue, key);
             Object childEnvironmentValue = PropertyUtils.getProperty(environmentValue, key);
             return new ConfigObject(childPath, childDefaultValue, childConfigValue, childEnvironmentValue);
-        }
-
-        private <T> T newInstance(Class<T> klass) {
-            try {
-                return klass.getConstructor().newInstance();
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            }
         }
 
         public Object getResult(Class<?> klass) {

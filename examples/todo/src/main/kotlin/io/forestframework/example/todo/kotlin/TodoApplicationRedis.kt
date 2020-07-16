@@ -20,7 +20,7 @@ import kotlin.math.abs
 
 @ForestApplication(
     include = [RedisModule::class],
-    extensions = [RedisClientExtension::class]
+    extensions = [RedisClientExtension::class, InitDataExtension::class]
 )
 class TodoApplicationRedis
 

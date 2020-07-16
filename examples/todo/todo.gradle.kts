@@ -35,7 +35,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("javax.persistence:javax.persistence-api:$jpaVersion")
     implementation("javax.validation:validation-api:$javaxValidationVersion")
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+//    implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("mysql:mysql-connector-java:$mysqlDriverVersion")
     testImplementation(project(":junit5-extension"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")

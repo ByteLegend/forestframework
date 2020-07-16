@@ -1,3 +1,8 @@
+plugins {
+    id("com.gradle.enterprise") version("3.3.4")
+    id("com.gradle.enterprise.gradle-enterprise-conventions-plugin") version("0.3")
+}
+
 include("core")
 include("junit5-extension")
 include("jdbc-client-extension")

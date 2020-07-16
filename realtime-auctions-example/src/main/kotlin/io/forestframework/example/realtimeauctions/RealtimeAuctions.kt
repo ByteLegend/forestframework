@@ -4,7 +4,6 @@ import io.forestframework.core.http.routing.Get
 import io.forestframework.core.http.routing.Intercept
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.param.PathParam
-import io.forestframework.core.http.param.RequestBody
 import io.forestframework.core.http.routing.Route
 import io.forestframework.core.http.socketjs.SocketJSBridge
 import io.forestframework.core.Forest
@@ -62,8 +61,8 @@ class AuctionHandler(private val repository: AuctionRepository, private val vali
     @Patch("/auctions/:id")
     fun handleChangeAuctionPrice(eventBus: EventBus,
                                  @PathParam("id") auctionId: String,
-                                 @RequestBody body: Map<String, Any>,
-                                 @RequestBody bodyString: String) {
+                                 body: Map<String, Any>,
+                                 bodyString: String) {
         val auctionRequest = Auction(
             auctionId,
             BigDecimal(body["price"].toString())

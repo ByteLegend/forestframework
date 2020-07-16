@@ -10,6 +10,7 @@ import io.forestframework.core.http.routing.DefaultRoutings;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
 import io.forestframework.ext.core.AutoScanComponentsExtension;
+import io.forestframework.ext.core.BannerExtension;
 import io.forestframework.ext.core.ForestApplicationAnnotationScanner;
 import io.forestframework.ext.core.RoutingExtension;
 import io.forestframework.utils.completablefuture.VertxCompletableFuture;
@@ -34,6 +35,7 @@ import static java.util.Collections.unmodifiableList;
 public class Application implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
     private static final List<Class<? extends Extension>> CORE_EXTENSION_CLASSES = unmodifiableList(asList(
+            BannerExtension.class,
             ForestApplicationAnnotationScanner.class,
             AutoScanComponentsExtension.class,
             RoutingExtension.class)
@@ -86,7 +88,7 @@ public class Application implements AutoCloseable {
         DeploymentOptions deploymentOptions = startupContext.getConfigProvider().getInstance("forest.deploy", DeploymentOptions.class);
         injector.getInstance(DefaultRoutings.class).finalizeRoutings();
         Future<String> vertxFuture = vertx.deployVerticle(() -> injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
-        CompletableFuture<String> future = VertxCompletableFuture.from(vertxFuture);
+        CompletableFuture<String> future = VertxCompletableFuture.from(vertx.getOrCreateContext(), vertxFuture);
         try {
             deploymentId = future.get();
         } catch (Throwable e) {
@@ -119,7 +121,7 @@ public class Application implements AutoCloseable {
     private List<Extension> instantiateExtensions(List<Class<? extends Extension>> extensionClasses) {
         List<Class<? extends Extension>> allExtensionClasses = new ArrayList<>(CORE_EXTENSION_CLASSES);
         allExtensionClasses.addAll(extensionClasses);
-        return extensionClasses.stream()
+        return allExtensionClasses.stream()
                 .map(extensionClass -> (Extension) instantiateWithDefaultConstructor(extensionClass))
                 .collect(Collectors.toList());
     }

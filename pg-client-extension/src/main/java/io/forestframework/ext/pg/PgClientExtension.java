@@ -16,8 +16,8 @@ public class PgClientExtension implements Extension {
     @Override
     public void beforeInjector(StartupContext startupContext) {
         startupContext.getComponentClasses().add(PgClientModule.class);
-        startupContext.getConfigProvider().addDefaultOptions("forest.pg.connect", PgConnectOptions.class);
-        startupContext.getConfigProvider().addDefaultOptions("forest.pg.pool", PoolOptions.class);
+        startupContext.getConfigProvider().addDefaultOptions("forest.pg.connect", PgConnectOptions::new);
+        startupContext.getConfigProvider().addDefaultOptions("forest.pg.pool", PoolOptions::new);
     }
 
     public static class PgClientModule extends AbstractModule {

@@ -1,16 +1,13 @@
 package io.forestframework.testsupport;
 
 import io.forestframework.core.Application;
-import io.forestframework.core.ForestApplication;
-import io.forestframework.core.config.ConfigProvider;
-import io.forestframework.utils.ComponentScanUtils;
+import io.forestframework.core.Forest;
+import io.forestframework.testsupport.utils.FreePortFinder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
-
-import java.util.Arrays;
 
 public class ForestExtension implements BeforeAllCallback, AfterAllCallback, TestInstancePostProcessor, BeforeEachCallback {
     private Application application;
@@ -24,12 +21,18 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
     public void beforeAll(ExtensionContext context) throws Exception {
         Class<?> testClass = context.getTestClass().get();
         ForestTest annotation = testClass.getAnnotation(ForestTest.class);
-        Class<?> appClass = annotation.getClass();
+        Class<?> appClass = annotation.appClass();
 
-        ForestApplication forestApplication = ComponentScanUtils.getApplicationAnnotation(appClass);
-        ConfigProvider configProvider = ConfigProvider.load();
-        this.application = new Application(appClass, Arrays.asList(forestApplication.extensions()), configProvider);
+        overwritePortPropertyIfNecessary();
+        this.application = Forest.run(appClass, new String[0]);
         this.application.start();
+    }
+
+    private void overwritePortPropertyIfNecessary() {
+        String currentPortProperty = System.getProperty("forest.http.port");
+        if (currentPortProperty == null || "0".equals(currentPortProperty)) {
+            System.setProperty("forest.http.port", "" + FreePortFinder.findFreeLocalPort());
+        }
     }
 
     @Override

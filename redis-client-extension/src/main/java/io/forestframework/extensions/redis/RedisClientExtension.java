@@ -7,17 +7,17 @@ import com.google.inject.Singleton;
 import io.forestframework.core.config.Config;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
+import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.RedisAPI;
 import io.vertx.redis.client.RedisConnection;
 import io.vertx.redis.client.RedisOptions;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 public class RedisClientExtension implements Extension {
     @Override
     public void beforeInjector(StartupContext startupContext) {
-        startupContext.getConfigProvider().addDefaultOptions("forest.redis", RedisOptions.class);
+        startupContext.getConfigProvider().addDefaultOptions("forest.redis", RedisOptions::new);
         startupContext.getComponentClasses().add(RedisClientModule.class);
     }
 

@@ -105,7 +105,7 @@ forest:
       soLinger: -1
       idleTimeout: 0
       idleTimeoutUnit: SECONDS
-      ssl: null
+      ssl: false
       sslHandshakeTimeout: 10
       sslHandshakeTimeoutUnit: SECONDS
       enabledCipherSuites: []
@@ -127,8 +127,8 @@ forest:
     maxNestedArrays: 32
     masterName: mymaster
     role: MASTER
-    slaves: NEVER
-    type: RedisClientType.STANDALONE
+    useSlave: NEVER
+    type: STANDALONE
     poolCleanerInterval: -1
     maxPoolSize: 6
     maxPoolWaiting: 24
