@@ -35,11 +35,10 @@ public class DefaultHttpVerticle extends AbstractVerticle {
                     .exceptionHandler(e -> LOGGER.error("", e))
                     .listen(result -> {
                         if (result.succeeded()) {
-                            LOGGER.info("Success");
+                            LOGGER.debug("Successfully deployed {}", this);
                             startPromise.complete();
                         } else {
                             LOGGER.error("", result.cause());
-                            result.cause().printStackTrace();
                             startPromise.fail(result.cause());
                         }
                     });

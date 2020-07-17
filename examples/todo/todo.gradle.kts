@@ -15,31 +15,15 @@ tasks.withType<KotlinCompile>() {
 }
 
 dependencies {
-    val kotlinVersion = "1.3.72"
-    val jpaVersion = "2.2"
-    val javaxValidationVersion = "2.0.1.Final"
-    val logbackVersion = "1.2.3"
-    val vertxVersion = "4.0.0-milestone5"
-    val jacksonVersion = "2.10.3"
-    val mysqlDriverVersion = "8.0.20"
     val junitVersion = "5.6.2"
+    val junitRedisExtension = "2.0.0"
     implementation(project(":jdbc-client-extension"))
     implementation(project(":redis-client-extension"))
     implementation(project(":cors-extension"))
-    implementation("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
-    implementation("io.vertx:vertx-lang-kotlin:$vertxVersion")
-    implementation("io.vertx:vertx-jdbc-client:$vertxVersion")
-    implementation(project(":core"))
-    implementation("javax.ws.rs:jsr311-api:1.1.1")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation("javax.persistence:javax.persistence-api:$jpaVersion")
-    implementation("javax.validation:validation-api:$javaxValidationVersion")
-//    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("mysql:mysql-connector-java:$mysqlDriverVersion")
+    implementation(project(":core-kotlin"))
     testImplementation(project(":junit5-extension"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("se.svt.oss.junit5:junit5-redis-extension:2.0.0")
+    testImplementation("io.vertx:vertx-web-client:4.0.0-milestone5")
+    testImplementation("se.svt.oss.junit5:junit5-redis-extension:$junitRedisExtension")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 

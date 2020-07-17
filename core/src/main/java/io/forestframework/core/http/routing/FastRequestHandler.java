@@ -1,9 +1,10 @@
 package io.forestframework.core.http.routing;
 
-import com.google.inject.Injector;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
+import com.google.inject.Injector;
 import io.forestframework.core.config.Config;
 import io.forestframework.core.http.FastRoutingCompatible;
+import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.OptimizedHeaders;
 import io.forestframework.core.http.param.ParameterResolver;
@@ -17,12 +18,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * A "fast" routing engine implementation which only handles "fast" routing. A routing is fast when:
@@ -39,7 +41,7 @@ import static java.util.stream.Collectors.toMap;
 public class FastRequestHandler extends AbstractRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(FastRequestHandler.class);
     private final DefaultRoutings routings;
-    private final Map<String, Routing> pathToFastRoutingMap;
+    private final Map<String, List<Routing>> pathToFastRoutingsMap;
 
     @Inject
     public FastRequestHandler(Injector injector,
@@ -48,56 +50,69 @@ public class FastRequestHandler extends AbstractRequestHandler {
                               @Config("forest.environment") String environment) {
         super(vertx, injector, routings, environment);
         this.routings = (DefaultRoutings) routings;
-        this.pathToFastRoutingMap = createPathToFastRoutingMap();
+        this.pathToFastRoutingsMap = createPathToFastRoutingsMap();
     }
 
     @Override
     public void handle(HttpServerRequest request) {
-        Routing routing = pathToFastRoutingMap.get(request.path());
+        Routing routing = findFastRouting(request);
 
-        if (routing == null) {
-            next(request);
-        } else {
+        if (routing != null) {
             doHandle(routing, request);
+        } else {
+            next(request);
         }
     }
 
-    public void doHandle(Routing routing, HttpServerRequest request) {
+    private Routing findFastRouting(HttpServerRequest request) {
+        HttpMethod method = HttpMethod.fromVertHttpMethod(request.method());
+        return pathToFastRoutingsMap.getOrDefault(request.path(), Collections.emptyList()).stream()
+                .filter(routing -> routing.getMethods().contains(method))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void doHandle(Routing routing, HttpServerRequest request) {
         RoutingContext context = new FastRoutingContext(vertx, request);
         Object[] arguments = resolveArguments(routing, context);
         CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
-        returnValueFuture
-                .thenAccept(returnValue ->
-                        processResult(context, routing, returnValue).thenAccept(ret -> {
-                            if (!request.response().ended()) {
-                                request.response().end();
-                            }
-                        }).exceptionally((Throwable failure) -> {
-                            onHandlerFailure(context, failure);
-                            return null;
-                        }))
-                .exceptionally((Throwable failure) -> {
-                    onHandlerFailure(context, failure);
-                    return null;
-                });
+        returnValueFuture.whenComplete((returnValue, failure) -> {
+            if (failure == null) {
+                processResult(context, routing, returnValue);
+            } else {
+                onHandlerFailure(context, failure);
+            }
+        });
     }
 
-    private Map<String, Routing> createPathToFastRoutingMap() {
+    private void processResult(RoutingContext context, Routing routing, Object handlerReturnValue) {
+        invokeResultProcessors(context, routing, handlerReturnValue).whenComplete((resultProcessorReturnValue, failure) -> {
+            if (failure == null) {
+                if (!context.response().ended()) {
+                    context.response().end();
+                }
+            } else {
+                onHandlerFailure(context, failure);
+            }
+        });
+    }
+
+    private Map<String, List<Routing>> createPathToFastRoutingsMap() {
         return routings.getRouting(RoutingType.HANDLER)
                 .stream()
                 .filter(this::isFastRouting)
-                .collect(toMap(Routing::getPath, r -> r, (x, y) -> x));
+                .collect(groupingBy(Routing::getPath));
     }
 
     private boolean isFastRouting(Routing routing) {
-        return routing.getRegexPath().isEmpty() && noPrefixMatchingInterceptors(routing) && noSlowParamResolverOrResultProcessor(routing);
+        return routing.getRegexPath().isEmpty() && noPrefixMatchingInterceptors(routing) && allParamResolversAndResultProcessorsAreFast(routing);
     }
 
-    private boolean noSlowParamResolverOrResultProcessor(Routing routing) {
+    private boolean allParamResolversAndResultProcessorsAreFast(Routing routing) {
         for (int i = 0; i < routing.getHandlerMethod().getParameters().length; ++i) {
             ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), i, ParameterResolver.class);
             if (resolver != null && !resolver.by().isAnnotationPresent(FastRoutingCompatible.class)) {
-                return true;
+                return false;
             }
         }
 

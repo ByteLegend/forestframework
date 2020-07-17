@@ -2,13 +2,14 @@ package io.forestframework.core;
 
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.ext.api.Extension;
-import io.forestframework.logging.ForestConfigurationFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static io.forestframework.utils.ComponentScanUtils.getApplicationAnnotation;
-import static org.apache.logging.log4j.core.config.ConfigurationFactory.CONFIGURATION_FACTORY_PROPERTY;
 
 public class Forest {
     public static final String VERSION = "0.1";
@@ -28,9 +29,7 @@ public class Forest {
 
     private static void initLogger() {
         try {
-            if (System.getProperty(CONFIGURATION_FACTORY_PROPERTY) == null) {
-                System.setProperty(CONFIGURATION_FACTORY_PROPERTY, ForestConfigurationFactory.class.getName());
-            }
+            Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, Level.INFO);
         } catch (NoClassDefFoundError e) {
             // log4j is explicitly excluded, ignore
         }

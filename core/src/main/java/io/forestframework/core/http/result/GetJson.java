@@ -18,9 +18,6 @@ public @interface GetJson {
     @AliasFor(target = Get.class, value = "path")
     String value() default "";
 
-    @AliasFor(target = Get.class, value = "path")
-    String path() default "";
-
     @AliasFor(target = Get.class, value = "regex")
     String regex() default "";
 

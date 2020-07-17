@@ -1774,6 +1774,7 @@ public class VertxCompletableFutureTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testToVertxFuture(TestContext tc) {
         Async async1 = tc.async();
         Async async2 = tc.async();

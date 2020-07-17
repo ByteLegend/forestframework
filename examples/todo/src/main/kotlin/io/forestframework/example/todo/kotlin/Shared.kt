@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 interface TodoService {
-    suspend fun initData()
+    suspend fun initData() {}
     suspend fun insert(todo: Todo): Todo
     suspend fun all(): List<Todo>
     suspend fun getCertain(todoID: String): Optional<Todo>
@@ -104,7 +104,7 @@ data class Todo(
     fun merge(todo: Todo): Todo {
         return Todo(id,
             todo.title ?: title,
-            todo.completed ?: completed,
+            todo.completed,
             todo.order ?: order,
             todo.url ?: url)
     }

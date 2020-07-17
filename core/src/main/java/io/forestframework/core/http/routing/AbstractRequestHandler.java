@@ -13,6 +13,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import kotlin.coroutines.Continuation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractRequestHandler implements RequestHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestHandler.class);
     private static final Map<Class<? extends RoutingResultProcessor>, RoutingResultProcessor> cache = new HashMap<>();
 
     protected Vertx vertx;
@@ -73,7 +76,7 @@ public abstract class AbstractRequestHandler implements RequestHandler {
         return arguments;
     }
 
-    CompletableFuture<Object> processResult(RoutingContext context, Routing routing, Object returnValue) {
+    CompletableFuture<Object> invokeResultProcessors(RoutingContext context, Routing routing, Object returnValue) {
         List<RoutingResultProcessor> resultProcessors = routing.getResultProcessors(injector, returnValue);
         if (resultProcessors.isEmpty()) {
             return CompletableFuture.completedFuture(null);
@@ -83,10 +86,9 @@ public abstract class AbstractRequestHandler implements RequestHandler {
             if (current == null) {
                 current = adapt(processor.processResponse(context, routing, returnValue));
             } else {
-                current = current
-                        .thenApply((processReturnValue) -> processor.processResponse(context, routing, processReturnValue))
+                current = current.thenApply((processReturnValue) -> processor.processResponse(context, routing, processReturnValue))
                         .exceptionally((Throwable failure) -> {
-                            failure.printStackTrace();
+                            LOGGER.error("", failure);
                             return failedFuture(failure);
                         });
             }
@@ -99,7 +101,7 @@ public abstract class AbstractRequestHandler implements RequestHandler {
     @SuppressWarnings("unchecked")
     private <T> CompletableFuture<T> adapt(Object obj) {
         if (obj instanceof Future) {
-            return VertxCompletableFuture.from((Future<T>) obj);
+            return VertxCompletableFuture.from(vertx.getOrCreateContext(), (Future<T>) obj);
         } else if (obj instanceof CompletableFuture) {
             return (CompletableFuture<T>) obj;
         } else {

@@ -1,9 +1,9 @@
 package io.forestframework.core.config;
 
 import com.google.common.collect.ImmutableMap;
+import io.forestframework.utils.Pair;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.math3.util.Pair;
 
 import java.util.Map;
 import java.util.Objects;
@@ -20,15 +20,15 @@ enum DefaultConverter implements Converter<Object, Object> {
     INSTANCE;
 
     private final Map<Pair<Class, Class>, Converter> converters = ImmutableMap.<Pair<Class, Class>, Converter>builder()
-            .put(Pair.create(Object.class, String.class), new ObjectToString())
-            .put(Pair.create(Object.class, JsonObject.class), new ObjectToJsonObject())
-            .put(Pair.create(String.class, Enum.class), new StringToEnum())
-            .put(Pair.create(Object.class, long.class), new ObjectToLong())
-            .put(Pair.create(String.class, Long.class), new ObjectToLong())
-            .put(Pair.create(Object.class, Integer.class), new ObjectToInteger())
-            .put(Pair.create(Object.class, int.class), new ObjectToInteger())
-            .put(Pair.create(Object.class, Boolean.class), new ObjectToBoolean())
-            .put(Pair.create(Object.class, boolean.class), new ObjectToBoolean())
+            .put(Pair.of(Object.class, String.class), new ObjectToString())
+            .put(Pair.of(Object.class, JsonObject.class), new ObjectToJsonObject())
+            .put(Pair.of(String.class, Enum.class), new StringToEnum())
+            .put(Pair.of(Object.class, long.class), new ObjectToLong())
+            .put(Pair.of(String.class, Long.class), new ObjectToLong())
+            .put(Pair.of(Object.class, Integer.class), new ObjectToInteger())
+            .put(Pair.of(Object.class, int.class), new ObjectToInteger())
+            .put(Pair.of(Object.class, Boolean.class), new ObjectToBoolean())
+            .put(Pair.of(Object.class, boolean.class), new ObjectToBoolean())
             .build();
 
     @Override
@@ -37,7 +37,7 @@ enum DefaultConverter implements Converter<Object, Object> {
             return obj;
         }
         for (Map.Entry<Pair<Class, Class>, Converter> entry : converters.entrySet()) {
-            if (entry.getKey().getFirst().isAssignableFrom(inType) && entry.getKey().getSecond().isAssignableFrom(outType)) {
+            if (entry.getKey().getLeft().isAssignableFrom(inType) && entry.getKey().getRight().isAssignableFrom(outType)) {
                 return entry.getValue().convert(obj, inType, outType);
             }
         }

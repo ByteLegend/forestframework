@@ -24,7 +24,6 @@ dependencies {
     val kotlinVersion = "1.3.72"
     val jpaVersion = "2.2"
     val javaxValidationVersion = "2.0.1.Final"
-    val logbackVersion = "1.2.3"
     val vertxVersion = "4.0.0-milestone5"
     val jacksonVersion = "2.10.3"
     val mysqlDriverVersion = "8.0.20"

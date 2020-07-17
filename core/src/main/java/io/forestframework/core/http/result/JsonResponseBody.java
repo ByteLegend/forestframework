@@ -17,4 +17,6 @@ import java.lang.annotation.Target;
 @ResultProcessor(by = JsonResultProcessor.class)
 public @interface JsonResponseBody {
     boolean pretty() default false;
+
+    boolean response404IfNull() default true;
 }

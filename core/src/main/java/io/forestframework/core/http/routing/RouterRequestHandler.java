@@ -81,6 +81,8 @@ public class RouterRequestHandler extends AbstractRequestHandler {
                 respond404(context);
             } else if (path.hasFailures()) {
                 path.respond500(devMode);
+            } else if (!context.response().ended()) {
+                context.response().end();
             }
         });
     }
@@ -134,7 +136,7 @@ public class RouterRequestHandler extends AbstractRequestHandler {
                             returnValueFuture.thenAccept((Object returnValue) -> {
                                 pathNode.setResult(returnValue);
                                 if (!context.isRerouteInvoked()) {
-                                    processResult(context, routing, returnValue)
+                                    invokeResultProcessors(context, routing, returnValue)
                                             .thenAccept(ret -> path.next())
                                             .exceptionally((Throwable failure) -> {
                                                 pathNode.setFailure(failure);

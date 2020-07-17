@@ -11,15 +11,11 @@ import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.HttpClient
-import io.vertx.core.http.HttpClientResponse
-import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.impl.headers.VertxHttpHeaders
-import io.vertx.kotlin.core.http.bodyAwait
-import io.vertx.kotlin.core.http.deleteAwait
-import io.vertx.kotlin.core.http.getAwait
-import io.vertx.kotlin.core.http.postAwait
-import io.vertx.kotlin.core.http.sendAwait
+import io.vertx.ext.web.client.HttpResponse
+import io.vertx.ext.web.client.WebClient
+import io.vertx.kotlin.ext.web.client.sendAwait
+import io.vertx.kotlin.ext.web.client.sendBufferAwait
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -68,7 +64,8 @@ class TodoApplicationJDBCKotlinIntegrationTest : TodoApplicationIntegrationTest(
 @ForestTest(appClass = TodoApplicationJDBC::class)
 class TodoApplicationJDBCJavaIntegrationTest : TodoApplicationIntegrationTest()
 
-open class TodoApplicationIntegrationTest {
+abstract class TodoApplicationIntegrationTest {
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     @Inject
     @Config("forest.http.port")
     lateinit var port: Integer
@@ -76,7 +73,7 @@ open class TodoApplicationIntegrationTest {
     @Inject
     lateinit var vertx: Vertx
 
-    lateinit var client: HttpClient
+    lateinit var client: WebClient
 
     val objectMapper = ObjectMapper()
 
@@ -87,19 +84,19 @@ open class TodoApplicationIntegrationTest {
 
     @BeforeEach
     fun setUp() {
-        client = vertx.createHttpClient()
+        client = WebClient.create(vertx)
     }
 
-    private fun <T> Buffer.toObject(klass: Class<T>) = objectMapper.readValue(this.toString(), klass)
+    private fun <T> String.toObject(klass: Class<T>) = objectMapper.readValue(this, klass)
 
-    private fun <T> Buffer.toObject(klass: TypeReference<T>) = objectMapper.readValue(this.toString(), klass)
+    private fun <T> String.toObject(klass: TypeReference<T>) = objectMapper.readValue(this, klass)
 
-    private fun HttpClientResponse.assert2XXStatus(): HttpClientResponse {
+    private fun HttpResponse<Buffer>.assert2XXStatus(): HttpResponse<Buffer> {
         assertTrue(statusCode() in 200..299)
         return this
     }
 
-    private fun HttpClientResponse.assert404(): HttpClientResponse {
+    private fun HttpResponse<Buffer>.assert404(): HttpResponse<Buffer> {
         assertEquals(404, statusCode())
         return this
     }
@@ -108,12 +105,12 @@ open class TodoApplicationIntegrationTest {
         val order = Random.nextInt()
         val title = UUID.randomUUID().toString()
         val todo = Todo(0, title, false, order, null)
-        return runBlocking {
-            client.postAwait(port.toInt(), "localhost", todoUri(), headers, Buffer.buffer(objectMapper.writeValueAsString(todo)))
-                .assert2XXStatus()
-                .bodyAwait()
-                .toObject(Todo::class.java)
-        }
+        return client.post(port.toInt(), "localhost", todoUri())
+            .putHeaders(headers)
+            .sendBufferAwait(Buffer.buffer(objectMapper.writeValueAsString(todo)))
+            .assert2XXStatus()
+            .bodyAsString()
+            .toObject(Todo::class.java)
     }
 
     private fun todoUri(id: Int? = null) = "/todos${if (id == null) "" else "/${id}"}"
@@ -121,9 +118,11 @@ open class TodoApplicationIntegrationTest {
     @Test
     fun `insert then fetch`() = runBlocking {
         val todo = createTodo()
-        val getTodo = client.getAwait(port.toInt(), "localhost", todoUri(todo.id))
+        val getTodo = client.get(port.toInt(), "localhost", todoUri(todo.id))
+            .putHeaders(headers)
+            .sendAwait()
             .assert2XXStatus()
-            .bodyAwait()
+            .bodyAsString()
             .toObject(Todo::class.java)
         assertEquals(todo, getTodo)
     }
@@ -132,39 +131,54 @@ open class TodoApplicationIntegrationTest {
     fun `insert then fetch all`() = runBlocking {
         val todo1 = createTodo()
         val todo2 = createTodo()
-        val allTodos = client.getAwait(port.toInt(), "localhost", todoUri())
+        val allTodos = client.get(port.toInt(), "localhost", todoUri())
+            .putHeaders(headers)
+            .sendAwait()
             .assert2XXStatus()
-            .bodyAwait()
+            .bodyAsString()
             .toObject(object : TypeReference<List<Todo>>() {})
-        assertEquals(listOf(todo1, todo2), allTodos)
+        assertEquals(setOf(todo1, todo2), allTodos.toSet())
     }
 
     @Test
     fun `insert then update`() = runBlocking {
         val todo = createTodo()
         val copy = Todo(todo.id, UUID.randomUUID().toString(), true, todo.order, todo.url)
-        val updated = client.sendAwait(HttpMethod.PATCH, port.toInt(), "localhost", todoUri(copy.id), headers, Buffer.buffer(objectMapper.writeValueAsString(copy)))
+        val updated = client.patch(port.toInt(), "localhost", todoUri(copy.id))
+            .putHeaders(headers)
+            .sendBufferAwait(Buffer.buffer(objectMapper.writeValueAsString(copy)))
             .assert2XXStatus()
-            .bodyAwait()
+            .bodyAsString()
             .toObject(Todo::class.java)
         assertEquals(copy, updated)
     }
 
     @Test
-    fun `insert then delete`() = runBlocking {
+    fun `insert then delete`() = runBlocking<Unit> {
         val todo = createTodo()
-        client.deleteAwait(port.toInt(), "localhost", todoUri(todo.id)).assert2XXStatus()
-        client.getAwait(todoUri(todo.id)).assert404()
+        client.delete(port.toInt(), "localhost", todoUri(todo.id))
+            .putHeaders(headers)
+            .sendAwait()
+            .assert2XXStatus()
+        client.get(port.toInt(), "localhost", todoUri(todo.id))
+            .putHeaders(headers)
+            .sendAwait()
+            .assert404()
     }
 
     @Test
     fun `insert then delete all`() = runBlocking {
         createTodo()
         createTodo()
-        client.deleteAwait(port.toInt(), "localhost", todoUri()).assert2XXStatus()
-        val allTodos = client.getAwait(todoUri())
+        client.delete(port.toInt(), "localhost", todoUri())
+            .putHeaders(headers)
+            .sendAwait()
             .assert2XXStatus()
-            .bodyAwait()
+        val allTodos = client.get(port.toInt(), "localhost", todoUri())
+            .putHeaders(headers)
+            .sendAwait()
+            .assert2XXStatus()
+            .bodyAsString()
             .toObject(object : TypeReference<List<Todo>>() {})
         assertTrue(allTodos.isEmpty())
     }

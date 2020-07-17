@@ -38,11 +38,6 @@ class RedisModule : AbstractModule() {
 @Singleton
 class RedisTodoService @Inject constructor(private val client: RedisAPI) : TodoService {
     private val redisToDoKey = "VERT_TODO"
-    override suspend fun initData() {
-        val sample = Todo(abs(ThreadLocalRandom.current().nextInt(0, Int.MAX_VALUE)),
-            "Something to do...", false, 1, "todo/ex")
-        insert(sample)
-    }
 
     override suspend fun insert(todo: Todo): Todo {
         val encoded = Json.encodePrettily(todo)

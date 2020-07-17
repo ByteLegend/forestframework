@@ -1,6 +1,6 @@
 package io.forestframework.core.http.routing;
 
-import org.apache.commons.math3.util.Pair;
+import io.forestframework.utils.Pair;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -18,6 +18,7 @@ public class DefaultRoutings implements Routings {
 
     @Override
     public List<Routing> getRouting(RoutingType routingType) {
+        // Collections$UnmodifiableMap doesn't support computeIfAbsent
         List<Routing> ret = routings.get(routingType);
         if (ret == null) {
             ret = new ArrayList<>();
@@ -36,8 +37,8 @@ public class DefaultRoutings implements Routings {
     public void finalizeRoutings() {
         routings = Collections.unmodifiableMap(
                 Stream.of(RoutingType.values())
-                        .map(routingType -> Pair.create(routingType, decorate(getRouting(routingType))))
-                        .collect(Collectors.toMap(Pair::getKey, Pair::getValue))
+                        .map(routingType -> Pair.of(routingType, decorate(getRouting(routingType))))
+                        .collect(Collectors.toMap(Pair::getLeft, Pair::getRight))
         );
         routingPrefixes = Collections.unmodifiableMap(
                 routings.entrySet()

@@ -1,11 +1,12 @@
 package io.forestframework.core.http.result;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.http.FastRoutingCompatible;
+import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
-import com.github.blindpirate.annotationmagic.AnnotationMagic;
 
 import javax.inject.Singleton;
 
@@ -21,12 +22,14 @@ public class JsonResultProcessor implements RoutingResultProcessor {
         routingContext.response().putHeader("Content-Type", "application/json");
         if (returnValue instanceof Buffer) {
             return routingContext.response().end((Buffer) returnValue);
+        } else if (returnValue == null && anno.response404IfNull()) {
+            return routingContext.response().setStatusCode(HttpStatusCode.NOT_FOUND.getCode()).end();
         } else {
-            return routingContext.response().end(getJson(anno, returnValue));
+            return routingContext.response().end(jsonify(anno, returnValue));
         }
     }
 
-    private String getJson(JsonResponseBody anno, Object returnValue) {
+    private String jsonify(JsonResponseBody anno, Object returnValue) {
         try {
             if (anno != null && anno.pretty()) {
                 return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(returnValue);

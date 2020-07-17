@@ -1,4 +1,6 @@
 forest:
+  deploy:
+    instances: 2
   environment: dev
   static:
     webroot: webroot

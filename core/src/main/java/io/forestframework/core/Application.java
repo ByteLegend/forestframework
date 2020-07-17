@@ -7,6 +7,7 @@ import com.google.inject.util.Modules;
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.DefaultHttpVerticle;
 import io.forestframework.core.http.routing.DefaultRoutings;
+import io.forestframework.core.http.routing.Routings;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
 import io.forestframework.ext.core.AutoScanComponentsExtension;
@@ -63,7 +64,10 @@ public class Application implements AutoCloseable {
 
     protected void configureComponents() {
         // 1. Start. Instantiate all extensions and configure components.
-        startupContext.getExtensions().forEach(extension -> extension.beforeInjector(startupContext));
+        startupContext.getExtensions().forEach(extension -> {
+            LOGGER.debug("Apply extension beforeInjector: {}", extension.getClass());
+            extension.beforeInjector(startupContext);
+        });
     }
 
     protected void createInjector() {
@@ -73,6 +77,8 @@ public class Application implements AutoCloseable {
                 .collect(Collectors.toList());
 
         injector = createInjector(startupContext, modules);
+
+        LOGGER.debug("Injector created successfully with {}", modules);
 
         // 3. Inject members to modules because they're created by us, not Guice.
         modules.forEach(injector::injectMembers);
@@ -86,11 +92,12 @@ public class Application implements AutoCloseable {
     protected void startHttpServer() {
         // 5. Start the HTTP server
         DeploymentOptions deploymentOptions = startupContext.getConfigProvider().getInstance("forest.deploy", DeploymentOptions.class);
-        injector.getInstance(DefaultRoutings.class).finalizeRoutings();
+        ((DefaultRoutings) injector.getInstance(Routings.class)).finalizeRoutings();
         Future<String> vertxFuture = vertx.deployVerticle(() -> injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
         CompletableFuture<String> future = VertxCompletableFuture.from(vertx.getOrCreateContext(), vertxFuture);
         try {
             deploymentId = future.get();
+            LOGGER.info("Http server successful started on {} with {} instances", startupContext.getConfigProvider().getInstance("forest.http.port", String.class), deploymentOptions.getInstances());
         } catch (Throwable e) {
             LOGGER.error("", e);
             throw new RuntimeException(e);
@@ -99,7 +106,7 @@ public class Application implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        VertxCompletableFuture.from(vertx.undeploy(deploymentId)).get();
+        VertxCompletableFuture.from(vertx.getOrCreateContext(), vertx.undeploy(deploymentId)).get();
     }
 
     public static <T> T instantiateWithDefaultConstructor(Class<?> extensionClass) {

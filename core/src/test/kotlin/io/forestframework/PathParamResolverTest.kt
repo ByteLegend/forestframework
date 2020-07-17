@@ -1,3 +1,4 @@
+@file:Suppress("UNUSED_PARAMETER")
 package io.forestframework
 
 import io.forestframework.core.http.DefaultRouting

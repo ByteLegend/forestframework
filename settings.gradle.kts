@@ -4,6 +4,7 @@ plugins {
 }
 
 include("core")
+include("core-kotlin")
 include("junit5-extension")
 include("jdbc-client-extension")
 include("redis-client-extension")
