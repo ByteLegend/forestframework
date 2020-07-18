@@ -145,6 +145,7 @@ public class RouterRequestHandler extends AbstractRequestHandler {
                                             });
                                 }
                             }).exceptionally(failure -> {
+                                LOGGER.error("", failure);
                                 pathNode.setResult(failure);
                                 path.next();
                                 return null;

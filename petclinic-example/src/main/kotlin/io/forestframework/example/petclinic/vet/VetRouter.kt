@@ -2,7 +2,7 @@ package io.forestframework.example.petclinic.vet
 
 import io.vertx.core.Vertx
 import io.vertx.ext.web.RoutingContext
-import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
+//import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.forestframework.core.http.routing.Get
 //import io.forestframework.annotation.TemplateRendering
 import io.forestframework.core.http.result.ThymeleafTemplateRendering
@@ -15,7 +15,7 @@ class VetRouter @Inject constructor(private val vets: VetRepository) {
     @Get("/vets.html")
 //    @TemplateRendering(engine = ThymeleafTemplateEngine::class)
     suspend fun showVetList(routingContext: RoutingContext): String {
-        ThymeleafTemplateEngine.create(Vertx.vertx());
+//        ThymeleafTemplateEngine.create(Vertx.vertx());
 
         routingContext.put("vets", Vets().also { it.vetList.addAll(vets.findAll()) })
         return "vets/vetList"

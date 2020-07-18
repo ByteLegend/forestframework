@@ -1,9 +1,11 @@
 package io.forestframework.example.todo.kotlin
 
 import com.google.inject.AbstractModule
+import com.google.inject.Injector
 import com.google.inject.Provides
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
+import io.forestframework.ext.api.Extension
 import io.forestframework.extensions.jdbc.JDBCClientExtension
 import io.vertx.core.json.JsonArray
 import io.vertx.ext.jdbc.JDBCClient
@@ -13,13 +15,14 @@ import io.vertx.kotlin.ext.sql.queryAwait
 import io.vertx.kotlin.ext.sql.queryWithParamsAwait
 import io.vertx.kotlin.ext.sql.updateAwait
 import io.vertx.kotlin.ext.sql.updateWithParamsAwait
+import kotlinx.coroutines.runBlocking
 import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @ForestApplication(
     include = [JDBCModule::class],
-    extensions = [JDBCClientExtension::class]
+    extensions = [JDBCClientExtension::class, InitDataExtension::class]
 )
 class TodoApplicationJDBC
 
@@ -32,6 +35,16 @@ class JDBCModule : AbstractModule() {
     @Singleton
     fun configure(jdbcClient: JDBCClient): TodoService = JdbcTodoService(jdbcClient)
 }
+
+
+class InitDataExtension : Extension {
+    override fun afterInjector(injector: Injector) {
+        runBlocking {
+            injector.getInstance(TodoService::class.java).initData()
+        }
+    }
+}
+
 
 @Singleton
 class JdbcTodoService @Inject constructor(private val jdbcClient: JDBCClient) : TodoService {

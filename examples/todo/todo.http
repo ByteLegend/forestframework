@@ -4,7 +4,12 @@ Content-Type: application/json; charset=utf8
 {"title":"a todo"}
 
 ###
-GET http://localhost:8080/todos/1111111111
+
+GET http://localhost:8080/todos
+Accept: application/json; charset=utf8
+
+###
+GET http://localhost:8080/todos/1
 Accept: application/json; charset=utf8
 
 ###

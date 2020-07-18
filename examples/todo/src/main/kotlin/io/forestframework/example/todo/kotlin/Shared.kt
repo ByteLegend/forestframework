@@ -15,6 +15,7 @@ import io.forestframework.ext.api.Extension
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import kotlinx.coroutines.runBlocking
+import java.lang.ClassCastException
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -27,14 +28,6 @@ interface TodoService {
     suspend fun update(todoId: String, newTodo: Todo): Optional<Todo>
     suspend fun delete(todoId: String)
     suspend fun deleteAll()
-}
-
-class InitDataExtension : Extension {
-    override fun afterInjector(injector: Injector) {
-        runBlocking {
-            injector.getInstance(TodoService::class.java).initData()
-        }
-    }
 }
 
 @SingletonComponent
@@ -96,7 +89,7 @@ data class Todo(
         : this(
         jsonObject.getInteger("id"),
         jsonObject.getString("title"),
-        jsonObject.getBoolean("completed") ?: false,
+        jsonObject.getAutoBoolean("completed"),
         jsonObject.getInteger("order"),
         jsonObject.getString("url")
     )
@@ -109,3 +102,10 @@ data class Todo(
             todo.url ?: url)
     }
 }
+
+fun JsonObject.getAutoBoolean(key: String) =
+    try {
+        getBoolean(key)
+    } catch (e: ClassCastException) {
+        getInteger(key) != 0
+    }

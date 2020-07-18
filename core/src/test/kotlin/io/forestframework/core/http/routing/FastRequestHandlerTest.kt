@@ -5,7 +5,9 @@ package io.forestframework.core.http.routing
 import com.github.blindpirate.annotationmagic.AnnotationMagic
 import com.google.inject.Injector
 import io.forestframework.core.http.DefaultRouting
+import io.forestframework.core.http.OptimizedHeaders
 import io.forestframework.core.http.param.JsonRequestBody
+import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.GetJson
 import io.forestframework.core.http.result.JsonResponseBody
 import io.forestframework.core.http.result.PlainText
@@ -19,9 +21,13 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.ext.web.RoutingContext
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
+import java.lang.RuntimeException
 
 @ExtendWith(MockKExtension::class)
 class FastRequestHandlerTest {
@@ -74,6 +80,22 @@ class FastRequestHandlerTest {
     }
 
     @Test
+    fun `handle exception in fast routings`() {
+        every { request.path() } returns "/exception"
+        every { request.method() } returns HttpMethod.GET
+
+        fastRequestHandler.handle(request)
+
+        verify {
+            response.statusCode = 500
+            response.putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_TEXT_PLAIN)
+            response.end(withArg<String> {
+                Assertions.assertTrue(it.contains("Bad!"))
+            })
+        }
+    }
+
+    @Test
     fun `can distinguish same path different method`() {
         every { request.path() } returns "/fast1"
         every { request.method() } returns HttpMethod.POST
@@ -85,9 +107,10 @@ class FastRequestHandlerTest {
         }
     }
 
-    @Test
-    fun `not handle slow routings`() {
-        every { request.path() } returns "/slow1"
+    @ParameterizedTest
+    @ValueSource(strings = ["/slow1", "/slow2/1", "/slow2/:userid", "/slow3/*", "/slow3/xxx", "/slow4/*", "/slow4/xxx"])
+    fun `not handle slow routings`(slowPath: String) {
+        every { request.path() } returns slowPath
         every { request.method() } returns HttpMethod.POST
 
         fastRequestHandler.handle(request)
@@ -105,7 +128,22 @@ class TestRouter {
     @PlainText
     fun fast1Post() = "hello"
 
+    @GetJson("/exception")
+    fun throwException(): Nothing = throw RuntimeException("Bad!")
+
     @Post("/slow1")
     @JsonResponseBody(pretty = true)
     fun slow1(@JsonRequestBody param: String, r: RoutingContext) = mapOf("name" to param)
+
+    @Post("/slow2/:userid")
+    @JsonResponseBody(pretty = true)
+    fun slow2(@PathParam("userid") userId: Int) = mapOf("id" to userId)
+
+    @Post("/slow3/*")
+    fun slow3(@PathParam("*") path: String) {
+    }
+
+    @Post("/slow4/*")
+    fun slow4() {
+    }
 }

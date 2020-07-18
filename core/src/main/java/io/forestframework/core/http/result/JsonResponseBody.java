@@ -18,5 +18,5 @@ import java.lang.annotation.Target;
 public @interface JsonResponseBody {
     boolean pretty() default false;
 
-    boolean response404IfNull() default true;
+    boolean respond404IfNull() default true;
 }

@@ -7,8 +7,7 @@ forest:
     endpoints:
       - redis://localhost:6379
   jdbc:
-    url: jdbc:mysql://localhost/vertx_blueprint?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
-    driver_class: com.mysql.cj.jdbc.Driver
+    url: jdbc:h2:file:./todo;DATABASE_TO_UPPER=false
+    driver_class: org.h2.Driver
     user: root
     password: root
-    max_pool_size: 30

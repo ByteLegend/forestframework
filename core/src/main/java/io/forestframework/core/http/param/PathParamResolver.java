@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
  * 3. Wildcard path: /static/* -> @PathParam("*")
  */
 @Singleton
-@FastRoutingCompatible
 public class PathParamResolver implements RoutingParameterResolver<Object> {
     private Map<String, Pattern> wildcardPatternCache = new ConcurrentHashMap<>();
 

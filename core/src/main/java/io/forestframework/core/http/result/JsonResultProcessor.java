@@ -22,7 +22,7 @@ public class JsonResultProcessor implements RoutingResultProcessor {
         routingContext.response().putHeader("Content-Type", "application/json");
         if (returnValue instanceof Buffer) {
             return routingContext.response().end((Buffer) returnValue);
-        } else if (returnValue == null && anno.response404IfNull()) {
+        } else if (returnValue == null && anno.respond404IfNull()) {
             return routingContext.response().setStatusCode(HttpStatusCode.NOT_FOUND.getCode()).end();
         } else {
             return routingContext.response().end(jsonify(anno, returnValue));

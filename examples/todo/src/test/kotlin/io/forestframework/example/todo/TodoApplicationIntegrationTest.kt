@@ -49,8 +49,7 @@ class TodoApplicationRedisKotlinIntegrationTest : TodoApplicationIntegrationTest
 class TodoApplicationRedisJavaIntegrationTest : TodoApplicationIntegrationTest()
 
 @Extensions(
-    ExtendWith(EmbeddedRedisExtension::class),
-    ExtendWith(RedisSetUpExtension::class),
+    ExtendWith(UseH2MemDatabaseExtension::class),
     ExtendWith(ForestExtension::class)
 )
 @ForestTest(appClass = TodoApplicationJDBC::class)
@@ -187,5 +186,11 @@ abstract class TodoApplicationIntegrationTest {
 class RedisSetUpExtension : BeforeAllCallback {
     override fun beforeAll(context: ExtensionContext) {
         System.setProperty("forest.redis.endpoints", "[\"redis://localhost:${System.getProperty(REDIS_PORT_PROPERTY)}\"]")
+    }
+}
+
+class UseH2MemDatabaseExtension : BeforeAllCallback {
+    override fun beforeAll(context: ExtensionContext?) {
+        System.setProperty("forest.jdbc.url", "jdbc:h2:mem:todo;DATABASE_TO_UPPER=false")
     }
 }

@@ -13,14 +13,12 @@ import io.vertx.kotlin.redis.client.hsetAwait
 import io.vertx.kotlin.redis.client.hvalsAwait
 import io.vertx.redis.client.RedisAPI
 import java.util.Optional
-import java.util.concurrent.ThreadLocalRandom
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.abs
 
 @ForestApplication(
     include = [RedisModule::class],
-    extensions = [RedisClientExtension::class, InitDataExtension::class]
+    extensions = [RedisClientExtension::class]
 )
 class TodoApplicationRedis
 

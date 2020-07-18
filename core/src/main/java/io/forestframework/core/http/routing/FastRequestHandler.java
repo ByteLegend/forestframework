@@ -31,7 +31,7 @@ import static java.util.stream.Collectors.groupingBy;
  *
  * <ol>
  *     <li>1. No regex/path parameters. Path matching is slow.</li>
- *     <li>2. No {@link RoutingContext in handler parameters}. {@link RoutingContext} is heavy, calling next() is slow.</li>
+ *     <li>2. No complicated {@link RoutingContext} operations in param resolvers and result processors. This is guaranteed by {@link FastRoutingCompatible}.
  *     <li>3. No prefix-matching interceptors. The prefix scanning is performed at startup phase.</li>
  * </ol>
  *
@@ -87,12 +87,11 @@ public class FastRequestHandler extends AbstractRequestHandler {
 
     private void processResult(RoutingContext context, Routing routing, Object handlerReturnValue) {
         invokeResultProcessors(context, routing, handlerReturnValue).whenComplete((resultProcessorReturnValue, failure) -> {
-            if (failure == null) {
-                if (!context.response().ended()) {
-                    context.response().end();
-                }
-            } else {
+            if (failure != null) {
                 onHandlerFailure(context, failure);
+            }
+            if (!context.response().ended()) {
+                context.response().end();
             }
         });
     }
@@ -105,7 +104,19 @@ public class FastRequestHandler extends AbstractRequestHandler {
     }
 
     private boolean isFastRouting(Routing routing) {
-        return routing.getRegexPath().isEmpty() && noPrefixMatchingInterceptors(routing) && allParamResolversAndResultProcessorsAreFast(routing);
+        return routing.getRegexPath().isEmpty() &&
+                !containsPathParameter(routing) &&
+                noPrefixMatchingInterceptors(routing) &&
+                allParamResolversAndResultProcessorsAreFast(routing);
+    }
+
+    private boolean containsPathParameter(Routing routing) {
+        for (char ch : routing.getPath().toCharArray()) {
+            if (ch == ':' || ch == '*') {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean allParamResolversAndResultProcessorsAreFast(Routing routing) {
@@ -134,9 +145,6 @@ public class FastRequestHandler extends AbstractRequestHandler {
         LOGGER.error("", failure);
         context.response().setStatusCode(HttpStatusCode.SERVER_ERROR.getCode());
         context.response().putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_TEXT_PLAIN);
-        context.response().write(ExceptionUtils.getStackTrace(failure));
-        if (!context.response().ended()) {
-            context.response().end();
-        }
+        context.response().end(ExceptionUtils.getStackTrace(failure));
     }
 }
