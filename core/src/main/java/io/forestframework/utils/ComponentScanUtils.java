@@ -10,8 +10,7 @@ import io.forestframework.core.http.routing.Route;
  */
 public class ComponentScanUtils {
     public static boolean isComponentClass(Class<?> klass) {
-        return AnnotationMagic.isAnnotationPresent(klass, Component.class)
-                || AnnotationMagic.isAnnotationPresent(klass, Route.class);
+        return AnnotationMagic.isAnnotationPresent(klass, Component.class);
     }
 
     public static ForestApplication getApplicationAnnotation(Class<?> appClass) {

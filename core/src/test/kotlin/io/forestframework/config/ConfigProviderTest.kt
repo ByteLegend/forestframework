@@ -22,6 +22,7 @@ import java.io.File
 import java.util.Collections.emptyList
 import java.util.concurrent.TimeUnit
 
+@Suppress("UNCHECKED_CAST")
 class ConfigProviderTest {
     val yamlParser = ObjectMapper(YAMLFactory())
     val jsonParser = ObjectMapper()
@@ -197,11 +198,7 @@ forest:
         SystemProperty(name = "forest.http.initialSettings.headerTableSize", value = "8192")
     )
     fun `environment config overwrites file config`(@TempDir tempDir: File) {
-        val originalConfig = System.getProperty("forest.config.file")
-        val configFile = File(tempDir, "config.yml").apply { writeText(realWorldConfig) }
-        System.setProperty("forest.config.file", configFile.absolutePath)
-
-        try {
+        withSystemPropertyConfigFile(tempDir, realWorldConfig) {
             val provider = ConfigProvider.load()
 
             val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
@@ -214,12 +211,6 @@ forest:
             assertEquals(8192, initialSettings.headerTableSize)
 
             assertEquals(8192, provider.getInstance("forest.http.initialSettings.headerTableSize", Integer::class.java))
-        } finally {
-            if (originalConfig != null) {
-                System.setProperty("forest.config.file", originalConfig)
-            } else {
-                System.clearProperty("forest.config.file")
-            }
         }
     }
 
@@ -233,10 +224,7 @@ forest:
         }
         """)
     fun `environment json config overwrites file config`(@TempDir tempDir: File) {
-        val originalConfig = System.getProperty("forest.config.file")
-        val configFile = File(tempDir, "config.yml").apply { writeText(realWorldConfig) }
-        System.setProperty("forest.config.file", configFile.absolutePath)
-        try {
+        withSystemPropertyConfigFile(tempDir, realWorldConfig) {
             val provider = ConfigProvider.load()
 
             val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
@@ -249,12 +237,6 @@ forest:
             assertEquals(8192, initialSettings.headerTableSize)
 
             assertEquals(8192, provider.getInstance("forest.http.initialSettings.headerTableSize", Integer::class.java))
-        } finally {
-            if (originalConfig != null) {
-                System.setProperty("forest.config.file", originalConfig)
-            } else {
-                System.clearProperty("forest.config.file")
-            }
         }
     }
 
@@ -262,9 +244,44 @@ forest:
     @SystemProperty(name = "forest.redis.endpoints", value = "[\"redis://localhost:6380\"]")
     fun `can parse JSON array`() {
         val provider = ConfigProvider.load()
-        provider.addDefaultOptions("forest.redis", { RedisOptions() })
+        provider.addDefaultOptions("forest.redis") { RedisOptions() }
 
         assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis.endpoints", List::class.java))
         assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis", RedisOptions::class.java).endpoints)
+    }
+
+    @Test
+    fun `can add to config`(@TempDir tempDir: File) {
+        withSystemPropertyConfigFile(tempDir, realWorldConfig) {
+            val provider = ConfigProvider.load()
+            provider.addConfig("forest.http.port", "12345")
+            provider.addConfig("forest.http.initialSettings.headerTableSize", "8192")
+
+            val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
+            assertEquals(12345, httpServerOptions.port)
+            assertEquals(8192, httpServerOptions.initialSettings.headerTableSize)
+            assertEquals(true, httpServerOptions.isCompressionSupported)
+            assertEquals(false, httpServerOptions.initialSettings.isPushEnabled)
+
+            val initialSettings: Http2Settings = provider.getInstance("forest.http.initialSettings", Http2Settings::class.java)
+            assertEquals(8192, initialSettings.headerTableSize)
+
+            assertEquals(8192, provider.getInstance("forest.http.initialSettings.headerTableSize", Integer::class.java))
+        }
+    }
+
+    private fun withSystemPropertyConfigFile(tempDir: File, fileContent: String, function: () -> Unit) {
+        val originalConfig = System.getProperty("forest.config.file")
+        val configFile = File(tempDir, "config.yml").apply { writeText(fileContent) }
+        System.setProperty("forest.config.file", configFile.absolutePath)
+        try {
+            function()
+        } finally {
+            if (originalConfig != null) {
+                System.setProperty("forest.config.file", originalConfig)
+            } else {
+                System.clearProperty("forest.config.file")
+            }
+        }
     }
 }

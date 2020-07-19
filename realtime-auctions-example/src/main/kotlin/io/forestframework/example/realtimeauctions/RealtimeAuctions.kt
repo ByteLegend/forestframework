@@ -10,6 +10,7 @@ import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
 import io.forestframework.ext.core.HttpException
 import io.forestframework.core.http.HttpStatusCode
+import io.forestframework.core.http.Router
 import io.forestframework.core.http.result.JsonResponseBody
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.shareddata.LocalMap
@@ -49,7 +50,7 @@ class EventBusHandler {
 }
 
 @Singleton
-@Route("/api")
+@Router("/api")
 class AuctionHandler(private val repository: AuctionRepository, private val validator: AuctionValidator) {
 
     @Get("/auctions/:id")

@@ -1,7 +1,7 @@
-plugins {
-    id("com.gradle.enterprise") version("3.3.4")
-    id("com.gradle.enterprise.gradle-enterprise-conventions-plugin") version("0.3")
-}
+//plugins {
+//    id("com.gradle.enterprise") version("3.3.4")
+//    id("com.gradle.enterprise.gradle-enterprise-conventions-plugin") version("0.3")
+//}
 
 include("core")
 include("core-kotlin")
@@ -18,6 +18,7 @@ include("realtime-auctions-example")
 include(":examples:todo-kotlin")
 include(":examples:todo")
 include("benchmark-kotlin")
+include("test-fixtures")
 
 rootProject.children.forEach {
     it.buildFileName = "${it.name}.gradle.kts"

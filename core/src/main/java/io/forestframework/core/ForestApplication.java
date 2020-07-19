@@ -3,7 +3,6 @@ package io.forestframework.core;
 import com.google.inject.BindingAnnotation;
 import io.forestframework.ext.api.Extension;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -12,7 +11,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
 @BindingAnnotation
 public @interface ForestApplication {

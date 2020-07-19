@@ -40,13 +40,13 @@ import kotlin.random.Random
 @ForestTest(appClass = TodoApplicationRedis::class)
 class TodoApplicationRedisKotlinIntegrationTest : TodoApplicationIntegrationTest()
 
-@Extensions(
-    ExtendWith(EmbeddedRedisExtension::class),
-    ExtendWith(RedisSetUpExtension::class),
-    ExtendWith(ForestExtension::class)
-)
-@ForestTest(appClass = io.forestframework.example.todo.java.TodoApplicationRedis::class)
-class TodoApplicationRedisJavaIntegrationTest : TodoApplicationIntegrationTest()
+//@Extensions(
+//    ExtendWith(EmbeddedRedisExtension::class),
+//    ExtendWith(RedisSetUpExtension::class),
+//    ExtendWith(ForestExtension::class)
+//)
+//@ForestTest(appClass = io.forestframework.example.todo.java.TodoApplicationRedis::class)
+//class TodoApplicationRedisJavaIntegrationTest : TodoApplicationIntegrationTest()
 
 @Extensions(
     ExtendWith(UseH2MemDatabaseExtension::class),
@@ -55,13 +55,13 @@ class TodoApplicationRedisJavaIntegrationTest : TodoApplicationIntegrationTest()
 @ForestTest(appClass = TodoApplicationJDBC::class)
 class TodoApplicationJDBCKotlinIntegrationTest : TodoApplicationIntegrationTest()
 
-@Extensions(
-    ExtendWith(EmbeddedRedisExtension::class),
-    ExtendWith(RedisSetUpExtension::class),
-    ExtendWith(ForestExtension::class)
-)
-@ForestTest(appClass = TodoApplicationJDBC::class)
-class TodoApplicationJDBCJavaIntegrationTest : TodoApplicationIntegrationTest()
+//@Extensions(
+//    ExtendWith(EmbeddedRedisExtension::class),
+//    ExtendWith(RedisSetUpExtension::class),
+//    ExtendWith(ForestExtension::class)
+//)
+//@ForestTest(appClass = TodoApplicationJDBC::class)
+//class TodoApplicationJDBCJavaIntegrationTest : TodoApplicationIntegrationTest()
 
 abstract class TodoApplicationIntegrationTest {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")

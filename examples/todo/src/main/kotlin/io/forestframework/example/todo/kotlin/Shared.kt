@@ -33,12 +33,12 @@ interface TodoService {
 @SingletonComponent
 class TodoRouter @Inject constructor(private val service: TodoService) {
     @Get("/index.html")
-    @StaticResource(webroot = "static")
-    fun index() = "/index.html"
+    @StaticResource
+    fun index() = "/static/index.html"
 
     @Get(regex = """\/(?<dir>(js|css))\/(?<file>.+)""")
     @StaticResource
-    fun jsCss(@PathParam("dir") dir: String, @PathParam("file") file: String) = "/$dir/$file"
+    fun jsCss(@PathParam("dir") dir: String, @PathParam("file") file: String) = "/static/$dir/$file"
 
     @Get("/todos/:todoId")
     @JsonResponseBody(pretty = true)

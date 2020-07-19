@@ -18,11 +18,13 @@ import io.vertx.ext.web.impl.Utils;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A fork of default StaticHandlerImpl with tweaking.
@@ -43,7 +45,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
     private boolean rangeSupport = DEFAULT_RANGE_SUPPORT;
     private boolean allowRootFileSystemAccess = DEFAULT_ROOT_FILESYSTEM_ACCESS;
     private boolean sendVaryHeader = DEFAULT_SEND_VARY_HEADER;
-    private String defaultContentEncoding = Charset.defaultCharset().name();
+    private String defaultContentEncoding = UTF_8.name();
 
     private Set<String> compressedMediaTypes = Collections.emptySet();
     private Set<String> compressedFileSuffixes = Collections.emptySet();

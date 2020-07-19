@@ -9,7 +9,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
 @Extends(Route.class)
 @Route(methods = {HttpMethod.CONNECT})

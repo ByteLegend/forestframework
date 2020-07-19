@@ -1,5 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+
+
+//import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+//
 plugins {
     kotlin("jvm") version "1.3.72"
 }
@@ -139,17 +142,17 @@ plugins {
 //        args("-F", "src/main/**/*.kt", "src/test/**/*.kt")
 //    }
 //}
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-}
+//dependencies {
+//    implementation(kotlin("stdlib-jdk8"))
+//}
 repositories {
     mavenCentral()
 }
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
+//val compileKotlin: KotlinCompile by tasks
+//compileKotlin.kotlinOptions {
+//    jvmTarget = "1.8"
+//}
+//val compileTestKotlin: KotlinCompile by tasks
+//compileTestKotlin.kotlinOptions {
+//    jvmTarget = "1.8"
+//}

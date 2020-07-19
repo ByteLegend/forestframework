@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -137,8 +138,9 @@ public class ConfigProvider {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getInstance(String key, Class<T> klass) {
-        List<String> paths = Arrays.asList(key.split("\\."));
+        String[] paths = key.split("\\.");
         ConfigObject current = new ConfigObject();
 
         for (String path : paths) {
@@ -203,7 +205,7 @@ public class ConfigProvider {
     }
 
     private static Map<String, Object> loadModel(InputStream is) throws IOException {
-        String content = IOUtils.toString(is, Charset.defaultCharset());
+        String content = IOUtils.toString(is, StandardCharsets.UTF_8);
         if (isJson(content)) {
             return JSON_PARSER.readValue(content, Map.class);
         } else {

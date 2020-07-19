@@ -10,6 +10,7 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import io.forestframework.core.ComponentClasses;
 import io.forestframework.core.http.DefaultRouting;
+import io.forestframework.core.http.Router;
 import io.forestframework.core.http.routing.DefaultRoutings;
 import io.forestframework.core.http.routing.FastRequestHandler;
 import io.forestframework.core.http.routing.RequestHandler;
@@ -81,7 +82,7 @@ public class RoutingExtension implements Extension {
     }
 
     private static boolean isRouter(Class<?> klass) {
-        return klass.isAnnotationPresent(Route.class)
+        return AnnotationMagic.isAnnotationPresent(klass, Router.class)
                 || Arrays.stream(klass.getMethods()).anyMatch(RoutingExtension::isRouteMethod);
     }
 
@@ -98,14 +99,13 @@ public class RoutingExtension implements Extension {
     @VisibleForTesting
     Routing toRouting(Class<?> klass, Method method) {
         Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethodOrNull(method, Route.class);
-        Route routeOnClass = AnnotationMagic.getOneAnnotationOnClassOrNull(klass, Route.class);
+        Router routeOnClass = AnnotationMagic.getOneAnnotationOnClassOrNull(klass, Router.class);
         if (routeOnClass == null && routeOnMethod != null) {
             return new DefaultRouting(routeOnMethod, method);
         }
-        String classPath = getPath(routeOnClass, klass);
         String methodPath = getPath(routeOnMethod, method);
-        String path = classPath + methodPath;
-        if (StringUtils.isNotBlank(routeOnMethod.regex()) || (routeOnClass != null && StringUtils.isNotBlank(routeOnClass.regex()))) {
+        String path = routeOnClass.value() + methodPath;
+        if (StringUtils.isNotBlank(routeOnMethod.regex())) {
             return new DefaultRouting("", path, Arrays.asList(routeOnMethod.methods()), method);
         } else {
             return new DefaultRouting(path, "", Arrays.asList(routeOnMethod.methods()), method);

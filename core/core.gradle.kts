@@ -20,12 +20,12 @@ dependencies {
     val guavaVersion = "28.2-jre"
     val jacksonVersion = "2.10.3"
     val kotlinVersion = "1.3.72"
+    val kotlinxVersion = "1.3.8"
     val junitVersion = "5.6.2"
     val junit4Version = "4.13"
     val mockKVersion = "1.9.3"
     val byteBuddyVersion = "1.10.11"
     val reflectasmVersion = "1.11.9"
-    val kotlinxVersion = "1.3.7"
     val apiGuadianVersion = "1.1.0"
     val log4jVersion = "2.13.3"
     val slf4jVersion = "1.7.30"
@@ -66,6 +66,7 @@ dependencies {
 
     implementation("com.google.guava:guava:$guavaVersion")
 
+    testImplementation(project(":test-fixtures"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")

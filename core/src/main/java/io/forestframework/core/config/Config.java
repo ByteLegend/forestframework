@@ -13,7 +13,6 @@ import java.lang.annotation.Target;
  * See {@link io.forestframework.core.config.ConfigProvider}
  */
 @Target({ElementType.PARAMETER, ElementType.FIELD})
-@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @BindingAnnotation
 public @interface Config {

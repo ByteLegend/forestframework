@@ -1,5 +1,6 @@
 package io.forestframework.core.http.routing;
 
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.inject.Injector;
 import io.forestframework.KotlinSuspendFunctionBridge;
 import io.forestframework.core.http.Blocking;
@@ -149,7 +150,7 @@ public abstract class AbstractRequestHandler implements RequestHandler {
     }
 
     private boolean isBlockingMethod(Routing routing) {
-        return routing.getHandlerMethod().getAnnotation(Blocking.class) != null;
+        return AnnotationMagic.isAnnotationPresent(routing.getHandlerMethod(), Blocking.class);
     }
 
     private <T> CompletableFuture<T> invokeViaKotlinBridge(Routing routing, Object[] arguments) {

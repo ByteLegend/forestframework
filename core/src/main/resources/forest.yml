@@ -3,7 +3,7 @@ forest:
     instances: 2
   environment: dev
   static:
-    webroot: webroot
+    webroot: static
   vertx:
     eventLoopPoolSize: 8
     workerPoolSize: 20

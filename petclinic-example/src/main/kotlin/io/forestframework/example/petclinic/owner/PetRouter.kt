@@ -1,19 +1,19 @@
 package io.forestframework.example.petclinic.owner
 
-import io.vertx.ext.web.RoutingContext
-import io.forestframework.core.http.param.Form
-import io.forestframework.core.http.param.ContextData
-import io.forestframework.core.http.routing.Get
-import io.forestframework.core.http.routing.Intercept
-import io.forestframework.core.http.param.PathParam
-import io.forestframework.core.http.routing.Post
-import io.forestframework.core.http.routing.Route
-import javax.inject.Inject
 //import io.forestframework.core.http.param.RequestBody
 //import io.forestframework.core.http.routing.Route
+import io.forestframework.core.http.Router
+import io.forestframework.core.http.param.ContextData
+import io.forestframework.core.http.param.Form
+import io.forestframework.core.http.param.PathParam
+import io.forestframework.core.http.routing.Get
+import io.forestframework.core.http.routing.Intercept
+import io.forestframework.core.http.routing.Post
+import io.vertx.ext.web.RoutingContext
+import javax.inject.Inject
 import javax.validation.Valid
 
-@Route("/owners/:ownerId")
+@Router("/owners/:ownerId")
 class PetRouter @Inject constructor(private val pets: PetRepository, private val owners: OwnerRepository) {
     private val VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm"
 

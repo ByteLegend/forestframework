@@ -80,6 +80,7 @@ public class CachingRoutingDecorator implements Routing {
         return delegate.getRegexPath();
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public RoutingParameterResolver<?> getParameterResolver(Injector injector, int index) {
         if (cachedParameterResolvers == UNINITIALIZED) {
@@ -88,8 +89,10 @@ public class CachingRoutingDecorator implements Routing {
 
         if (cachedParameterResolvers[index] instanceof RoutingParameterResolver) {
             return (RoutingParameterResolver) cachedParameterResolvers[index];
-        } else {
+        } else if (cachedParameterResolvers[index] instanceof Class) {
             return (RoutingParameterResolver) injector.getInstance((Class<?>) cachedParameterResolvers[index]);
+        } else {
+            return delegate.getParameterResolver(injector, index);
         }
     }
 

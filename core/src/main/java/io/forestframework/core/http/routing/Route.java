@@ -2,6 +2,8 @@ package io.forestframework.core.http.routing;
 
 
 import com.github.blindpirate.annotationmagic.AliasFor;
+import com.github.blindpirate.annotationmagic.Extends;
+import io.forestframework.core.Component;
 import io.forestframework.core.http.HttpMethod;
 
 import java.lang.annotation.Documented;
@@ -15,7 +17,7 @@ import java.lang.annotation.Target;
  * When Route is annotated on a class, only its path and regexpath can be used.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Documented
 @Inherited
 public @interface Route {
