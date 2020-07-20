@@ -1,96 +1,56 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-plugins {
-    id("java-library")
-    id("org.jetbrains.kotlin.jvm")
-}
-
-tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
-repositories {
-    jcenter()
-    mavenCentral()
-}
+val libs: (String) -> String by rootProject.ext
 
 dependencies {
-    val vertxVersion = "4.0.0-milestone5"
-    val guiceVersion = "4.2.3"
-    val guavaVersion = "28.2-jre"
-    val jacksonVersion = "2.10.3"
-    val kotlinVersion = "1.3.72"
-    val kotlinxVersion = "1.3.8"
-    val junitVersion = "5.6.2"
-    val junit4Version = "4.13"
-    val mockKVersion = "1.9.3"
-    val byteBuddyVersion = "1.10.11"
-    val reflectasmVersion = "1.11.9"
-    val apiGuadianVersion = "1.1.0"
-    val log4jVersion = "2.13.3"
-    val slf4jVersion = "1.7.30"
-    val commonsLangVersion = "3.10"
-    val junitExtensionsVersion = "2.4.0"
-    val commonsIOVersion = "2.7"
-    val annotationMagicVersion = "0.1.2"
-    // This dependency is exported to consumers, that is to say found on their compile classpath.
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
-    compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    compileOnly("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
-//    api("org.apache.commons:commons-math3:3.6.1")
-    api("io.vertx:vertx-core:$vertxVersion")
-    api("io.vertx:vertx-web:$vertxVersion")
-//    api("io.vertx:vertx-web-templ-thymeleaf:$vertxVersion")
-//    api("io.vertx:vertx-codegen:$vertxVersion")
-    api("javax.inject:javax.inject:1")
-    api("com.google.inject:guice:$guiceVersion")
-    api("com.github.blindpirate:annotation-magic:$annotationMagicVersion")
-    api("org.slf4j:slf4j-api:$slf4jVersion")
-    api("com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
-    api("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    api("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
+    api(libs("vertx-core"))
+    api(libs("vertx-web"))
+    api(libs("javax.inject"))
+    api(libs("guice"))
+    api(libs("annotation-magic"))
+    api(libs("slf4j-api"))
+    api(libs("jackson-core"))
+    api(libs("jackson-databind"))
+    api(libs("jackson-annotations"))
+    api(libs("jackson-dataformat-yaml"))
 
-    // https://mvnrepository.com/artifact/javax.ws.rs/jsr311-api
-//    compileOnly("javax.ws.rs:jsr311-api:1.1.1")
-    implementation("com.esotericsoftware:reflectasm:$reflectasmVersion")
-    implementation("org.apache.commons:commons-lang3:${commonsLangVersion}")
-    implementation("commons-io:commons-io:$commonsIOVersion")
-    implementation("com.google.guava:guava:$guavaVersion")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
-    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
-    implementation("net.bytebuddy:byte-buddy-agent:$byteBuddyVersion")
-    implementation("net.bytebuddy:byte-buddy:$byteBuddyVersion")
-    implementation("org.apiguardian:apiguardian-api:$apiGuadianVersion")
+    compileOnly(libs("kotlinx-coroutines-jdk8"))
+    compileOnly(libs("kotlinx-coroutines-core"))
+    compileOnly(libs("kotlin-stdlib-jdk8"))
+    compileOnly(libs("vertx-lang-kotlin-coroutines"))
 
-    implementation("com.google.guava:guava:$guavaVersion")
+    implementation(libs("reflectasm"))
+    implementation(libs("commons-lang3"))
+    implementation(libs("commons-io"))
+    implementation(libs("guava"))
+    implementation(libs("log4j-slf4j-impl"))
+    implementation(libs("log4j-core"))
+    implementation(libs("byte-buddy-agent"))
+    implementation(libs("byte-buddy"))
+    implementation(libs("apiguardian-api"))
 
     testImplementation(project(":test-fixtures"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    testImplementation("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
 
-    testImplementation("io.vertx:vertx-unit:$vertxVersion")
-    // Keep this or https://github.com/mockito/mockito/issues/366
-    testImplementation("io.vertx:vertx-codegen:$vertxVersion")
-    testImplementation("junit:junit:$junit4Version")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$junitVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-    testImplementation("io.mockk:mockk:$mockKVersion")
-    testImplementation("io.github.glytching:junit-extensions:$junitExtensionsVersion")
-    testImplementation("io.vertx:vertx-redis-client:$vertxVersion")
+    testImplementation(libs("vertx-lang-kotlin-coroutines"))
+    testImplementation(libs("vertx-unit"))
+    testImplementation(libs("vertx-codegen"))  // Keep this or https://github.com/mockito/mockito/issues/366
+    testImplementation(libs("vertx-redis-client"))
+
+    testImplementation(libs("kotlinx-coroutines-jdk8"))
+    testImplementation(libs("kotlinx-coroutines-core"))
+    testImplementation(libs("kotlin-stdlib-jdk8"))
+
+    testImplementation(libs("junit"))
+    testImplementation(libs("junit-extensions"))
+    testImplementation(libs("junit-jupiter-api"))
+    testImplementation(libs("junit-jupiter-params"))
+
+    testImplementation(libs("mockk"))
+
+    testRuntimeOnly(libs("junit-jupiter-engine"))
+    testRuntimeOnly(libs("junit-vintage-engine"))
 }
 
-val test by tasks.getting(Test::class) {
+tasks.test {
     useJUnitPlatform {
         includeEngines("junit-jupiter", "junit-vintage")
     }
-}
-
-tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "1.8"
 }
