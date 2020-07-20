@@ -1,8 +1,8 @@
 package io.forestframework.example.todo.kotlin
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.google.inject.Injector
-import io.forestframework.SingletonComponent
+import io.forestframework.core.SingletonComponent
+import io.forestframework.core.config.Config
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.JsonResponseBody
@@ -10,11 +10,10 @@ import io.forestframework.core.http.routing.Delete
 import io.forestframework.core.http.routing.Get
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.Post
+import io.forestframework.core.http.staticresource.GetStaticResource
 import io.forestframework.core.http.staticresource.StaticResource
-import io.forestframework.ext.api.Extension
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
-import kotlinx.coroutines.runBlocking
 import java.lang.ClassCastException
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicInteger
@@ -32,13 +31,13 @@ interface TodoService {
 
 @SingletonComponent
 class TodoRouter @Inject constructor(private val service: TodoService) {
-    @Get("/index.html")
-    @StaticResource
-    fun index() = "/static/index.html"
+    // Or use StaticResourceExtension
+    @GetStaticResource("/")
+    fun index() = "static/index.html"
 
     @Get(regex = """\/(?<dir>(js|css))\/(?<file>.+)""")
     @StaticResource
-    fun jsCss(@PathParam("dir") dir: String, @PathParam("file") file: String) = "/static/$dir/$file"
+    fun jsCss(@PathParam("dir") dir: String, @PathParam("file") file: String) = "static/$dir/$file"
 
     @Get("/todos/:todoId")
     @JsonResponseBody(pretty = true)

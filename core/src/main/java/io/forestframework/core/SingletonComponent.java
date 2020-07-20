@@ -1,4 +1,4 @@
-package io.forestframework;
+package io.forestframework.core;
 
 import com.github.blindpirate.annotationmagic.CompositeOf;
 import io.forestframework.core.Component;

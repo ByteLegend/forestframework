@@ -48,11 +48,9 @@ class TodoApplicationRedisKotlinIntegrationTest : TodoApplicationIntegrationTest
 //@ForestTest(appClass = io.forestframework.example.todo.java.TodoApplicationRedis::class)
 //class TodoApplicationRedisJavaIntegrationTest : TodoApplicationIntegrationTest()
 
-@Extensions(
-    ExtendWith(UseH2MemDatabaseExtension::class),
-    ExtendWith(ForestExtension::class)
-)
-@ForestTest(appClass = TodoApplicationJDBC::class)
+@ExtendWith(ForestExtension::class)
+@ForestTest(appClass = TodoApplicationJDBC::class,
+    extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
 class TodoApplicationJDBCKotlinIntegrationTest : TodoApplicationIntegrationTest()
 
 //@Extensions(
@@ -189,8 +187,3 @@ class RedisSetUpExtension : BeforeAllCallback {
     }
 }
 
-class UseH2MemDatabaseExtension : BeforeAllCallback {
-    override fun beforeAll(context: ExtensionContext?) {
-        System.setProperty("forest.jdbc.url", "jdbc:h2:mem:todo;DATABASE_TO_UPPER=false")
-    }
-}
