@@ -20,10 +20,12 @@ dependencies {
     val junitRedisExtension = "2.0.0"
     val h2Version = "1.4.200"
     val groovyVersion = "2.5.12"
+    val jedisVersion = "3.2.0"
     implementation(project(":jdbc-client-extension"))
     implementation(project(":redis-client-extension"))
     implementation(project(":cors-extension"))
     implementation(project(":core-kotlin"))
+    implementation("redis.clients:jedis:$jedisVersion")
     implementation("com.h2database:h2:$h2Version")
     testImplementation(project(":junit5-extension"))
     testImplementation("io.vertx:vertx-web-client:4.0.0-milestone5")

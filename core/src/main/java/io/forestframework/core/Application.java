@@ -7,6 +7,7 @@ import com.google.inject.util.Modules;
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.DefaultHttpVerticle;
 import io.forestframework.core.http.routing.DefaultRoutings;
+import io.forestframework.core.http.routing.RequestHandlerChain;
 import io.forestframework.core.http.routing.Routings;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
@@ -93,6 +94,7 @@ public class Application implements AutoCloseable {
         // 5. Start the HTTP server
         DeploymentOptions deploymentOptions = startupContext.getConfigProvider().getInstance("forest.deploy", DeploymentOptions.class);
         ((DefaultRoutings) injector.getInstance(Routings.class)).finalizeRoutings();
+
         Future<String> vertxFuture = vertx.deployVerticle(() -> injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
         CompletableFuture<String> future = VertxCompletableFuture.from(vertx.getOrCreateContext(), vertxFuture);
         try {

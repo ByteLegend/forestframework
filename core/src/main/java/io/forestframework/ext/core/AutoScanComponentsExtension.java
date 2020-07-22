@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import static com.google.common.reflect.ClassPath.from;
 
 public class AutoScanComponentsExtension implements Extension {
+    @SuppressWarnings("UnstableApiUsage")
     private LinkedHashSet<Class<?>> scanComponentClasses(Class<?> applicationClass, ForestApplication annotation) {
         String packageName = applicationClass.getPackage().getName();
         try {

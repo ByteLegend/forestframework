@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.forestframework.core.config.Config
 import io.forestframework.core.http.OptimizedHeaders
+import io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC
+import io.forestframework.example.todo.java.async.redis.TodoApplicationJavaAsyncRedis
+import io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRedis
 import io.forestframework.example.todo.kotlin.Todo
-import io.forestframework.example.todo.kotlin.TodoApplicationJDBC
-import io.forestframework.example.todo.kotlin.TodoApplicationRedis
+import io.forestframework.example.todo.kotlin.jdbc.TodoApplicationKotlinCoroutinesJDBC
+import io.forestframework.example.todo.kotlin.redis.TodoApplicationKotlinCoroutinesRedis
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
@@ -37,29 +40,35 @@ import kotlin.random.Random
     ExtendWith(RedisSetUpExtension::class),
     ExtendWith(ForestExtension::class)
 )
-@ForestTest(appClass = TodoApplicationRedis::class)
-class TodoApplicationRedisKotlinIntegrationTest : TodoApplicationIntegrationTest()
+@ForestTest(appClass = TodoApplicationKotlinCoroutinesRedis::class)
+class TodoApplicationRedisKotlinCoroutinesIntegrationTest : TodoApplicationIntegrationTest()
 
-//@Extensions(
-//    ExtendWith(EmbeddedRedisExtension::class),
-//    ExtendWith(RedisSetUpExtension::class),
-//    ExtendWith(ForestExtension::class)
-//)
-//@ForestTest(appClass = io.forestframework.example.todo.java.TodoApplicationRedis::class)
-//class TodoApplicationRedisJavaIntegrationTest : TodoApplicationIntegrationTest()
+@Extensions(
+    ExtendWith(EmbeddedRedisExtension::class),
+    ExtendWith(RedisSetUpExtension::class),
+    ExtendWith(ForestExtension::class)
+)
+@ForestTest(appClass = TodoApplicationJavaAsyncRedis::class)
+class TodoApplicationJavaAsyncRedisIntegrationTest : TodoApplicationIntegrationTest()
+
+@Extensions(
+    ExtendWith(EmbeddedRedisExtension::class),
+    ExtendWith(RedisSetUpExtension::class),
+    ExtendWith(ForestExtension::class)
+)
+@ForestTest(appClass = TodoApplicationJavaSyncRedis::class)
+class TodoApplicationJavaSyncRedisIntegrationTest : TodoApplicationIntegrationTest()
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = TodoApplicationJDBC::class,
+@ForestTest(appClass = TodoApplicationKotlinCoroutinesJDBC::class,
     extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
-class TodoApplicationJDBCKotlinIntegrationTest : TodoApplicationIntegrationTest()
+class TodoApplicationKotlinCoroutinesJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
-//@Extensions(
-//    ExtendWith(EmbeddedRedisExtension::class),
-//    ExtendWith(RedisSetUpExtension::class),
-//    ExtendWith(ForestExtension::class)
-//)
-//@ForestTest(appClass = TodoApplicationJDBC::class)
-//class TodoApplicationJDBCJavaIntegrationTest : TodoApplicationIntegrationTest()
+@ExtendWith(ForestExtension::class)
+@ForestTest(appClass = TodoApplicationJavaAsyncJDBC::class,
+    extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
+class TodoApplicationJavaAsyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
+
 
 abstract class TodoApplicationIntegrationTest {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
@@ -89,7 +98,7 @@ abstract class TodoApplicationIntegrationTest {
     private fun <T> String.toObject(klass: TypeReference<T>) = objectMapper.readValue(this, klass)
 
     private fun HttpResponse<Buffer>.assert2XXStatus(): HttpResponse<Buffer> {
-        assertTrue(statusCode() in 200..299)
+        assertTrue(statusCode() in 200..299) { "Status: ${statusCode()}" }
         return this
     }
 
@@ -147,7 +156,15 @@ abstract class TodoApplicationIntegrationTest {
             .assert2XXStatus()
             .bodyAsString()
             .toObject(Todo::class.java)
+
+        val todoAgain = client.get(port.toInt(), "localhost", todoUri(todo.id))
+            .putHeaders(headers)
+            .sendAwait()
+            .assert2XXStatus()
+            .bodyAsString()
+            .toObject(Todo::class.java)
         assertEquals(copy, updated)
+        assertEquals(todoAgain, updated)
     }
 
     @Test

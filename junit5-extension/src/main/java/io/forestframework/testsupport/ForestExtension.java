@@ -42,7 +42,6 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
         Class<?> testClass = context.getTestClass().get();
         ForestTest annotation = testClass.getAnnotation(ForestTest.class);
         this.application = Forest.run(annotation.appClass(), getExtensionsInTest(annotation), getConfigsInTest(annotation));
-        this.application.start();
     }
 
     private Map<String, String> getConfigsInTest(ForestTest annotation) {

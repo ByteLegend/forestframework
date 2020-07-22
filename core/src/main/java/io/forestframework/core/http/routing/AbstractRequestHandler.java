@@ -150,7 +150,8 @@ public abstract class AbstractRequestHandler implements RequestHandler {
     }
 
     private boolean isBlockingMethod(Routing routing) {
-        return AnnotationMagic.isAnnotationPresent(routing.getHandlerMethod(), Blocking.class);
+        return AnnotationMagic.isAnnotationPresent(routing.getHandlerMethod(), Blocking.class)
+                || AnnotationMagic.isAnnotationPresent(routing.getHandlerMethod().getDeclaringClass(), Blocking.class);
     }
 
     private <T> CompletableFuture<T> invokeViaKotlinBridge(Routing routing, Object[] arguments) {

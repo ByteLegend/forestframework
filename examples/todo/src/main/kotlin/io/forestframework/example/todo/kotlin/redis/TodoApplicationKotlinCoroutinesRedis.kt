@@ -1,10 +1,13 @@
-package io.forestframework.example.todo.kotlin
+package io.forestframework.example.todo.kotlin.redis
 
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
-import io.forestframework.ext.core.StaticResourceExtension
+import io.forestframework.core.SingletonComponent
+import io.forestframework.example.todo.kotlin.Todo
+import io.forestframework.example.todo.kotlin.TodoRouter
+import io.forestframework.example.todo.kotlin.TodoService
 import io.forestframework.extensions.redis.RedisClientExtension
 import io.vertx.core.json.Json
 import io.vertx.kotlin.redis.client.delAwait
@@ -18,24 +21,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @ForestApplication(
-    include = [RedisModule::class],
-    extensions = [RedisClientExtension::class,
-        StaticResourceExtension::class]
-)
-class TodoApplicationRedis
+    include = [TodoRouter::class],
+    extensions = [RedisClientExtension::class])
+class TodoApplicationKotlinCoroutinesRedis
 
 fun main() {
-    Forest.run(TodoApplicationRedis::class.java)
+    Forest.run(TodoApplicationKotlinCoroutinesRedis::class.java)
 }
 
+@SingletonComponent
 class RedisModule : AbstractModule() {
     @Provides
     @Singleton
     fun configure(redisClient: RedisAPI): TodoService = RedisTodoService(redisClient)
 }
 
-
-@Singleton
 class RedisTodoService @Inject constructor(private val client: RedisAPI) : TodoService {
     private val redisToDoKey = "VERT_TODO"
 

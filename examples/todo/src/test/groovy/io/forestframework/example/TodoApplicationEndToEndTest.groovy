@@ -1,23 +1,28 @@
 package io.forestframework.example
 
 import geb.Browser
-import geb.Page
 import io.forestframework.core.SingletonRouter
 import io.forestframework.core.config.Config
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.staticresource.GetStaticResource
-import io.forestframework.example.todo.kotlin.TodoApplicationJDBC
+import io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC
+import io.forestframework.example.todo.java.async.redis.TodoApplicationJavaAsyncRedis
+import io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRedis
+import io.forestframework.example.todo.kotlin.jdbc.TodoApplicationKotlinCoroutinesJDBC
+import io.forestframework.example.todo.kotlin.redis.TodoApplicationKotlinCoroutinesRedis
 import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.StartupContext
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ExtensionContext
+import se.svt.util.junit5.redis.EmbeddedRedisExtension
+import se.svt.util.junit5.redis.EmbeddedRedisExtensionKt
 
 import javax.inject.Inject
-import java.util.concurrent.CountDownLatch
-
 
 abstract class AbstractTodoApplicationEndToEndTest {
     @Inject
@@ -56,16 +61,43 @@ abstract class AbstractTodoApplicationEndToEndTest {
 }
 
 
-class TodoApplicationRedisKotlinEndToEndTest {
+@ExtendWith(ForestExtension.class)
+@ForestTest(appClass = TodoApplicationKotlinCoroutinesJDBC.class,
+        extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"],
+        extraExtensions = JsSpecExtension.class)
+class TodoApplicationKotlinCoroutinesJDBCEndToEndTest extends AbstractTodoApplicationEndToEndTest {
+}
+
+@ExtendWith(EmbeddedRedisExtension.class)
+@ExtendWith(RedisSetUpExtension.class)
+@ExtendWith(ForestExtension.class)
+@ForestTest(appClass = TodoApplicationKotlinCoroutinesRedis.class,
+        extraExtensions = JsSpecExtension.class)
+class TodoApplicationRedisKotlinCoroutinesEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
 }
 
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = TodoApplicationJDBC.class,
+@ForestTest(appClass = TodoApplicationJavaAsyncJDBC.class,
         extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"],
         extraExtensions = JsSpecExtension.class)
-class TodoApplicationJDBCKotlinEndToEndTest extends AbstractTodoApplicationEndToEndTest {
+class TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
 }
 
+@ExtendWith(EmbeddedRedisExtension.class)
+@ExtendWith(RedisSetUpExtension.class)
+@ExtendWith(ForestExtension.class)
+@ForestTest(appClass = TodoApplicationJavaAsyncRedis.class,
+        extraExtensions = JsSpecExtension.class)
+class TodoApplicationJavaAsyncRedisEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
+}
+
+@ExtendWith(EmbeddedRedisExtension.class)
+@ExtendWith(RedisSetUpExtension.class)
+@ExtendWith(ForestExtension.class)
+@ForestTest(appClass = TodoApplicationJavaSyncRedis.class,
+        extraExtensions = JsSpecExtension.class)
+class TodoApplicationJavaSyncEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
+}
 
 class JsSpecExtension implements Extension {
     @Override
@@ -73,6 +105,14 @@ class JsSpecExtension implements Extension {
         context.getComponentClasses().add(JsSpecRouter.class)
     }
 }
+
+class RedisSetUpExtension implements BeforeAllCallback {
+    @Override
+    void beforeAll(ExtensionContext context) {
+        System.setProperty("forest.redis.endpoints", "[\"redis://localhost:${System.getProperty(EmbeddedRedisExtensionKt.REDIS_PORT_PROPERTY)}\"]")
+    }
+}
+
 
 @SingletonRouter
 class JsSpecRouter {

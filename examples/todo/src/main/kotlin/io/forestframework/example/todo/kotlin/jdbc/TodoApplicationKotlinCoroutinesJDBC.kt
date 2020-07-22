@@ -1,10 +1,14 @@
-package io.forestframework.example.todo.kotlin
+package io.forestframework.example.todo.kotlin.jdbc
 
 import com.google.inject.AbstractModule
 import com.google.inject.Injector
 import com.google.inject.Provides
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
+import io.forestframework.core.SingletonComponent
+import io.forestframework.example.todo.kotlin.Todo
+import io.forestframework.example.todo.kotlin.TodoRouter
+import io.forestframework.example.todo.kotlin.TodoService
 import io.forestframework.ext.api.Extension
 import io.forestframework.extensions.jdbc.JDBCClientExtension
 import io.vertx.core.json.JsonArray
@@ -21,21 +25,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @ForestApplication(
-    include = [JDBCModule::class],
+    include = [TodoRouter::class],
     extensions = [JDBCClientExtension::class, InitDataExtension::class]
 )
-class TodoApplicationJDBC
+class TodoApplicationKotlinCoroutinesJDBC
 
 fun main() {
-    Forest.run(TodoApplicationJDBC::class.java)
+    Forest.run(TodoApplicationKotlinCoroutinesJDBC::class.java)
 }
 
+@SingletonComponent
 class JDBCModule : AbstractModule() {
     @Provides
     @Singleton
     fun configure(jdbcClient: JDBCClient): TodoService = JdbcTodoService(jdbcClient)
 }
-
 
 class InitDataExtension : Extension {
     override fun afterInjector(injector: Injector) {
@@ -45,8 +49,6 @@ class InitDataExtension : Extension {
     }
 }
 
-
-@Singleton
 class JdbcTodoService @Inject constructor(private val jdbcClient: JDBCClient) : TodoService {
     private val SQL_CREATE = """
 CREATE TABLE IF NOT EXISTS `todo` (
@@ -68,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `todo` (
         `completed` = ?,
         `order` = ?,
         `url` = ?
-        WHERE `id` = ?;
+        WHERE `id` = ?
         """.trimIndent()
     private val SQL_DELETE = "DELETE FROM `todo` WHERE `id` = ?"
     private val SQL_DELETE_ALL = "DELETE FROM `todo`"
@@ -123,5 +125,4 @@ CREATE TABLE IF NOT EXISTS `todo` (
     override suspend fun deleteAll() {
         jdbcClient.updateAwait(SQL_DELETE_ALL)
     }
-
 }

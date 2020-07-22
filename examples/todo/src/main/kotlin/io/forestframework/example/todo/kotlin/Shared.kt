@@ -2,6 +2,7 @@ package io.forestframework.example.todo.kotlin
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.forestframework.core.SingletonComponent
+import io.forestframework.core.SingletonRouter
 import io.forestframework.core.config.Config
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
@@ -29,7 +30,7 @@ interface TodoService {
     suspend fun deleteAll()
 }
 
-@SingletonComponent
+@SingletonRouter
 class TodoRouter @Inject constructor(private val service: TodoService) {
     // Or use StaticResourceExtension
     @GetStaticResource("/")
@@ -102,6 +103,7 @@ data class Todo(
     }
 }
 
+@Suppress("HasPlatformType")
 fun JsonObject.getAutoBoolean(key: String) =
     try {
         getBoolean(key)

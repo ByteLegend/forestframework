@@ -2,6 +2,7 @@ package io.forestframework.core.http;
 
 import io.forestframework.core.config.Config;
 import io.forestframework.core.http.routing.RequestHandler;
+import io.forestframework.core.http.routing.RequestHandlerChain;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 public class DefaultHttpVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHttpVerticle.class);
@@ -19,6 +21,7 @@ public class DefaultHttpVerticle extends AbstractVerticle {
 
     @Inject
     public DefaultHttpVerticle(Vertx vertx,
+                               @Singleton
                                RequestHandler routingEngine,
                                @Config("forest.http") HttpServerOptions httpServerOptions
     ) {
