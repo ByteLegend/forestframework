@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import org.apache.commons.io.IOUtils;
 import org.apiguardian.api.API;
 
@@ -91,6 +92,7 @@ public class ConfigProvider {
         defaultOptions.put("forest.http", HttpServerOptions::new);
         defaultOptions.put("forest.vertx", VertxOptions::new);
         defaultOptions.put("forest.deploy", DeploymentOptions::new);
+        defaultOptions.put("forest.sockjs", SockJSHandlerOptions::new);
     }
 
     public ConfigProvider(Map<String, Object> configFileModel, Map<String, Object> environmentModel) {

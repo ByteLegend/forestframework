@@ -12,4 +12,12 @@ public class HttpException extends RuntimeException {
     public HttpStatusCode getCode() {
         return code;
     }
+
+    public static HttpException notFound() {
+        return new HttpException(HttpStatusCode.NOT_FOUND);
+    }
+
+    public static HttpException unauthorized() {
+        return new HttpException(HttpStatusCode.UNAUTHORIZED);
+    }
 }

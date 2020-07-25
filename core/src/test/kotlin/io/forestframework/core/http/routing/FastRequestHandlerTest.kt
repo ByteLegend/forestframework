@@ -55,6 +55,8 @@ class FastRequestHandlerTest {
     fun setUp() {
         every { routings.getRoutingPrefixes(RoutingType.PRE_HANDLER) } returns emptyList()
         every { routings.getRoutingPrefixes(RoutingType.POST_HANDLER) } returns emptyList()
+        every { routings.getRoutingPrefixes(RoutingType.SOCK_JS) } returns emptyList()
+        every { routings.getRoutingPrefixes(RoutingType.SOCK_JS_BRIDGE) } returns emptyList()
         every { routings.getRouting(RoutingType.HANDLER) } returns
             TestRouter::class.java.methods
                 .filter { AnnotationMagic.isAnnotationPresent(it, Route::class.java) }

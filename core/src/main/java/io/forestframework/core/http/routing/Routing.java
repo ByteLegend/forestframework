@@ -54,7 +54,7 @@ public interface Routing {
         if (resolver == null) {
             throw new IllegalArgumentException("Don't know how to resolve param " + index + " of " + getHandlerMethod());
         }
-        return injector.getInstance(resolver.by());
+        return injector.getInstance(resolver.resolver());
     }
 
     default List<RoutingResultProcessor> getResultProcessors(Injector injector, Object returnValue) {

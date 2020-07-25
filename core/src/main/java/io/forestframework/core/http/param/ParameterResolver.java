@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ParameterResolver {
-    Class<? extends RoutingParameterResolver<?>> by();
+    Class<? extends RoutingParameterResolver<?>> resolver();
 }

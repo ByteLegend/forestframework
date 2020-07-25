@@ -1,17 +1,18 @@
 package io.forestframework.example.realtimeauctions
 
-import io.forestframework.core.http.routing.Get
-import io.forestframework.core.http.routing.Intercept
-import io.forestframework.core.http.routing.Patch
-import io.forestframework.core.http.param.PathParam
-import io.forestframework.core.http.routing.Route
-import io.forestframework.core.http.socketjs.SocketJSBridge
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
-import io.forestframework.ext.core.HttpException
+import io.forestframework.core.SingletonRouter
 import io.forestframework.core.http.HttpStatusCode
-import io.forestframework.core.http.Router
-import io.forestframework.core.http.result.JsonResponseBody
+import io.forestframework.core.http.param.JsonRequestBody
+import io.forestframework.core.http.param.PathParam
+import io.forestframework.core.http.param.RequestBody
+import io.forestframework.core.http.result.GetJson
+import io.forestframework.core.http.routing.Intercept
+import io.forestframework.core.http.routing.Patch
+import io.forestframework.core.http.socketjs.SocketJSBridge
+import io.forestframework.ext.core.EnableStaticResource
+import io.forestframework.ext.core.HttpException
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.shareddata.LocalMap
 import io.vertx.core.shareddata.SharedData
@@ -25,6 +26,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @ForestApplication
+@EnableStaticResource
 class RealtimeAuctions {
 }
 
@@ -32,7 +34,7 @@ fun main() {
     Forest.run(RealtimeAuctions::class.java)
 }
 
-@Singleton
+@SingletonRouter
 class EventBusHandler {
     @SocketJSBridge("/eventbus/*")
     fun bridgeEvent(event: BridgeEvent, socket: SockJSSocket) {
@@ -49,21 +51,19 @@ class EventBusHandler {
 //    }
 }
 
-@Singleton
-@Router("/api")
-class AuctionHandler(private val repository: AuctionRepository, private val validator: AuctionValidator) {
+@SingletonRouter("/api")
+class AuctionHandler @Inject constructor(private val repository: AuctionRepository, private val validator: AuctionValidator) {
 
-    @Get("/auctions/:id")
-    @JsonResponseBody(pretty = true)
-    fun handleGetAuction(context: RoutingContext, @PathParam("id") auctionId: String): Auction {
-        return repository.getById(auctionId).orElseThrow { HttpException(HttpStatusCode.NOT_FOUND) }
+    @GetJson(value = "/auctions/:id", pretty = true, respond404IfNull = true)
+    fun handleGetAuction(context: RoutingContext, @PathParam("id") auctionId: String): Auction? {
+        return repository.getById(auctionId).orElse(null)
     }
 
     @Patch("/auctions/:id")
     fun handleChangeAuctionPrice(eventBus: EventBus,
                                  @PathParam("id") auctionId: String,
-                                 body: Map<String, Any>,
-                                 bodyString: String) {
+                                 @JsonRequestBody body: Map<String, Any>,
+                                 @RequestBody bodyString: String) {
         val auctionRequest = Auction(
             auctionId,
             BigDecimal(body["price"].toString())

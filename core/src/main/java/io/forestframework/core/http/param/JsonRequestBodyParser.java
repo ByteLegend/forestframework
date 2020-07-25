@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Singleton
-public class JsonRequestBodyParser implements RoutingParameterResolver<Object> {
+public class JsonRequestBodyParser implements ContentTypeAwareRoutingParameterResolver<Object> {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -26,5 +26,10 @@ public class JsonRequestBodyParser implements RoutingParameterResolver<Object> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String contentType() {
+        return "application/json";
     }
 }

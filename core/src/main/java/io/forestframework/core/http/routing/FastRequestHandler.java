@@ -122,7 +122,7 @@ public class FastRequestHandler extends AbstractRequestHandler {
     private boolean allParamResolversAndResultProcessorsAreFast(Routing routing) {
         for (int i = 0; i < routing.getHandlerMethod().getParameters().length; ++i) {
             ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), i, ParameterResolver.class);
-            if (resolver != null && !resolver.by().isAnnotationPresent(FastRoutingCompatible.class)) {
+            if (resolver != null && !resolver.resolver().isAnnotationPresent(FastRoutingCompatible.class)) {
                 return false;
             }
         }

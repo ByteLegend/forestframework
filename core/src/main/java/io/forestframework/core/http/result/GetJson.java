@@ -21,4 +21,7 @@ public @interface GetJson {
 
     @AliasFor(target = JsonResponseBody.class, value = "pretty")
     boolean pretty() default false;
+
+    @AliasFor(target = JsonResponseBody.class, value = "respond404IfNull")
+    boolean respond404IfNull() default false;
 }

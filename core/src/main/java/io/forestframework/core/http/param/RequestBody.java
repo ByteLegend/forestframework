@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Extends(ParameterResolver.class)
-@ParameterResolver(resolver = JsonRequestBodyParser.class)
-public @interface JsonRequestBody {
+@ParameterResolver(resolver = ContentTypeNegotiatingRequestBodyParser.class)
+public @interface RequestBody {
 }

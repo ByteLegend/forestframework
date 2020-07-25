@@ -21,6 +21,8 @@ import java.lang.annotation.Target;
 @Documented
 @Inherited
 public @interface Route {
+    RoutingType type() default RoutingType.HANDLER;
+
     HttpMethod[] methods() default {HttpMethod.GET};
 
     @AliasFor("path")

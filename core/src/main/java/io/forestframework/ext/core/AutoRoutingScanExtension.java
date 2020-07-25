@@ -1,7 +1,6 @@
 package io.forestframework.ext.core;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Injector;
@@ -96,8 +95,8 @@ public class AutoRoutingScanExtension implements Extension {
         return !AnnotationMagic.getAnnotationsOnMethod(method, Route.class).isEmpty();
     }
 
-    @VisibleForTesting
-    Routing toRouting(Class<?> klass, Method method) {
+    @SuppressWarnings("ConstantConditions")
+    private Routing toRouting(Class<?> klass, Method method) {
         Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethodOrNull(method, Route.class);
         Router routeOnClass = AnnotationMagic.getOneAnnotationOnClassOrNull(klass, Router.class);
         if (routeOnClass == null && routeOnMethod != null) {
@@ -106,9 +105,9 @@ public class AutoRoutingScanExtension implements Extension {
         String methodPath = getPath(routeOnMethod, method);
         String path = routeOnClass.value() + methodPath;
         if (StringUtils.isNotBlank(routeOnMethod.regex())) {
-            return new DefaultRouting("", path, Arrays.asList(routeOnMethod.methods()), method);
+            return new DefaultRouting(routeOnMethod.type(), "", path, Arrays.asList(routeOnMethod.methods()), method);
         } else {
-            return new DefaultRouting(path, "", Arrays.asList(routeOnMethod.methods()), method);
+            return new DefaultRouting(routeOnMethod.type(), path, "", Arrays.asList(routeOnMethod.methods()), method);
         }
     }
 

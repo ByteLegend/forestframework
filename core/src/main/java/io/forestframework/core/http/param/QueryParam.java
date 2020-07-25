@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 @Extends(ParameterResolver.class)
-@ParameterResolver(by = QueryParamResolver.class)
+@ParameterResolver(resolver = QueryParamResolver.class)
 public @interface QueryParam {
     String value();
 

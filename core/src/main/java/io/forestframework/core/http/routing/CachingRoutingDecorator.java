@@ -101,7 +101,7 @@ public class CachingRoutingDecorator implements Routing {
         for (int i = 0; i < ret.length; ++i) {
             ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(delegate.getHandlerMethod(), i, ParameterResolver.class);
             if (resolver != null) {
-                Class<? extends RoutingParameterResolver<?>> resolverClass = resolver.by();
+                Class<? extends RoutingParameterResolver<?>> resolverClass = resolver.resolver();
                 ret[i] = isSingleton(resolverClass) ? injector.getInstance(resolverClass) : resolverClass;
             }
         }

@@ -54,5 +54,9 @@ public enum RoutingType {
      * {@link io.forestframework.core.http.result.RoutingResultProcessor}. Specially, you can inject exceptions throws by pre-handlers and handlers
      * as parameters of after-handlers. See {}.
      */
-    POST_HANDLER
+    POST_HANDLER,
+
+    // See https://vertx.io/docs/vertx-web/java/#_sockjs
+    SOCK_JS,
+    SOCK_JS_BRIDGE;
 }

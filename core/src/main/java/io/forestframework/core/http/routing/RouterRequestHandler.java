@@ -1,6 +1,7 @@
 package io.forestframework.core.http.routing;
 
 import com.google.inject.Injector;
+import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.RerouteNextAwareRoutingContextDecorator;
@@ -10,6 +11,9 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +29,7 @@ import static io.forestframework.core.http.routing.RoutingPath.RoutingPathNode;
 import static io.forestframework.core.http.routing.RoutingType.HANDLER;
 import static io.forestframework.core.http.routing.RoutingType.POST_HANDLER;
 import static io.forestframework.core.http.routing.RoutingType.PRE_HANDLER;
+import static io.forestframework.core.http.routing.RoutingType.SOCK_JS;
 
 /**
  * A request handler that leverages Vert.x {@link Router}.
@@ -36,12 +41,13 @@ public class RouterRequestHandler extends AbstractRequestHandler {
     private static final EnumSet<HttpMethod> METHODS_WITHOUT_BODY = EnumSet.of(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.TRACE, HttpMethod.OPTIONS);
     private static final String ROUTING_PATH_KEY = "FOREST_ROUTING_PATH";
     static final Logger LOGGER = LoggerFactory.getLogger(RouterRequestHandler.class);
-    private static final String ENABLED_STATES_KEY = "FOREST_ROUTING_ENGINE_ENABLED_STATES";
     private final Handler<HttpServerRequest> router;
+    private final ConfigProvider configProvider;
 
     @Inject
     public RouterRequestHandler(Vertx vertx, Injector injector, Routings routings, String environment) {
         super(vertx, injector, routings, environment);
+        this.configProvider = injector.getInstance(ConfigProvider.class);
         this.router = createRouter();
     }
 
@@ -58,7 +64,18 @@ public class RouterRequestHandler extends AbstractRequestHandler {
         configureHandlerRoutes(router, routings.getRouting(HANDLER));
         configurePrePostHandlerRoutes(router, routings.getRouting(POST_HANDLER));
         configureFinalizingRoute(router);
+
+        configureSockJSRoutes(router, routings.getRouting(SOCK_JS));
         return router;
+    }
+
+    private void configureSockJSRoutes(Router router, List<Routing> routings) {
+        SockJSHandlerOptions options = configProvider.getInstance("forest.sockjs", SockJSHandlerOptions.class);
+
+        for (Routing routing : routings) {
+            SockJSHandler handler = SockJSHandler.create(vertx, options);
+            configureRouter(router, routing).handler(handler);
+        }
     }
 
     private RoutingPath getOrCreatePath(RerouteNextAwareRoutingContextDecorator context) {

@@ -10,6 +10,7 @@ import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
@@ -61,6 +62,8 @@ public abstract class AbstractRequestHandler implements RequestHandler {
             return (T) routingContext.request();
         } else if (argumentType == HttpServerResponse.class) {
             return (T) routingContext.response();
+        } else if (argumentType == EventBus.class) {
+            return (T) injector.getInstance(EventBus.class);
         }
 
         return (T) routing.getParameterResolver(injector, index).resolveArgument(routing, routingContext, index);

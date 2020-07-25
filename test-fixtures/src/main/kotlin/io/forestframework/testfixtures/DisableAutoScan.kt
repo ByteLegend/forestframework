@@ -12,7 +12,7 @@ annotation class DisableAutoScan
 class DisableAutoScanExtension : Extension {
     override fun beforeInjector(startupContext: StartupContext) {
         startupContext.componentClasses.removeIf {
-            it.`package`.name.startsWith(startupContext.appClass.`package`.name)
+            it.`package`.name.startsWith(startupContext.appClass.`package`.name) && it != startupContext.appClass
         }
     }
 }
