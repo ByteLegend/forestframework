@@ -6,6 +6,7 @@ import io.forestframework.core.config.Config
 import io.forestframework.core.http.OptimizedHeaders
 import io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC
 import io.forestframework.example.todo.java.async.redis.TodoApplicationJavaAsyncRedis
+import io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC
 import io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRedis
 import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.jdbc.TodoApplicationKotlinCoroutinesJDBC
@@ -69,6 +70,11 @@ class TodoApplicationKotlinCoroutinesJDBCIntegrationTest : TodoApplicationIntegr
 @ForestTest(appClass = TodoApplicationJavaAsyncJDBC::class)
 @ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
 class TodoApplicationJavaAsyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
+
+@ExtendWith(ForestExtension::class)
+@ForestTest(appClass = TodoApplicationJavaSyncJDBC::class)
+@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
+class TodoApplicationJavaSyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
 
 abstract class TodoApplicationIntegrationTest {
