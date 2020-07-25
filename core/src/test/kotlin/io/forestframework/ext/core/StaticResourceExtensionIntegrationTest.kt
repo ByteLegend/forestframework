@@ -3,11 +3,15 @@ package io.forestframework.ext.core
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
+import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.kotlin.ext.web.client.sendAwait
+import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.StringContains
 import org.hamcrest.core.StringContains.containsString
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -16,13 +20,15 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
-@ForestApplication(extensions = [StaticResourceExtension::class])
+@ForestApplication
+@EnableStaticResource
 class StaticResourceExtensionTestApplication
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = StaticResourceExtensionTestApplication::class,
-    extraConfigs = ["forest.static.webroot=StaticResourceTestData"]
-)
+@EnableStaticResource
+@ExtraConfig(value = ["forest.static.webroot=StaticResourceTestData"])
+@ForestTest(appClass = StaticResourceExtensionTestApplication::class)
+@DisableAutoScan
 class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get resource {0}")
     @CsvSource(value = [
@@ -58,28 +64,14 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = RouterWithPredefinedRoot::class)
-class StaticResourceExtensionTestApplicationWithPredefinedRoot : AbstractForestIntegrationTest() {
-    @Test
-    fun `index_html is not re-registered for root`() = runBlockingUnit {
-        assertEquals("HelloWorld", get("/").sendAwait().bodyAsString())
-    }
-}
-
-@ForestApplication(extensions = [StaticResourceExtension::class])
-class RouterWithPredefinedRoot {
-    @GetPlainText("/")
-    fun index() = "HelloWorld"
-}
-
-@ExtendWith(ForestExtension::class)
-@ForestTest(appClass = StaticResourceExtensionTestApplication::class,
-    extraConfigs = ["""forest.static.webroots=[
+@ExtraConfig(value = ["""forest.static.webroots=[
                 "StaticResourceTestData/img", 
                 "StaticResourceTestData/js",
                 "StaticResourceTestData/css"
             ]
         """])
+@ForestTest(appClass = StaticResourceExtensionTestApplication::class)
+@DisableAutoScan
 class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get resource {0}")
     @CsvSource(value = [
@@ -96,7 +88,7 @@ class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestInt
             .assertContentType(expectedContentType)
             .apply {
                 if (expectedContent != "BINARY") {
-                    assertThat(bodyAsString(), containsString(expectedContent))
+                    MatcherAssert.assertThat(bodyAsString(), StringContains.containsString(expectedContent))
                 }
             }
     }
@@ -119,4 +111,20 @@ class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestInt
     fun `get 404 when resource not found`(path: String) = runBlockingUnit {
         get(path).sendAwait().assert404()
     }
+}
+
+@ExtendWith(ForestExtension::class)
+@ForestTest(appClass = RouterWithPredefinedRoot::class)
+class StaticResourceExtensionTestApplicationWithPredefinedRoot : AbstractForestIntegrationTest() {
+    @Test
+    fun `index_html is not re-registered for root`() = runBlockingUnit {
+        Assertions.assertEquals("HelloWorld", get("/").sendAwait().bodyAsString())
+    }
+}
+
+@ForestApplication
+@EnableStaticResource
+class RouterWithPredefinedRoot {
+    @GetPlainText("/")
+    fun index() = "HelloWorld"
 }

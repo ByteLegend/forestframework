@@ -40,16 +40,30 @@ import java.util.stream.Stream;
  *     <li>2. Scan all {@link io.forestframework.core.http.routing.Routing}s from component classes.</li>
  * </ol>
  */
-public class RoutingExtension implements Extension {
+public class AutoRoutingScanExtension implements Extension {
     @Override
     public void beforeInjector(StartupContext startupContext) {
         startupContext.getComponentClasses().add(RoutingModule.class);
     }
 
+    @Override
+    public void afterInjector(Injector injector) {
+        Routings routings = injector.getInstance(Routings.class);
+
+        // @formatter:off
+        List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() { }, ComponentClasses.class));
+        // @formatter:on
+
+        componentClasses.stream()
+                .filter(AutoRoutingScanExtension::isRouter)
+                .flatMap(componentClass -> findRoutingHandlers(injector, componentClass))
+                .forEach(routing -> routings.getRouting(routing.getType()).add(routing));
+    }
+
     @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
     @Retention(RetentionPolicy.RUNTIME)
     @BindingAnnotation
-    public @interface RoutingEngines {
+    @interface RoutingEngines {
     }
 
     public static class RoutingModule extends AbstractModule {
@@ -67,28 +81,14 @@ public class RoutingExtension implements Extension {
         }
     }
 
-    @Override
-    public void afterInjector(Injector injector) {
-        Routings routings = injector.getInstance(Routings.class);
-
-        // @formatter:off
-        List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() { }, ComponentClasses.class));
-        // @formatter:on
-
-        componentClasses.stream()
-                .filter(RoutingExtension::isRouter)
-                .flatMap(componentClass -> findRoutingHandlers(injector, componentClass))
-                .forEach(routing -> routings.getRouting(routing.getType()).add(routing));
-    }
-
     private static boolean isRouter(Class<?> klass) {
         return AnnotationMagic.isAnnotationPresent(klass, Router.class)
-                || Arrays.stream(klass.getMethods()).anyMatch(RoutingExtension::isRouteMethod);
+                || Arrays.stream(klass.getMethods()).anyMatch(AutoRoutingScanExtension::isRouteMethod);
     }
 
     private Stream<Routing> findRoutingHandlers(Injector injector, Class<?> klass) {
         return Stream.of(klass.getMethods())
-                .filter(RoutingExtension::isRouteMethod)
+                .filter(AutoRoutingScanExtension::isRouteMethod)
                 .map(method -> toRouting(klass, method));
     }
 
@@ -125,3 +125,4 @@ public class RoutingExtension implements Extension {
         }
     }
 }
+

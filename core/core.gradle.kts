@@ -34,9 +34,7 @@ dependencies {
     testImplementation(libs("vertx-codegen"))  // Keep this or https://github.com/mockito/mockito/issues/366
     testImplementation(libs("vertx-redis-client"))
 
-    testImplementation(libs("kotlinx-coroutines-jdk8"))
-    testImplementation(libs("kotlinx-coroutines-core"))
-    testImplementation(libs("kotlin-stdlib-jdk8"))
+
 
     testImplementation(libs("junit"))
     testImplementation(libs("junit-extensions"))

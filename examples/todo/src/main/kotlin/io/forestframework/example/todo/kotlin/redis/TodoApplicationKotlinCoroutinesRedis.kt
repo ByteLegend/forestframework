@@ -8,7 +8,8 @@ import io.forestframework.core.SingletonComponent
 import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.TodoRouter
 import io.forestframework.example.todo.kotlin.TodoService
-import io.forestframework.extensions.redis.RedisClientExtension
+import io.forestframework.ext.core.IncludeComponents
+import io.forestframework.extensions.redis.EnableRedisClient
 import io.vertx.core.json.Json
 import io.vertx.kotlin.redis.client.delAwait
 import io.vertx.kotlin.redis.client.hdelAwait
@@ -20,9 +21,9 @@ import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@ForestApplication(
-    include = [TodoRouter::class],
-    extensions = [RedisClientExtension::class])
+@ForestApplication
+@IncludeComponents(classes = [TodoRouter::class])
+@EnableRedisClient
 class TodoApplicationKotlinCoroutinesRedis
 
 fun main() {

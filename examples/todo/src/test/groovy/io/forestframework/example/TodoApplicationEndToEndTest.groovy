@@ -10,8 +10,10 @@ import io.forestframework.example.todo.java.async.redis.TodoApplicationJavaAsync
 import io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRedis
 import io.forestframework.example.todo.kotlin.jdbc.TodoApplicationKotlinCoroutinesJDBC
 import io.forestframework.example.todo.kotlin.redis.TodoApplicationKotlinCoroutinesRedis
+import io.forestframework.ext.api.EnableExtensions
 import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.StartupContext
+import io.forestframework.ext.core.ExtraConfig
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import org.junit.jupiter.api.BeforeAll
@@ -62,40 +64,40 @@ abstract class AbstractTodoApplicationEndToEndTest {
 
 
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = TodoApplicationKotlinCoroutinesJDBC.class,
-        extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"],
-        extraExtensions = JsSpecExtension.class)
+@ForestTest(appClass = TodoApplicationKotlinCoroutinesJDBC.class)
+@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
+@EnableExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationKotlinCoroutinesJDBCEndToEndTest extends AbstractTodoApplicationEndToEndTest {
 }
 
 @ExtendWith(EmbeddedRedisExtension.class)
 @ExtendWith(RedisSetUpExtension.class)
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = TodoApplicationKotlinCoroutinesRedis.class,
-        extraExtensions = JsSpecExtension.class)
+@ForestTest(appClass = TodoApplicationKotlinCoroutinesRedis.class)
+@EnableExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationRedisKotlinCoroutinesEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
 }
 
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = TodoApplicationJavaAsyncJDBC.class,
-        extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"],
-        extraExtensions = JsSpecExtension.class)
+@ForestTest(appClass = TodoApplicationJavaAsyncJDBC.class)
+@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
+@EnableExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
 }
 
 @ExtendWith(EmbeddedRedisExtension.class)
 @ExtendWith(RedisSetUpExtension.class)
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = TodoApplicationJavaAsyncRedis.class,
-        extraExtensions = JsSpecExtension.class)
+@ForestTest(appClass = TodoApplicationJavaAsyncRedis.class)
+@EnableExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaAsyncRedisEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
 }
 
 @ExtendWith(EmbeddedRedisExtension.class)
 @ExtendWith(RedisSetUpExtension.class)
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = TodoApplicationJavaSyncRedis.class,
-        extraExtensions = JsSpecExtension.class)
+@ForestTest(appClass = TodoApplicationJavaSyncRedis.class)
+@EnableExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaSyncEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
 }
 

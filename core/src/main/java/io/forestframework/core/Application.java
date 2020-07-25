@@ -4,52 +4,35 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.DefaultHttpVerticle;
 import io.forestframework.core.http.routing.DefaultRoutings;
-import io.forestframework.core.http.routing.RequestHandlerChain;
 import io.forestframework.core.http.routing.Routings;
-import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
-import io.forestframework.ext.core.AutoScanComponentsExtension;
-import io.forestframework.ext.core.BannerExtension;
-import io.forestframework.ext.core.ForestApplicationAnnotationScanner;
-import io.forestframework.ext.core.RoutingExtension;
 import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
+import static io.forestframework.utils.StartupUtils.instantiateWithDefaultConstructor;
 
 /**
  * For internal use only. This is not public API.
  */
 public class Application implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
-    private static final List<Class<? extends Extension>> CORE_EXTENSION_CLASSES = unmodifiableList(asList(
-            BannerExtension.class,
-            ForestApplicationAnnotationScanner.class,
-            AutoScanComponentsExtension.class,
-            RoutingExtension.class)
-    );
-    private final Vertx vertx;
     private final StartupContext startupContext;
     private Injector injector;
     private String deploymentId;
 
-    public Application(Class<?> applicationClass, List<Class<? extends Extension>> extensionClasses, ConfigProvider configProvider) {
-        this.vertx = Vertx.vertx(configProvider.getInstance("forest.vertx", VertxOptions.class));
-        this.startupContext = new StartupContext(vertx, applicationClass, configProvider, instantiateExtensions(extensionClasses));
+    public Application(StartupContext startupContext) {
+        this.startupContext = startupContext;
+//        this.vertx = Vertx.vertx(configProvider.getInstance("forest.vertx", VertxOptions.class));
+//        this.startupContext = new StartupContext(vertx, applicationClass, configProvider, instantiateExtensions(extensionClasses));
     }
 
     public void start() {
@@ -95,8 +78,8 @@ public class Application implements AutoCloseable {
         DeploymentOptions deploymentOptions = startupContext.getConfigProvider().getInstance("forest.deploy", DeploymentOptions.class);
         ((DefaultRoutings) injector.getInstance(Routings.class)).finalizeRoutings();
 
-        Future<String> vertxFuture = vertx.deployVerticle(() -> injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
-        CompletableFuture<String> future = VertxCompletableFuture.from(vertx.getOrCreateContext(), vertxFuture);
+        Future<String> vertxFuture = startupContext.getVertx().deployVerticle(() -> injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
+        CompletableFuture<String> future = VertxCompletableFuture.from(startupContext.getVertx().getOrCreateContext(), vertxFuture);
         try {
             deploymentId = future.get();
             LOGGER.info("Http server successful started on {} with {} instances", startupContext.getConfigProvider().getInstance("forest.http.port", String.class), deploymentOptions.getInstances());
@@ -108,15 +91,7 @@ public class Application implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        VertxCompletableFuture.from(vertx.getOrCreateContext(), vertx.undeploy(deploymentId)).get();
-    }
-
-    public static <T> T instantiateWithDefaultConstructor(Class<?> extensionClass) {
-        try {
-            return (T) extensionClass.getConstructor().newInstance();
-        } catch (Throwable e) {
-            throw new RuntimeException("Can't instantiate " + extensionClass + ", an class instantiated at startup time must have an accessible default constructor.");
-        }
+        VertxCompletableFuture.from(startupContext.getVertx().getOrCreateContext(), startupContext.getVertx().undeploy(deploymentId)).get();
     }
 
     private static Injector createInjector(StartupContext startupContext, List<Module> modules) {
@@ -125,13 +100,5 @@ public class Application implements AutoCloseable {
             current = Modules.override(current).with(module);
         }
         return Guice.createInjector(current);
-    }
-
-    private List<Extension> instantiateExtensions(List<Class<? extends Extension>> extensionClasses) {
-        List<Class<? extends Extension>> allExtensionClasses = new ArrayList<>(CORE_EXTENSION_CLASSES);
-        allExtensionClasses.addAll(extensionClasses);
-        return allExtensionClasses.stream()
-                .map(extensionClass -> (Extension) instantiateWithDefaultConstructor(extensionClass))
-                .collect(Collectors.toList());
     }
 }

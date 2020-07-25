@@ -7,16 +7,17 @@ import io.forestframework.core.Forest;
 import io.forestframework.core.ForestApplication;
 import io.forestframework.example.todo.java.async.TodoRouter;
 import io.forestframework.example.todo.java.async.TodoService;
-import io.forestframework.ext.core.StaticResourceExtension;
-import io.forestframework.extensions.redis.RedisClientExtension;
+import io.forestframework.ext.core.EnableStaticResource;
+import io.forestframework.ext.core.IncludeComponents;
+import io.forestframework.extensions.redis.EnableRedisClient;
 import io.vertx.redis.client.RedisAPI;
 
 import static io.forestframework.example.todo.java.async.redis.TodoApplicationJavaAsyncRedis.RedisModule;
 
-@ForestApplication(
-        include = {RedisModule.class, TodoRouter.class},
-        extensions = {RedisClientExtension.class, StaticResourceExtension.class}
-)
+@ForestApplication
+@IncludeComponents(classes = {RedisModule.class, TodoRouter.class})
+@EnableStaticResource
+@EnableRedisClient
 public class TodoApplicationJavaAsyncRedis {
     public static void main(String[] args) {
         Forest.run(TodoApplicationJavaAsyncRedis.class);

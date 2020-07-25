@@ -4,6 +4,7 @@ import io.forestframework.core.Forest;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
 
+
 /**
  * Do nothing but display banner at startup.
  *
@@ -34,7 +35,7 @@ public class BannerExtension implements Extension {
 
     public static class BannerOptions {
         private boolean enabled = true;
-        private String text = DEFAULT_BANNER;
+        private String text = BannerExtension.DEFAULT_BANNER;
 
         public boolean isEnabled() {
             return enabled;

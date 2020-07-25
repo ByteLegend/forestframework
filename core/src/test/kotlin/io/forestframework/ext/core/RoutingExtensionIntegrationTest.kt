@@ -4,7 +4,19 @@ import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.GetJson
+import io.forestframework.core.http.result.GetPlainText
+import io.forestframework.testfixtures.AbstractForestIntegrationTest
+import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
+import io.vertx.kotlin.ext.web.client.sendAwait
+import org.hamcrest.MatcherAssert
+import org.hamcrest.core.StringContains
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 
 
 data class User(val id: Int)

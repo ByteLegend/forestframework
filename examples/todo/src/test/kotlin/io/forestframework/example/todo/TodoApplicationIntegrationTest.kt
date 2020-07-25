@@ -10,6 +10,7 @@ import io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRe
 import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.jdbc.TodoApplicationKotlinCoroutinesJDBC
 import io.forestframework.example.todo.kotlin.redis.TodoApplicationKotlinCoroutinesRedis
+import io.forestframework.ext.core.ExtraConfig
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
@@ -60,13 +61,13 @@ class TodoApplicationJavaAsyncRedisIntegrationTest : TodoApplicationIntegrationT
 class TodoApplicationJavaSyncRedisIntegrationTest : TodoApplicationIntegrationTest()
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = TodoApplicationKotlinCoroutinesJDBC::class,
-    extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
+@ForestTest(appClass = TodoApplicationKotlinCoroutinesJDBC::class)
+@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
 class TodoApplicationKotlinCoroutinesJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = TodoApplicationJavaAsyncJDBC::class,
-    extraConfigs = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
+@ForestTest(appClass = TodoApplicationJavaAsyncJDBC::class)
+@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:todo;DATABASE_TO_UPPER=false"])
 class TodoApplicationJavaAsyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
 

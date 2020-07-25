@@ -23,6 +23,7 @@ final class CoreModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(StartupContext.class).toInstance(startupContext);
         bind(ConfigProvider.class).toInstance(startupContext.getConfigProvider());
         bind(Vertx.class).toInstance(startupContext.getVertx());
         bind(EventBus.class).toInstance(startupContext.getVertx().eventBus());

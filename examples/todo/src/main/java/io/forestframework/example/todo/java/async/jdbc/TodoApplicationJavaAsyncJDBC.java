@@ -9,7 +9,9 @@ import io.forestframework.core.ForestApplication;
 import io.forestframework.core.SingletonComponent;
 import io.forestframework.example.todo.java.async.TodoRouter;
 import io.forestframework.example.todo.java.async.TodoService;
+import io.forestframework.ext.api.EnableExtensions;
 import io.forestframework.ext.api.Extension;
+import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.ext.core.StaticResourceExtension;
 import io.forestframework.extensions.jdbc.JDBCClientExtension;
 import io.forestframework.utils.completablefuture.VertxCompletableFuture;
@@ -19,10 +21,9 @@ import io.vertx.ext.jdbc.JDBCClient;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.JDBCModule;
 
-@ForestApplication(
-        include = {JDBCModule.class, TodoRouter.class},
-        extensions = {JDBCClientExtension.class, InitDataExtension.class, StaticResourceExtension.class}
-)
+@ForestApplication
+@IncludeComponents(classes = {JDBCModule.class, TodoRouter.class})
+@EnableExtensions(extensions = {JDBCClientExtension.class, InitDataExtension.class, StaticResourceExtension.class})
 public class TodoApplicationJavaAsyncJDBC {
     public static void main(String[] args) {
         Forest.run(TodoApplicationJavaAsyncJDBC.class);

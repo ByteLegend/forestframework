@@ -1,23 +1,20 @@
 package io.forestframework.testsupport;
 
+import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.Application;
 import io.forestframework.core.Forest;
-import io.forestframework.ext.api.Extension;
-import io.forestframework.testsupport.utils.FreePortFinder;
-import org.apache.commons.lang3.StringUtils;
+import io.forestframework.core.config.ConfigProvider;
+import io.forestframework.ext.api.EnableExtensions;
+import io.forestframework.ext.api.StartupContext;
+import io.vertx.core.Vertx;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static io.forestframework.utils.ComponentScanUtils.getApplicationAnnotation;
-import static java.util.Arrays.asList;
+import java.util.stream.IntStream;
 
 /**
  * The JUnit 5 extension which provides support of:
@@ -29,7 +26,7 @@ import static java.util.Arrays.asList;
  *     <li>Replace the dependencies in test application with mocked implementations (Mockk and Mockito).</li>
  * </ul>
  */
-public class ForestExtension implements BeforeAllCallback, AfterAllCallback, TestInstancePostProcessor, BeforeEachCallback {
+public class ForestExtension implements BeforeAllCallback, AfterAllCallback, TestInstancePostProcessor {
     private Application application;
 
     @Override
@@ -39,34 +36,8 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        Class<?> testClass = context.getTestClass().get();
-        ForestTest annotation = testClass.getAnnotation(ForestTest.class);
-        this.application = Forest.run(annotation.appClass(), getExtensionsInTest(annotation), getConfigsInTest(annotation));
-    }
-
-    private Map<String, String> getConfigsInTest(ForestTest annotation) {
-        Map<String, String> configs = new HashMap<>();
-        for (String extraConfig : annotation.extraConfigs()) {
-            if (StringUtils.countMatches(extraConfig, '=') < 1) {
-                throw new RuntimeException("Invalid config: " + extraConfig);
-            }
-
-            configs.put(StringUtils.substringBefore(extraConfig, "="), StringUtils.substringAfter(extraConfig, "="));
-        }
-        if (!configs.containsKey("forest.http.port")) {
-            configs.put("forest.http.port", "" + FreePortFinder.findFreeLocalPort());
-        }
-        return configs;
-    }
-
-    private List<Class<? extends Extension>> getExtensionsInTest(ForestTest annotation) {
-        List<Class<? extends Extension>> extensions = new ArrayList<>(asList(getApplicationAnnotation(annotation.appClass()).extensions()));
-        extensions.addAll(asList(annotation.extraExtensions()));
-        return extensions;
-    }
-
-    @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
+        ConfigProvider configProvider = ConfigProvider.load();
+        application = Forest.run(createStartupContext(context.getTestClass().get(), configProvider));
     }
 
     @Override
@@ -74,5 +45,38 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
         if (application != null) {
             application.getInjector().injectMembers(testInstance);
         }
+    }
+
+    private static List<EnableExtensions> scanEnableExtensions(Class<?> appClass, Class<?> testClass) {
+        List<EnableExtensions> annotationsOnAppClass = AnnotationMagic.getAnnotationsOnClass(appClass, EnableExtensions.class);
+        List<EnableExtensions> annotationsOnTestClass = AnnotationMagic.getAnnotationsOnClass(testClass, EnableExtensions.class);
+
+        List<EnableExtensions> result = new ArrayList<>();
+
+        int testAnnoIterationIndex = 0;
+        for (; testAnnoIterationIndex < annotationsOnTestClass.size(); ++testAnnoIterationIndex) {
+            EnableExtensions anno = annotationsOnTestClass.get(testAnnoIterationIndex);
+            if (AnnotationMagic.instanceOf(anno, ForestTest.class)) {
+                break;
+            } else {
+                result.add(anno);
+            }
+        }
+
+        result.addAll(annotationsOnAppClass);
+
+        IntStream.range(testAnnoIterationIndex, annotationsOnTestClass.size()).mapToObj(annotationsOnTestClass::get).forEach(result::add);
+        return result;
+    }
+
+    private static StartupContext createStartupContext(Class<?> testClass, ConfigProvider configProvider) {
+        ForestTest forestTestAnno = testClass.getAnnotation(ForestTest.class);
+        if (forestTestAnno == null) {
+            throw new IllegalArgumentException("Test class must be annotated with @ForestTest!");
+        }
+
+        List<EnableExtensions> annotations = scanEnableExtensions(forestTestAnno.appClass(), testClass);
+
+        return new TestApplicationStartupContext(Vertx.vertx(), forestTestAnno.appClass(), configProvider, annotations);
     }
 }

@@ -15,7 +15,7 @@ val slf4jVersion = "1.7.30"
 val commonsLangVersion = "3.10"
 val junitExtensionsVersion = "2.4.0"
 val commonsIOVersion = "2.7"
-val annotationMagicVersion = "0.1.2"
+val annotationMagicVersion = "0.2.4"
 val jsr311ApiVersion = "1.1.1"
 
 val libs = listOf(

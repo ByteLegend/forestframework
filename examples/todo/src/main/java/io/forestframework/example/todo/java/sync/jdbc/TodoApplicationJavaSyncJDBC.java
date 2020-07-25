@@ -6,16 +6,17 @@ import io.forestframework.core.Forest;
 import io.forestframework.core.ForestApplication;
 import io.forestframework.example.todo.java.sync.TodoRouter;
 import io.forestframework.example.todo.java.sync.TodoService;
+import io.forestframework.ext.api.EnableExtensions;
 import io.forestframework.ext.api.Extension;
+import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.ext.core.StaticResourceExtension;
 
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.JDBCModule;
 
-@ForestApplication(
-        include = {TodoRouter.class, JDBCModule.class},
-        extensions = {StaticResourceExtension.class, InitDataExtension.class}
-)
+@ForestApplication
+@IncludeComponents(classes = {TodoRouter.class, JDBCModule.class})
+@EnableExtensions(extensions = {StaticResourceExtension.class, InitDataExtension.class})
 public class TodoApplicationJavaSyncJDBC {
     public static void main(String[] args) {
         Forest.run(TodoApplicationJavaSyncJDBC.class);

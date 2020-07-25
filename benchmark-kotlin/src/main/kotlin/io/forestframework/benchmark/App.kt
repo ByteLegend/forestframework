@@ -47,7 +47,7 @@ val HELLO_WORLD_LENGTH = HttpHeaders.createOptimized("" + HELLO_WORLD.length)
 val SERVER = HttpHeaders.createOptimized("forest")
 val HELLO_WORLD_BUFFER: Buffer = BufferImpl.directBuffer(HELLO_WORLD, "UTF-8")
 
-@ForestApplication(extensions = [PgClientExtension::class])
+//@ForestApplication(extensions = [PgClientExtension::class])
 @Singleton
 class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     var dateString = createDateHeader()
