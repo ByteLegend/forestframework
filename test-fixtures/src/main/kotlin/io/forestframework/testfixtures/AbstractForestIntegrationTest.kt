@@ -5,12 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.forestframework.core.config.Config
 import io.forestframework.core.http.HttpStatusCode
 import io.forestframework.core.http.OptimizedHeaders
+import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.http.HttpClient
+import io.vertx.core.http.HttpClientResponse
 import io.vertx.core.http.impl.headers.VertxHttpHeaders
 import io.vertx.ext.web.client.HttpRequest
 import io.vertx.ext.web.client.HttpResponse
-import io.vertx.ext.web.client.WebClient
+import io.vertx.kotlin.core.http.bodyAwait
+import io.vertx.kotlin.coroutines.awaitResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
@@ -18,6 +22,10 @@ import org.junit.jupiter.api.BeforeEach
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+
+class HttpClientResponseWrapper(private val delegate: HttpClientResponse) : HttpClientResponse by delegate {
+    lateinit var body: Buffer
+}
 
 abstract class AbstractForestIntegrationTest {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
@@ -28,18 +36,40 @@ abstract class AbstractForestIntegrationTest {
     @Inject
     lateinit var vertx: Vertx
 
-    lateinit var client: WebClient
+    lateinit var client: HttpClient
 
     val objectMapper = ObjectMapper()
 
     @BeforeEach
     fun setUp() {
-        client = WebClient.create(vertx)
+        client = vertx.createHttpClient()
     }
 
-    fun post(uri: String) = client.post(port.toInt(), "localhost", uri)
+    suspend fun HttpClientResponse.bodyAsString(): String =
+        if (this is HttpClientResponseWrapper) {
+            body.toString()
+        } else {
+            bodyAwait().toString()
+        }
 
-    fun get(uri: String) = client.get(port.toInt(), "localhost", uri)
+    suspend fun HttpClientResponse.bodyAsBinary(): Buffer =
+        if (this is HttpClientResponseWrapper) {
+            body
+        } else {
+            bodyAwait()
+        }
+
+    // Set body handler before reading the whole response, otherwise
+    // https://stackoverflow.com/questions/57957767/illegalstateexception-thrown-when-reading-the-vert-x-http-client-response-body
+    suspend fun get(uri: String) = awaitResult<HttpClientResponse> { handler ->
+        client.get(port.toInt(), "localhost", uri) { responseAsyncResult ->
+            val wrapper = HttpClientResponseWrapper(responseAsyncResult.result())
+            responseAsyncResult.result().bodyHandler {
+                wrapper.body = it
+                handler.handle(responseAsyncResult.map { wrapper })
+            }
+        }
+    }
 
     fun HttpRequest<Buffer>.contentTypeJson() = VertxHttpHeaders().apply {
         add(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON)
@@ -52,25 +82,27 @@ abstract class AbstractForestIntegrationTest {
         return this
     }
 
-    fun HttpResponse<Buffer>.assert200() = assertStatusCode(HttpStatusCode.OK)
+    fun HttpClientResponse.assert200() = assertStatusCode(HttpStatusCode.OK)
 
-    fun HttpResponse<Buffer>.assert404() = assertStatusCode(HttpStatusCode.NOT_FOUND)
+    fun HttpClientResponse.assert404() = assertStatusCode(HttpStatusCode.NOT_FOUND)
 
-    fun HttpResponse<Buffer>.assertStatusCode(statusCode: HttpStatusCode): HttpResponse<Buffer> {
+    fun HttpClientResponse.assertStatusCode(statusCode: HttpStatusCode): HttpClientResponse {
         Assertions.assertEquals(statusCode.code, statusCode())
         return this
     }
 
-    fun <T> HttpResponse<Buffer>.toObject(klass: Class<T>) = objectMapper.readValue(bodyAsString(), klass)
+    @Suppress("BlockingMethodInNonBlockingContext")
+    suspend fun <T> HttpClientResponseWrapper.toObject(klass: Class<T>) = objectMapper.readValue(bodyAsString(), klass)
 
-    fun <T> HttpResponse<Buffer>.toObject(klass: TypeReference<T>) = objectMapper.readValue(bodyAsString(), klass)
+    @Suppress("BlockingMethodInNonBlockingContext")
+    suspend fun <T> HttpClientResponseWrapper.toObject(klass: TypeReference<T>) = objectMapper.readValue(bodyAsString(), klass)
 
-    fun HttpResponse<Buffer>.assertContentType(type: String): HttpResponse<Buffer> {
+    fun HttpClientResponse.assertContentType(type: String): HttpClientResponse {
         Assertions.assertEquals(type, getHeader(OptimizedHeaders.HEADER_CONTENT_TYPE.toString()).toString())
         return this
     }
 
-    fun HttpResponse<Buffer>.assertContentType(type: CharSequence):HttpResponse<Buffer> {
+    fun HttpClientResponse.assertContentType(type: CharSequence): HttpClientResponse {
         assertContentType(type.toString())
         return this
     }

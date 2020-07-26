@@ -6,6 +6,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
+import io.vertx.kotlin.core.http.bodyAwait
 import io.vertx.kotlin.ext.web.client.sendAwait
 import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
@@ -43,7 +44,7 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
         "/favicon.ico, image/x-icon,                             BINARY"
     ])
     fun `can get resources`(path: String, expectedContentType: String, expectedContent: String) = runBlockingUnit {
-        get(path).sendAwait()
+        get(path)
             .assert200()
             .assertContentType(expectedContentType)
             .apply {
@@ -51,7 +52,7 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
                     assertThat(bodyAsString(), containsString(expectedContent))
                 } else {
                     // At least 100 bytes
-                    assertTrue(body().length() > 100);
+                    assertTrue(bodyAsBinary().length() > 100);
                 }
             }
     }
@@ -59,7 +60,7 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest
     @ValueSource(strings = ["/inexisitent", "/js/inexistent", "/css/a/a.css/1"])
     fun `get 404 when resource not found`(path: String) = runBlockingUnit {
-        get(path).sendAwait().assert404()
+        get(path).assert404()
     }
 }
 
@@ -83,12 +84,12 @@ class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestInt
         "/2.js,     application/javascript,     this is 2.js"
     ])
     fun `can get resources`(path: String, expectedContentType: String, expectedContent: String): Unit = runBlockingUnit {
-        get(path).sendAwait()
+        get(path)
             .assert200()
             .assertContentType(expectedContentType)
             .apply {
                 if (expectedContent != "BINARY") {
-                    MatcherAssert.assertThat(bodyAsString(), StringContains.containsString(expectedContent))
+                    assertThat(bodyAsString(), containsString(expectedContent))
                 }
             }
     }
@@ -109,7 +110,7 @@ class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestInt
         "favicon.ico"
     ])
     fun `get 404 when resource not found`(path: String) = runBlockingUnit {
-        get(path).sendAwait().assert404()
+        get(path).assert404()
     }
 }
 
@@ -118,7 +119,7 @@ class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestInt
 class StaticResourceExtensionTestApplicationWithPredefinedRoot : AbstractForestIntegrationTest() {
     @Test
     fun `index_html is not re-registered for root`() = runBlockingUnit {
-        Assertions.assertEquals("HelloWorld", get("/").sendAwait().bodyAsString())
+        assertEquals("HelloWorld", get("/").bodyAsString())
     }
 }
 
