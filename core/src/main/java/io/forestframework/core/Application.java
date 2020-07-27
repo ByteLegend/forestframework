@@ -31,8 +31,6 @@ public class Application implements AutoCloseable {
 
     public Application(StartupContext startupContext) {
         this.startupContext = startupContext;
-//        this.vertx = Vertx.vertx(configProvider.getInstance("forest.vertx", VertxOptions.class));
-//        this.startupContext = new StartupContext(vertx, applicationClass, configProvider, instantiateExtensions(extensionClasses));
     }
 
     public void start() {

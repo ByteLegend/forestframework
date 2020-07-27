@@ -7,14 +7,13 @@ on:
   pull_request:
     paths-ignore:
       - '**/*.md'
-
 jobs:
   run:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         java: [8, 11]
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.java }}

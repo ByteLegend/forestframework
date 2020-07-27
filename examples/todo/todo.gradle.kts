@@ -33,8 +33,10 @@ dependencies {
     testImplementation("org.codehaus.groovy:groovy-all:$groovyVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testImplementation("org.gebish:geb-core:3.4")
     testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
+    testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:3.141.59")
     testImplementation("org.seleniumhq.selenium:selenium-support:3.141.59")
 }
 

@@ -73,6 +73,7 @@ public class AutoRoutingScanExtension implements Extension {
             bind(Routings.class).toInstance(routings);
         }
 
+        @SuppressWarnings("Java9CollectionFactory")
         @Provides
         @RoutingEngines
         public List<RequestHandler> defaultRoutingEngines(FastRequestHandler fastRoutingEngine, RouterRequestHandler routerRequestHandler) {

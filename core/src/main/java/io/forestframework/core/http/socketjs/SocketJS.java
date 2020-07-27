@@ -10,9 +10,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Extends(Route.class)
 @Route(type = RoutingType.SOCK_JS)
 public @interface SocketJS {
-    String value();
+    String value() default "";
+
+    SocketJSEventType[] eventTypes() default {
+            SocketJSEventType.OPEN,
+            SocketJSEventType.CLOSE,
+            SocketJSEventType.MESSAGE,
+            SocketJSEventType.ERROR
+    };
 }

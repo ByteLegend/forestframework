@@ -6,13 +6,8 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
-import io.vertx.kotlin.core.http.bodyAwait
-import io.vertx.kotlin.ext.web.client.sendAwait
-import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.core.StringContains
 import org.hamcrest.core.StringContains.containsString
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
