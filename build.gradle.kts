@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URI
 
 //
 plugins {
@@ -13,6 +14,7 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
+        maven { url = URI("https://oss.sonatype.org/content/repositories/snapshots") }
     }
 
     configureJavaProject()

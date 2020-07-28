@@ -93,6 +93,7 @@ public class ConfigProvider {
         defaultOptions.put("forest.vertx", VertxOptions::new);
         defaultOptions.put("forest.deploy", DeploymentOptions::new);
         defaultOptions.put("forest.sockjs", SockJSHandlerOptions::new);
+        defaultOptions.put("forest.environment", () -> "dev");
     }
 
     public ConfigProvider(Map<String, Object> configFileModel, Map<String, Object> environmentModel) {

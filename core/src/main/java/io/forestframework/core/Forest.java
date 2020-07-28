@@ -26,7 +26,6 @@ public class Forest {
 
     public static Application run(StartupContext startupContext) {
         initLogger();
-        UnsafeHack.instrumentGuice(startupContext.getConfigProvider());
         Application app = new Application(startupContext);
         app.start();
         return app;

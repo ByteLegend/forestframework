@@ -23,8 +23,6 @@ dependencies {
     implementation(libs("guava"))
     implementation(libs("log4j-slf4j-impl"))
     implementation(libs("log4j-core"))
-    implementation(libs("byte-buddy-agent"))
-    implementation(libs("byte-buddy"))
     implementation(libs("apiguardian-api"))
 
     testImplementation(project(":test-fixtures"))

@@ -1,9 +1,14 @@
 package io.forestframework.core;
 
 import com.google.inject.Guice;
+import com.google.inject.GuiceExt;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.LookupInterceptor;
 import com.google.inject.Module;
+import com.google.inject.internal.UnsafeInstanceBindingImpl;
 import com.google.inject.util.Modules;
+import io.forestframework.core.config.Config;
 import io.forestframework.core.http.DefaultHttpVerticle;
 import io.forestframework.core.http.routing.DefaultRoutings;
 import io.forestframework.core.http.routing.Routings;
@@ -97,6 +102,15 @@ public class Application implements AutoCloseable {
         for (Module module : modules) {
             current = Modules.override(current).with(module);
         }
-        return Guice.createInjector(current);
+        return GuiceExt.createInjector(new LookupInterceptor() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public <T> T intercept(Key<T> key) {
+                if (key.getAnnotation() != null && key.getAnnotation().annotationType() == Config.class) {
+                    return (T) startupContext.getConfigProvider().getInstance(((Config) key.getAnnotation()).value(), key.getTypeLiteral().getRawType());
+                }
+                return null;
+            }
+        }, current);
     }
 }

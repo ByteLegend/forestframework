@@ -1,5 +1,5 @@
 val vertxVersion = "4.0.0-milestone5"
-val guiceVersion = "4.2.3"
+val guiceVersion = "4.2.3-SNAPSHOT"
 val guavaVersion = "28.2-jre"
 val jacksonVersion = "2.10.3"
 val kotlinVersion = "1.3.72"
@@ -7,7 +7,6 @@ val kotlinxVersion = "1.3.8"
 val junitVersion = "5.6.2"
 val junit4Version = "4.13"
 val mockKVersion = "1.9.3"
-val byteBuddyVersion = "1.10.11"
 val reflectasmVersion = "1.11.9"
 val apiGuadianVersion = "1.1.0"
 val log4jVersion = "2.13.3"
@@ -35,7 +34,7 @@ val libs = listOf(
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
 
     "javax.inject:javax.inject:1",
-    "com.google.inject:guice:$guiceVersion",
+    "io.forestframework:guice:$guiceVersion",
     "javax.ws.rs:jsr311-api:1.1.1",
 
     "com.github.blindpirate:annotation-magic:$annotationMagicVersion",
@@ -55,8 +54,6 @@ val libs = listOf(
     "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion",
     "org.apache.logging.log4j:log4j-core:$log4jVersion",
 
-    "net.bytebuddy:byte-buddy-agent:$byteBuddyVersion",
-    "net.bytebuddy:byte-buddy:$byteBuddyVersion",
     "org.apiguardian:apiguardian-api:$apiGuadianVersion",
 
     "io.mockk:mockk:$mockKVersion",
