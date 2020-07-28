@@ -189,23 +189,18 @@ public class ConfigProvider {
         if (System.getProperty("forest.config.file") != null) {
             return loadModel(new FileInputStream(System.getProperty("forest.config.file")));
         } else {
-            InputStream yml = ConfigProvider.class.getResourceAsStream("/forest.yml");
-            if (yml != null) {
-                try (yml) {
+            try (InputStream yml = ConfigProvider.class.getResourceAsStream("/forest.yml")) {
+                if (yml != null) {
                     return loadModel(yml);
                 }
             }
-
-            InputStream yaml = ConfigProvider.class.getResourceAsStream("/forest.yaml");
-            if (yaml != null) {
-                try (yaml) {
+            try (InputStream yaml = ConfigProvider.class.getResourceAsStream("/forest.yaml")) {
+                if (yaml != null) {
                     return loadModel(yaml);
                 }
             }
-
-            InputStream json = ConfigProvider.class.getResourceAsStream("/forest.json");
-            if (json != null) {
-                try (json) {
+            try (InputStream json = ConfigProvider.class.getResourceAsStream("/forest.json")) {
+                if (json != null) {
                     return loadModel(json);
                 }
             }

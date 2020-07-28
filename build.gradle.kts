@@ -40,6 +40,11 @@ fun Project.configureKotlinProject() {
     }
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 fun Project.configureJavaProject() {
     apply(plugin = "java-library")
     tasks.test {
