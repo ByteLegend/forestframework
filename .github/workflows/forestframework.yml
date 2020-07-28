@@ -32,5 +32,5 @@ jobs:
       - name: Show Gradle version
         run: ./gradlew --version
       - name: Build with Gradle
-        run: ./gradlew check
+        run: ./gradlew check --scan
 
