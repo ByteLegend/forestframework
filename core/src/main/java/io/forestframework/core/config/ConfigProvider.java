@@ -191,17 +191,23 @@ public class ConfigProvider {
         } else {
             InputStream yml = ConfigProvider.class.getResourceAsStream("/forest.yml");
             if (yml != null) {
-                return loadModel(yml);
+                try (yml) {
+                    return loadModel(yml);
+                }
             }
 
             InputStream yaml = ConfigProvider.class.getResourceAsStream("/forest.yaml");
             if (yaml != null) {
-                return loadModel(yaml);
+                try (yaml) {
+                    return loadModel(yaml);
+                }
             }
 
             InputStream json = ConfigProvider.class.getResourceAsStream("/forest.json");
             if (json != null) {
-                return loadModel(json);
+                try (json) {
+                    return loadModel(json);
+                }
             }
             return Collections.emptyMap();
         }
