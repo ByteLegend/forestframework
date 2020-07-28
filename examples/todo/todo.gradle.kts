@@ -21,9 +21,9 @@ dependencies {
     val h2Version = "1.4.200"
     val groovyVersion = "2.5.12"
     val jedisVersion = "3.2.0"
-    implementation(project(":jdbc-client-extension"))
-    implementation(project(":redis-client-extension"))
-    implementation(project(":cors-extension"))
+    implementation(project(":extensions:jdbc-client-extension"))
+    implementation(project(":extensions:redis-client-extension"))
+    implementation(project(":extensions:cors-extension"))
     implementation(project(":core-kotlin"))
     implementation("redis.clients:jedis:$jedisVersion")
     implementation("com.h2database:h2:$h2Version")

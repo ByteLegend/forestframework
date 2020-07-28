@@ -1,29 +1,28 @@
-//plugins {
-//    id("com.gradle.enterprise") version("3.3.4")
-//    id("com.gradle.enterprise.gradle-enterprise-conventions-plugin") version("0.3")
-//}
-
-
-
 include("core")
 include("core-kotlin")
 include("junit5-extension")
-include("jdbc-client-extension")
-include("redis-client-extension")
-include("pg-client-extension")
-include("jsr311-extension")
-include("jsr303-extension")
-include("cors-extension")
-include("thymeleaf-extension")
+include("test-fixtures")
+
+include(":extensions:jdbc-client-extension")
+include(":extensions:redis-client-extension")
+include(":extensions:pg-client-extension")
+include(":extensions:jsr311-extension")
+include(":extensions:jsr303-extension")
+include(":extensions:cors-extension")
+include(":extensions:thymeleaf-extension")
+
 include(":examples:realtime-auctions")
 include(":examples:todo")
-include("benchmark-kotlin")
-include("test-fixtures")
+include(":examples:petclinic")
+include(":examples:benchmark-kotlin")
+include(":examples:initializr")
 
 rootProject.children.forEach {
     it.buildFileName = "${it.name}.gradle.kts"
 }
 
-project(":examples").children.forEach {
-    it.buildFileName = "${it.name}.gradle.kts"
+listOf(":extensions", ":examples").forEach { p ->
+    project(p).children.forEach {
+        it.buildFileName = "${it.name}.gradle.kts"
+    }
 }

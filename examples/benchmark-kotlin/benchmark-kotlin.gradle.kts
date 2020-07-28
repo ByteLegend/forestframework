@@ -27,7 +27,7 @@ dependencies {
     val vertxVersion = "4.0.0-milestone5"
     val jacksonVersion = "2.10.3"
     val mysqlDriverVersion = "8.0.20"
-    implementation(project(":pg-client-extension"))
+    implementation(project(":extensions:pg-client-extension"))
 //    implementation(project(":redis-client-extension"))
 //    implementation(project(":cors-extension"))
     implementation("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
