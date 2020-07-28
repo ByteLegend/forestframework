@@ -28,6 +28,7 @@ import org.apiguardian.api.API;
  *
  * The invocation order is defined and configued in {@link Routings}
  */
+
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 public enum RoutingType {
     /**
@@ -58,5 +59,5 @@ public enum RoutingType {
 
     // See https://vertx.io/docs/vertx-web/java/#_sockjs
     SOCK_JS,
-    SOCK_JS_BRIDGE;
+    SOCK_JS_BRIDGE
 }

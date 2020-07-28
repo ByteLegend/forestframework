@@ -2,8 +2,6 @@ package io.forestframework.core.http.routing;
 
 import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.core.http.HttpMethod;
-import io.forestframework.core.http.routing.Intercept;
-import io.forestframework.core.http.routing.RoutingType;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

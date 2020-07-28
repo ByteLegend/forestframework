@@ -3,7 +3,6 @@ package io.forestframework.core.http.routing;
 import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.core.http.HttpMethod;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -2,7 +2,6 @@ package io.forestframework.core.http.result;
 
 import com.github.blindpirate.annotationmagic.AliasFor;
 import com.github.blindpirate.annotationmagic.CompositeOf;
-import io.forestframework.core.http.result.PlainText;
 import io.forestframework.core.http.routing.Get;
 
 import java.lang.annotation.ElementType;

@@ -1,12 +1,10 @@
 package io.forestframework.core;
 
-import com.google.inject.Guice;
 import com.google.inject.GuiceExt;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.LookupInterceptor;
 import com.google.inject.Module;
-import com.google.inject.internal.UnsafeInstanceBindingImpl;
 import com.google.inject.util.Modules;
 import io.forestframework.core.config.Config;
 import io.forestframework.core.http.DefaultHttpVerticle;

@@ -1,7 +1,7 @@
 package io.forestframework.core.http.routing;
 
-import com.google.inject.Injector;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
+import com.google.inject.Injector;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;

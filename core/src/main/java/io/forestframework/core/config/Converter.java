@@ -62,7 +62,7 @@ class ObjectToBoolean implements Converter<Object, Boolean> {
 
 class ObjectToString implements Converter<Object, String> {
     @Override
-    public String convert(Object o, Class<? extends Object> inType, Class<? extends String> outType) {
+    public String convert(Object o, Class<?> inType, Class<? extends String> outType) {
         return Objects.toString(o);
     }
 }
@@ -80,7 +80,7 @@ class StringToEnum implements Converter<String, Enum> {
 
 class ObjectToInteger implements Converter<Object, Integer> {
     @Override
-    public Integer convert(Object obj, Class<? extends Object> inType, Class<? extends Integer> outType) {
+    public Integer convert(Object obj, Class<?> inType, Class<? extends Integer> outType) {
         String s = obj.toString();
         if (s.startsWith("0x")) {
             return Integer.valueOf(s.substring(2), 16);
@@ -92,7 +92,7 @@ class ObjectToInteger implements Converter<Object, Integer> {
 
 class ObjectToLong implements Converter<Object, Long> {
     @Override
-    public Long convert(Object obj, Class<? extends Object> inType, Class<? extends Long> outType) {
+    public Long convert(Object obj, Class<?> inType, Class<? extends Long> outType) {
         String s = obj.toString();
         if (s.startsWith("0x")) {
             return Long.valueOf(s.substring(2), 16);

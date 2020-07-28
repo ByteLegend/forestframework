@@ -14,9 +14,7 @@ import javax.inject.Singleton;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -189,31 +187,31 @@ public class ConfigProvider {
         if (System.getProperty("forest.config.file") != null) {
             return loadModel(new FileInputStream(System.getProperty("forest.config.file")));
         } else {
-            try (InputStream yml = ConfigProvider.class.getResourceAsStream("/forest.yml")) {
-                if (yml != null) {
-                    return loadModel(yml);
-                }
+            InputStream yml = ConfigProvider.class.getResourceAsStream("/forest.yml");
+            if (yml != null) {
+                return loadModel(yml);
             }
-            try (InputStream yaml = ConfigProvider.class.getResourceAsStream("/forest.yaml")) {
-                if (yaml != null) {
-                    return loadModel(yaml);
-                }
+            InputStream yaml = ConfigProvider.class.getResourceAsStream("/forest.yaml");
+            if (yaml != null) {
+                return loadModel(yaml);
             }
-            try (InputStream json = ConfigProvider.class.getResourceAsStream("/forest.json")) {
-                if (json != null) {
-                    return loadModel(json);
-                }
+            InputStream json = ConfigProvider.class.getResourceAsStream("/forest.json");
+            if (json != null) {
+                return loadModel(json);
             }
             return Collections.emptyMap();
         }
     }
 
-    private static Map<String, Object> loadModel(InputStream is) throws IOException {
-        String content = IOUtils.toString(is, StandardCharsets.UTF_8);
-        if (isJson(content)) {
-            return JSON_PARSER.readValue(content, Map.class);
-        } else {
-            return YAML_PARSER.readValue(content, Map.class);
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> loadModel(InputStream i) throws IOException {
+        try (InputStream is = i) {
+            String content = IOUtils.toString(is, StandardCharsets.UTF_8);
+            if (isJson(content)) {
+                return JSON_PARSER.readValue(content, Map.class);
+            } else {
+                return YAML_PARSER.readValue(content, Map.class);
+            }
         }
     }
 
@@ -227,10 +225,10 @@ public class ConfigProvider {
     }
 
     private class ConfigObject {
-        private String path;
+        private final String path;
         private Object defaultValue;
-        private Object configValue;
-        private Object environmentValue;
+        private final Object configValue;
+        private final Object environmentValue;
 
         public ConfigObject() {
             this("", null, configFileModel, environmentModel);
@@ -267,6 +265,7 @@ public class ConfigProvider {
 
         // BeanUtils.copyProperties() is shallow copy, so we filter out non-nested properties, invoke copyProperties,
         // then manually copy nested fields recursively
+        @SuppressWarnings("unchecked")
         private void mergeConfigValueToDefault(Object destBean, Map<String, Object> srcMap) {
             if (defaultValue == null) {
                 defaultValue = srcMap;
@@ -293,6 +292,7 @@ public class ConfigProvider {
                     || List.class.isAssignableFrom(klass);
         }
 
+        @SuppressWarnings("unchecked")
         private Object mergeConfigValue() {
             mergeConfigValueToDefault(defaultValue, (Map<String, Object>) configValue);
             mergeConfigValueToDefault(defaultValue, (Map<String, Object>) environmentValue);

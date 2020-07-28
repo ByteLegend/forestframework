@@ -2,12 +2,6 @@ package io.forestframework.utils;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.Component;
-import io.forestframework.ext.api.EnableExtensions;
-import io.forestframework.ext.api.Extension;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * For internal use only.

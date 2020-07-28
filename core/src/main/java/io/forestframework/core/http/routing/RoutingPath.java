@@ -6,7 +6,10 @@ import io.forestframework.core.http.OptimizedHeaders;
 import io.forestframework.core.http.RerouteNextAwareRoutingContextDecorator;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.function.Predicate;
@@ -76,6 +79,19 @@ public class RoutingPath {
         if (devMode) {
             context.response().putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_TEXT_PLAIN);
             context.response().end(ExceptionUtils.getStackTrace(failure));
+        }
+
+    }
+
+    static class User {
+        int age;
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
         }
     }
 

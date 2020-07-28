@@ -7,7 +7,6 @@ import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.RoutingContext;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 

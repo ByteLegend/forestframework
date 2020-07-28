@@ -12,6 +12,7 @@ import static com.google.common.net.MediaType.JSON_UTF_8;
 import static com.google.common.net.MediaType.PLAIN_TEXT_UTF_8;
 import static com.google.common.net.MediaType.PNG;
 
+@SuppressWarnings("UnstableApiUsage")
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 public class OptimizedHeaders {
     public static final CharSequence HEADER_CONTENT_TYPE = HttpHeaders.createOptimized("content-type");

@@ -1,8 +1,8 @@
 package io.forestframework.core.http.staticresource;
 
-import io.forestframework.core.http.routing.Get;
 import com.github.blindpirate.annotationmagic.AliasFor;
 import com.github.blindpirate.annotationmagic.CompositeOf;
+import io.forestframework.core.http.routing.Get;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

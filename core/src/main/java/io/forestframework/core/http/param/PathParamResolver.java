@@ -1,7 +1,6 @@
 package io.forestframework.core.http.param;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
-import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.StringUtils;

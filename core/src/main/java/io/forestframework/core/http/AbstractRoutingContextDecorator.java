@@ -100,7 +100,7 @@ public abstract class AbstractRoutingContextDecorator implements RoutingContext 
     @Override
     @SuppressWarnings("deprecated")
     public String normalisedPath() {
-        return delegate.normalisedPath();
+        return delegate.normalizedPath();
     }
 
     @Override

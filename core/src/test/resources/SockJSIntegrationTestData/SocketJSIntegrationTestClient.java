@@ -1,8 +1,6 @@
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
-import java.nio.ByteBuffer;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 
 /**

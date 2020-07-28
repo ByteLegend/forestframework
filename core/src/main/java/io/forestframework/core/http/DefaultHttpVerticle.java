@@ -2,7 +2,6 @@ package io.forestframework.core.http;
 
 import io.forestframework.core.config.Config;
 import io.forestframework.core.http.routing.RequestHandler;
-import io.forestframework.core.http.routing.RequestHandlerChain;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
