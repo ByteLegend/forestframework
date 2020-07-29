@@ -18,7 +18,7 @@ dependencies {
     val kotlinVersion = "1.3.72"
     val jpaVersion = "2.2"
     val javaxValidationVersion = "2.0.1.Final"
-    val vertxVersion = "4.0.0-milestone5"
+    val vertxVersion = "4.0.0.Beta1"
     implementation(project(":core"))
     implementation("javax.ws.rs:jsr311-api:1.1.1")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")

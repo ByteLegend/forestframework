@@ -10,7 +10,7 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpClientResponse
 import io.vertx.core.http.WebSocket
-import io.vertx.core.http.impl.headers.VertxHttpHeaders
+import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.ext.web.client.HttpRequest
 import io.vertx.ext.web.client.HttpResponse
 import io.vertx.kotlin.core.http.bodyAwait
@@ -115,7 +115,7 @@ abstract class AbstractForestIntegrationTest {
         }
     }
 
-    fun HttpRequest<Buffer>.contentTypeJson() = VertxHttpHeaders().apply {
+    fun HttpRequest<Buffer>.contentTypeJson() = HeadersMultiMap().apply {
         add(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON)
     }.apply {
         this@contentTypeJson.putHeaders(this)

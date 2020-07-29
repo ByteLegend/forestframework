@@ -7,6 +7,7 @@ import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.result.ResultProcessor;
 import io.forestframework.core.http.result.RoutingResultProcessor;
+import org.apiguardian.api.API;
 
 import javax.inject.Singleton;
 import java.lang.reflect.Method;
@@ -17,6 +18,7 @@ import java.util.stream.Stream;
 /**
  * A decorator for {@link Routing}s, mainly for caching purpose.
  */
+@API(status = API.Status.INTERNAL)
 public class CachingRoutingDecorator implements Routing {
     private static final Object[] UNINITIALIZED = {};
     private final Routing delegate;

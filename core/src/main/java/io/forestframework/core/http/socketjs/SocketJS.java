@@ -16,10 +16,10 @@ import java.lang.annotation.Target;
 public @interface SocketJS {
     String value() default "";
 
-    SocketJSEventType[] eventTypes() default {
-            SocketJSEventType.OPEN,
-            SocketJSEventType.CLOSE,
-            SocketJSEventType.MESSAGE,
-            SocketJSEventType.ERROR
+    SockJSEventType[] eventTypes() default {
+            SockJSEventType.OPEN,
+            SockJSEventType.CLOSE,
+            SockJSEventType.MESSAGE,
+            SockJSEventType.ERROR
     };
 }

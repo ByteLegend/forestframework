@@ -1758,7 +1758,8 @@ public class VertxCompletableFutureTest {
         Async async1 = tc.async();
         Async async2 = tc.async();
         VertxCompletableFuture<Void> future = new VertxCompletableFuture<>(vertx);
-        assertThat(future.context(), is(not(vertx.getOrCreateContext())));
+        // Since 4.0.0.Beta1: "Event loop affinity"
+        assertThat(future.context(), is(vertx.getOrCreateContext()));
         vertx.runOnContext(v -> {
             assertThat(future.withContext().context(), is(vertx.getOrCreateContext()));
             async1.complete();

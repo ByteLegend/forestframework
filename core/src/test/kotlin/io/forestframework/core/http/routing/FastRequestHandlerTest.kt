@@ -34,7 +34,7 @@ class FastRequestHandlerTest {
     lateinit var vertx: Vertx
 
     @MockK
-    lateinit var routings: DefaultRoutings
+    lateinit var routings: DefaultRoutingManager
 
     @MockK
     lateinit var injector: Injector

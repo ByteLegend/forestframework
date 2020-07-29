@@ -16,7 +16,7 @@ import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.impl.headers.VertxHttpHeaders
+import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.ext.web.client.sendAwait
@@ -90,7 +90,7 @@ abstract class TodoApplicationIntegrationTest {
 
     val objectMapper = ObjectMapper()
 
-    val headers = VertxHttpHeaders().apply {
+    val headers = HeadersMultiMap().apply {
         add(OptimizedHeaders.HEADER_ACCEPT, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON)
         add(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON)
     }

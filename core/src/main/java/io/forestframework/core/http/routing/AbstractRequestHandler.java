@@ -30,11 +30,11 @@ public abstract class AbstractRequestHandler implements RequestHandler {
 
     protected Vertx vertx;
     protected Injector injector;
-    protected Routings routings;
+    protected RoutingManager routings;
     protected boolean devMode;
     private RequestHandler next;
 
-    public AbstractRequestHandler(Vertx vertx, Injector injector, Routings routings, String environment) {
+    public AbstractRequestHandler(Vertx vertx, Injector injector, RoutingManager routings, String environment) {
         this.vertx = vertx;
         this.injector = injector;
         this.routings = routings;

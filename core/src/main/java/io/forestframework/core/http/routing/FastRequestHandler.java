@@ -40,16 +40,16 @@ import static java.util.stream.Collectors.groupingBy;
 @Singleton
 public class FastRequestHandler extends AbstractRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(FastRequestHandler.class);
-    private final DefaultRoutings routings;
+    private final DefaultRoutingManager routings;
     private final Map<String, List<Routing>> pathToFastRoutingsMap;
 
     @Inject
     public FastRequestHandler(Injector injector,
                               Vertx vertx,
-                              Routings routings,
+                              RoutingManager routings,
                               @Config("forest.environment") String environment) {
         super(vertx, injector, routings, environment);
-        this.routings = (DefaultRoutings) routings;
+        this.routings = (DefaultRoutingManager) routings;
         this.pathToFastRoutingsMap = createPathToFastRoutingsMap();
     }
 

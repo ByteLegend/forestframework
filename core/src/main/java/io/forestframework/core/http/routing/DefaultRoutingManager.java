@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
-public class DefaultRoutings implements Routings {
+public class DefaultRoutingManager implements RoutingManager {
     private Map<RoutingType, List<Routing>> routings = new HashMap<>();
     private Map<RoutingType, List<String>> routingPrefixes;
 
@@ -78,7 +78,15 @@ public class DefaultRoutings implements Routings {
     }
 
     private List<Routing> decorate(List<Routing> routings) {
-        return routings.stream().map(CachingRoutingDecorator::new).collect(Collectors.toList());
+        return routings.stream().map(this::decorate).collect(Collectors.toList());
+    }
+
+    private Routing decorate(Routing routing) {
+        if (routing instanceof SockJSRouting) {
+            return routing;
+        } else {
+            return new CachingRoutingDecorator(routing);
+        }
     }
 //
 //    private Map<RoutingType, List<Routing>> createFinalizedRoutings() {

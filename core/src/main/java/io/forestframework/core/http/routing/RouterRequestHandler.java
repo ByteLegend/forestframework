@@ -5,6 +5,7 @@ import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.RerouteNextAwareRoutingContextDecorator;
+import io.forestframework.core.http.socketjs.SockJSEventType;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -19,10 +20,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static io.forestframework.core.http.routing.RoutingPath.RoutingPathNode;
 import static io.forestframework.core.http.routing.RoutingType.HANDLER;
@@ -44,7 +51,7 @@ public class RouterRequestHandler extends AbstractRequestHandler {
     private final ConfigProvider configProvider;
 
     @Inject
-    public RouterRequestHandler(Vertx vertx, Injector injector, Routings routings, String environment) {
+    public RouterRequestHandler(Vertx vertx, Injector injector, RoutingManager routings, String environment) {
         super(vertx, injector, routings, environment);
         this.configProvider = injector.getInstance(ConfigProvider.class);
         this.router = createRouter();
@@ -71,10 +78,80 @@ public class RouterRequestHandler extends AbstractRequestHandler {
     private void configureSockJSRoutes(Router router, List<Routing> routings) {
         SockJSHandlerOptions options = configProvider.getInstance("forest.sockjs", SockJSHandlerOptions.class);
 
-        for (Routing routing : routings) {
+        // A single path must has only one handler per event type
+        Map<String, List<SockJSRouting>> pathToHandlers = routings.stream()
+                .map(r -> (SockJSRouting) r)
+                .collect(Collectors.groupingBy(SockJSRouting::getPath));
+
+        for (Map.Entry<String, List<SockJSRouting>> entry : pathToHandlers.entrySet()) {
+            String path = entry.getKey();
+            Map<SockJSEventType, SockJSRouting> eventTypeToRouting = validateAndRemapSockJsRoutings(path, entry.getValue());
             SockJSHandler handler = SockJSHandler.create(vertx, options);
-            configureRouter(router, routing).handler(handler);
+
+            router.route(path)
+                    .handler(new SockJSHandlerDecorator(handler, eventTypeToRouting))
+                    .failureHandler(context -> {
+                        // onError
+                    });
         }
+    }
+
+    private Map<SockJSEventType, SockJSRouting> validateAndRemapSockJsRoutings(String path, List<SockJSRouting> routings) {
+        Map<SockJSEventType, SockJSRouting> ret = new HashMap<>();
+        for (SockJSRouting routing : validateSockJsRoutingsFor(path, routings)) {
+            for (SockJSEventType type : routing.eventTypes()) {
+                ret.put(type, routing);
+            }
+        }
+        return ret;
+    }
+
+    private static class SockJSHandlerDecorator implements Handler<RoutingContext> {
+        private final SockJSHandler sockJSHandler;
+        private final Map<SockJSEventType, SockJSRouting> eventTypeToRouting;
+
+        public SockJSHandlerDecorator(SockJSHandler sockJSHandler, Map<SockJSEventType, SockJSRouting> eventTypeToRouting) {
+            this.sockJSHandler = sockJSHandler;
+            this.eventTypeToRouting = eventTypeToRouting;
+        }
+
+        @Override
+        public void handle(RoutingContext routingContext) {
+            sockJSHandler.socketHandler(sockJSSocket -> {
+                // OnOpen
+                SockJSRouting onOpenHandler = eventTypeToRouting.get(SockJSEventType.OPEN);
+                if (onOpenHandler != null) {
+
+                }
+
+
+                sockJSSocket.handler(buffer -> {
+                    // onMessage
+                }).exceptionHandler(throwable -> {
+                    // onError
+                }).endHandler(v -> {
+                    // onClose
+                });
+            });
+            sockJSHandler.handle(routingContext);
+        }
+    }
+
+    private List<SockJSRouting> validateSockJsRoutingsFor(String path, List<SockJSRouting> routings) {
+        Set<SockJSEventType> eventTypes = new HashSet<>();
+        for (SockJSRouting routing : routings) {
+            for (SockJSEventType eventType : routing.eventTypes()) {
+                if (eventTypes.add(eventType)) {
+                    List<Method> conflictHandlers = routings.stream()
+                            .filter(it -> it.eventTypes().contains(eventType))
+                            .map(SockJSRouting::getHandlerMethod)
+                            .collect(Collectors.toList());
+                    throw new IllegalArgumentException("Found more than one SockJS handler mapped to " + path + ": " + conflictHandlers);
+                }
+            }
+        }
+
+        return routings;
     }
 
     private RoutingPath getOrCreatePath(RerouteNextAwareRoutingContextDecorator context) {
@@ -129,7 +206,6 @@ public class RouterRequestHandler extends AbstractRequestHandler {
             route.handler(BodyHandler.create());
         }
         return route;
-
     }
 
     private boolean hasBody(List<HttpMethod> methods) {

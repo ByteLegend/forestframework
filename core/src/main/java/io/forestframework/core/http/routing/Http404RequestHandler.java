@@ -19,12 +19,12 @@ import java.util.List;
 @Singleton
 public class Http404RequestHandler extends AbstractRequestHandler {
     private final List<String> handlerPathPrefixes;
-    private final DefaultRoutings routings;
+    private final DefaultRoutingManager routings;
 
     @Inject
-    public Http404RequestHandler(Vertx vertx, Injector injector, Routings routings, @Config("forest.environment") String environment) {
+    public Http404RequestHandler(Vertx vertx, Injector injector, RoutingManager routings, @Config("forest.environment") String environment) {
         super(vertx, injector, routings, environment);
-        this.routings = (DefaultRoutings) routings;
+        this.routings = (DefaultRoutingManager) routings;
         this.handlerPathPrefixes = this.routings.getRoutingPrefixes(RoutingType.HANDLER);
     }
 

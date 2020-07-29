@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Extends(SocketJS.class)
-@SocketJS(eventTypes = {SocketJSEventType.MESSAGE})
+@SocketJS(eventTypes = {SockJSEventType.MESSAGE})
 public @interface OnMessage {
     String value() default "";
 }

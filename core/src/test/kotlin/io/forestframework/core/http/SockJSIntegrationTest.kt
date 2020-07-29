@@ -8,7 +8,7 @@ import io.forestframework.core.http.socketjs.OnError
 import io.forestframework.core.http.socketjs.OnMessage
 import io.forestframework.core.http.socketjs.OnOpen
 import io.forestframework.core.http.socketjs.SocketJS
-import io.forestframework.core.http.socketjs.SocketJSEventType
+import io.forestframework.core.http.socketjs.SockJSEventType
 import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
@@ -31,12 +31,12 @@ class SockJSTestApp {
     val messages = mutableListOf<String>()
 
     @SocketJS("/ws1")
-    suspend fun webSocketWriteBackDirectly(socket: SockJSSocket, messageType: SocketJSEventType, message: Buffer) {
+    suspend fun webSocketWriteBackDirectly(socket: SockJSSocket, messageType: SockJSEventType, message: Buffer) {
         messages.add(message.toString())
         when (messageType) {
-            SocketJSEventType.OPEN -> socket.writeAwait("open")
-            SocketJSEventType.MESSAGE -> socket.writeAwait(message)
-            SocketJSEventType.CLOSE -> socket.writeAwait("close")
+            SockJSEventType.OPEN -> socket.writeAwait("open")
+            SockJSEventType.MESSAGE -> socket.writeAwait(message)
+            SockJSEventType.CLOSE -> socket.writeAwait("close")
         }
     }
 }

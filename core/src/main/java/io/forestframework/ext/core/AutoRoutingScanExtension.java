@@ -10,16 +10,17 @@ import com.google.inject.TypeLiteral;
 import io.forestframework.core.ComponentClasses;
 import io.forestframework.core.http.DefaultRouting;
 import io.forestframework.core.http.Router;
-import io.forestframework.core.http.routing.DefaultRoutings;
+import io.forestframework.core.http.routing.DefaultRoutingManager;
 import io.forestframework.core.http.routing.FastRequestHandler;
 import io.forestframework.core.http.routing.RequestHandler;
 import io.forestframework.core.http.routing.Route;
 import io.forestframework.core.http.routing.RouterRequestHandler;
 import io.forestframework.core.http.routing.Routing;
-import io.forestframework.core.http.routing.Routings;
+import io.forestframework.core.http.routing.RoutingManager;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
 import org.apache.commons.lang3.StringUtils;
+import org.apiguardian.api.API;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
  *     <li>2. Scan all {@link io.forestframework.core.http.routing.Routing}s from component classes.</li>
  * </ol>
  */
+@API(status = API.Status.INTERNAL)
 public class AutoRoutingScanExtension implements Extension {
     @Override
     public void beforeInjector(StartupContext startupContext) {
@@ -47,7 +49,7 @@ public class AutoRoutingScanExtension implements Extension {
 
     @Override
     public void afterInjector(Injector injector) {
-        Routings routings = injector.getInstance(Routings.class);
+        RoutingManager routings = injector.getInstance(RoutingManager.class);
 
         // @formatter:off
         List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() { }, ComponentClasses.class));
@@ -66,11 +68,11 @@ public class AutoRoutingScanExtension implements Extension {
     }
 
     public static class RoutingModule extends AbstractModule {
-        private final Routings routings = new DefaultRoutings();
+        private final RoutingManager routings = new DefaultRoutingManager();
 
         @Override
         protected void configure() {
-            bind(Routings.class).toInstance(routings);
+            bind(RoutingManager.class).toInstance(routings);
         }
 
         @SuppressWarnings("Java9CollectionFactory")

@@ -5,8 +5,8 @@ import org.apiguardian.api.API;
 
 import java.util.List;
 
-@DefaultImplementedBy(DefaultRoutings.class)
+@DefaultImplementedBy(DefaultRoutingManager.class)
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
-public interface Routings {
+public interface RoutingManager {
     List<Routing> getRouting(RoutingType routingType);
 }

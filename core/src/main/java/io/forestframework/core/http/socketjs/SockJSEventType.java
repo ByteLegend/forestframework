@@ -1,6 +1,6 @@
 package io.forestframework.core.http.socketjs;
 
-public enum SocketJSEventType {
+public enum SockJSEventType {
     OPEN,
     MESSAGE,
     CLOSE,

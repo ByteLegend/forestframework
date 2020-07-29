@@ -26,7 +26,7 @@ import org.apiguardian.api.API;
  *     }
  * </pre>
  *
- * The invocation order is defined and configued in {@link Routings}
+ * The invocation order is defined and configued in {@link RoutingManager}
  */
 
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
