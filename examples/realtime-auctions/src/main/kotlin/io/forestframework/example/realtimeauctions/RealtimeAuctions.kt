@@ -10,7 +10,7 @@ import io.forestframework.core.http.param.RequestBody
 import io.forestframework.core.http.result.GetJson
 import io.forestframework.core.http.routing.Intercept
 import io.forestframework.core.http.routing.Patch
-import io.forestframework.core.http.socketjs.SocketJSBridge
+import io.forestframework.core.http.sockjs.SocketJSBridge
 import io.forestframework.ext.core.EnableStaticResource
 import io.forestframework.ext.core.HttpException
 import io.vertx.core.eventbus.EventBus

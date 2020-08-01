@@ -1,9 +1,8 @@
 package io.forestframework.example.todo.kotlin
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.forestframework.core.SingletonComponent
 import io.forestframework.core.SingletonRouter
-import io.forestframework.core.config.Config
+import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.JsonResponseBody
@@ -15,7 +14,6 @@ import io.forestframework.core.http.staticresource.GetStaticResource
 import io.forestframework.core.http.staticresource.StaticResource
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
-import java.lang.ClassCastException
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -30,7 +28,7 @@ interface TodoService {
     suspend fun deleteAll()
 }
 
-@SingletonRouter
+@Router
 class TodoRouter @Inject constructor(private val service: TodoService) {
     // Or use StaticResourceExtension
     @GetStaticResource("/")

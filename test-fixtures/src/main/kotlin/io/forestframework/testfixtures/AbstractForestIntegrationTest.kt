@@ -42,25 +42,26 @@ class WebSocketClient(val socket: WebSocket) {
     var cursorIndex: Int = 0
     val receivedMessages = mutableListOf<String>()
 
-    suspend fun sendMessage(message: String) {
+    suspend fun sendMessage(message: String): WebSocketClient {
         socket.writeTextMessageAwait(message)
+        return this
     }
 
-    suspend fun waitFor(vararg message: String, timeoutMillis: Int = 1000, stepMillis: Int = 100) {
-        waitFor(message.toList(), timeoutMillis, stepMillis)
+    suspend fun waitFor(vararg message: String, timeoutMillis: Int = 1000, stepMillis: Int = 100): WebSocketClient {
+        return waitFor(message.toList(), timeoutMillis, stepMillis)
     }
 
-    suspend fun waitFor(message: List<String>, timeoutMillis: Int = 1000, stepMillis: Int = 100) {
+    suspend fun waitFor(message: List<String>, timeoutMillis: Int = 1000, stepMillis: Int = 100): WebSocketClient {
         var millis = 0
         while (millis < timeoutMillis) {
             val indexOfSubList = Collections.indexOfSubList(receivedMessages.subList(cursorIndex, receivedMessages.size), message)
             if (indexOfSubList != -1) {
                 cursorIndex += message.size
-                return
+                return this
             }
 
             delay(stepMillis.toLong())
-            millis + stepMillis
+            millis += stepMillis
         }
 
         throw IllegalStateException("Wait for '$message' timeout after $timeoutMillis ms")

@@ -1,6 +1,5 @@
 package io.forestframework.ext.core;
 
-import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.ext.api.EnableExtensions;
 import io.forestframework.ext.api.Extension;
@@ -22,7 +21,7 @@ public @interface IncludeComponents {
     class IncludeComponentExtension implements Extension {
         @Override
         public void beforeInjector(StartupContext startupContext) {
-            AnnotationMagic.getAnnotationsOnClass(startupContext.getAppClass(), IncludeComponents.class)
+            startupContext.getEnableExtensionsAnnotation(IncludeComponents.class)
                     .stream()
                     .map(IncludeComponents::classes)
                     .flatMap(Stream::of)

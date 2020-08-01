@@ -1,14 +1,9 @@
-package io.forestframework.core.http
+package io.forestframework.core.http.websocket
 
 import io.forestframework.core.ForestApplication
-import io.forestframework.core.SingletonRouter
+import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.PathParam
-import io.forestframework.core.http.socketjs.OnClose
-import io.forestframework.core.http.socketjs.OnError
-import io.forestframework.core.http.socketjs.OnMessage
-import io.forestframework.core.http.socketjs.OnOpen
-import io.forestframework.core.http.socketjs.SocketJS
-import io.forestframework.core.http.socketjs.SockJSEventType
+import io.forestframework.core.http.sockjs.SockJSEventType
 import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
@@ -17,7 +12,6 @@ import io.forestframework.testsupport.ForestTest
 import io.vertx.core.buffer.Buffer
 import io.vertx.ext.web.handler.sockjs.SockJSSocket
 import io.vertx.kotlin.ext.web.handler.sockjs.writeAwait
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledOnJre
 import org.junit.jupiter.api.condition.JRE.JAVA_11
@@ -27,10 +21,10 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 @ForestApplication
-class SockJSTestApp {
+class WebSocketTestApp {
     val messages = mutableListOf<String>()
 
-    @SocketJS("/ws1")
+    @WebSocket("/test1")
     suspend fun webSocketWriteBackDirectly(socket: SockJSSocket, messageType: SockJSEventType, message: Buffer) {
         messages.add(message.toString())
         when (messageType) {
@@ -41,29 +35,29 @@ class SockJSTestApp {
     }
 }
 
-@SingletonRouter("/chat/:username")
+@Router("/chat/:username")
 class SockJSRouter {
     val sessions = ConcurrentHashMap<String, SockJSSocket>()
 
-    @OnOpen
+    @OnWSOpen
     fun onOpen(socket: SockJSSocket, @PathParam("username") username: String) {
         sessions[username] = socket
         broadcast("User $username joined")
     }
 
-    @OnClose
+    @OnWSClose
     fun onClose(socket: SockJSSocket, @PathParam("username") username: String) {
         sessions.remove(username)
         broadcast("User $username left")
     }
 
-    @OnError
+    @OnWSError
     fun onError(socket: SockJSSocket, @PathParam("username") username: String, throwable: Throwable) {
         sessions.remove(username)
         broadcast("User $username left on error: $throwable")
     }
 
-    @OnMessage
+    @OnWSMessage
     fun onMessage(message: String, @PathParam("username") username: String) {
         broadcast(">> $username: $message")
     }
@@ -74,16 +68,15 @@ class SockJSRouter {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = SockJSTestApp::class)
+@ForestTest(appClass = WebSocketTestApp::class)
 @DisableAutoScan
 @IncludeComponents(classes = [SockJSRouter::class])
-@Disabled
 class SockJSIntegrationTest : AbstractForestIntegrationTest() {
     @Inject
-    lateinit var app: SockJSTestApp
+    lateinit var app: WebSocketTestApp
 
     @Test
-    suspend fun `can handle websocket`() = runBlockingUnit {
+    fun `can handle websocket`() = runBlockingUnit {
         val numbers = List(10) { "$it" }
         val expectedNumbers = List(10) { "${it + 1}" }
         openWebsocket("/ws1")
@@ -93,7 +86,7 @@ class SockJSIntegrationTest : AbstractForestIntegrationTest() {
     }
 
     @Test
-    suspend fun `websocket chat room test`() = runBlockingUnit {
+    fun `websocket chat room test`() = runBlockingUnit {
         val alice = openWebsocket("/chat/Alice")
 
         alice.waitFor("User Alice joined")
@@ -116,7 +109,7 @@ class SockJSIntegrationTest : AbstractForestIntegrationTest() {
 
     @Test
     @EnabledOnJre(value = [JAVA_11])
-    suspend fun `chat room error handling test`() = runBlockingUnit {
+    fun `chat room error handling test`() = runBlockingUnit {
         val alice = openWebsocket("/chat/Alice")
 
         val wsClientJavaFile = Paths.get(javaClass.getResource("/SockJSIntegrationTestData/SocketJSIntegrationTestClient.java").toURI()).toFile()

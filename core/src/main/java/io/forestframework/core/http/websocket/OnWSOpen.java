@@ -1,6 +1,8 @@
-package io.forestframework.core.http.socketjs;
+package io.forestframework.core.http.websocket;
 
 import com.github.blindpirate.annotationmagic.Extends;
+import io.forestframework.core.http.sockjs.SockJS;
+import io.forestframework.core.http.sockjs.SockJSEventType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,8 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(SocketJS.class)
-@SocketJS(eventTypes = {SockJSEventType.ERROR})
-public @interface OnError {
+@Extends(WebSocket.class)
+@WebSocket(eventTypes = {WebSocketEventType.OPEN})
+public @interface OnWSOpen {
     String value() default "";
 }

@@ -3,16 +3,16 @@ package io.forestframework.core.http.routing;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.inject.Injector;
 import io.forestframework.KotlinSuspendFunctionBridge;
+import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.Blocking;
+import io.forestframework.core.http.InjectableParameters;
+import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.result.RoutingResultProcessor;
 import io.forestframework.utils.ReflectionUtils;
 import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import kotlin.coroutines.Continuation;
 import org.slf4j.Logger;
@@ -24,57 +24,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class AbstractRequestHandler implements RequestHandler {
+public abstract class AbstractRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestHandler.class);
     private static final Map<Class<? extends RoutingResultProcessor>, RoutingResultProcessor> cache = new HashMap<>();
 
     protected Vertx vertx;
     protected Injector injector;
-    protected RoutingManager routings;
     protected boolean devMode;
-    private RequestHandler next;
 
-    public AbstractRequestHandler(Vertx vertx, Injector injector, RoutingManager routings, String environment) {
+    public AbstractRequestHandler(Vertx vertx, Injector injector, ConfigProvider configProvider) {
         this.vertx = vertx;
         this.injector = injector;
-        this.routings = routings;
-        this.devMode = "dev".equalsIgnoreCase(environment);
-    }
-
-    void setNext(RequestHandler next) {
-        if (this.next != null) {
-            throw new UnsupportedOperationException();
-        }
-        this.next = next;
-    }
-
-    protected void next(HttpServerRequest request) {
-        if (next != null) {
-            next.handle(request);
-        }
+        this.devMode = "dev".equalsIgnoreCase(configProvider.getInstance("forest.environment", String.class));
     }
 
     @SuppressWarnings({"unchecked"})
-    protected <T> T resolveArgument(Routing routing, int index, Class<T> argumentType, RoutingContext routingContext) {
-        if (argumentType == RoutingContext.class) {
-            return (T) routingContext;
-        } else if (argumentType == HttpServerRequest.class) {
-            return (T) routingContext.request();
-        } else if (argumentType == HttpServerResponse.class) {
-            return (T) routingContext.response();
-        } else if (argumentType == EventBus.class) {
-            return (T) injector.getInstance(EventBus.class);
+    protected <T> T resolveArgument(Routing routing, int index, Class<T> argumentType, InjectableParameters injectableParameters) {
+        RoutingParameterResolver resolver = routing.getParameterResolver(injector, index);
+        if (resolver == null) {
+            return injectableParameters.resolve(argumentType, () -> "Don't know how to resolve param " + index + " of " + routing.getHandlerMethod());
+        } else {
+            return (T) resolver.resolveArgument(routing, injectableParameters.resolve(RoutingContext.class, null), index);
         }
-
-        return (T) routing.getParameterResolver(injector, index).resolveArgument(routing, routingContext, index);
     }
 
-    protected Object[] resolveArguments(Routing routing, RoutingContext context) {
+    protected Object[] resolveArguments(Routing routing, InjectableParameters injectableParameters) {
         Class<?>[] argumentsType = routing.getHandlerMethod().getParameterTypes();
         Object[] arguments = new Object[argumentsType.length];
         for (int i = 0; i < argumentsType.length; ++i) {
             if (!isContinuation(argumentsType[i])) {
-                arguments[i] = resolveArgument(routing, i, argumentsType[i], context);
+                arguments[i] = resolveArgument(routing, i, argumentsType[i], injectableParameters);
             }
         }
         return arguments;
@@ -167,7 +146,11 @@ public abstract class AbstractRequestHandler implements RequestHandler {
     }
 
     protected <T> CompletableFuture<T> resolveArgumentsAndInvokeHandler(Routing routing, RoutingContext context) {
-        Object[] arguments = resolveArguments(routing, context);
+        return resolveArgumentsAndInvokeHandler(routing, new InjectableParameters(injector).with(context));
+    }
+
+    protected <T> CompletableFuture<T> resolveArgumentsAndInvokeHandler(Routing routing, InjectableParameters injectableParameters) {
+        Object[] arguments = resolveArguments(routing, injectableParameters);
         return invokeHandler(routing, arguments);
     }
 

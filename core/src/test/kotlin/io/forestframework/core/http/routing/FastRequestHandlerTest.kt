@@ -4,8 +4,12 @@ package io.forestframework.core.http.routing
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic
 import com.google.inject.Injector
+import io.forestframework.core.config.ConfigProvider
+import io.forestframework.core.http.ChainedRequestHandler
 import io.forestframework.core.http.DefaultRouting
+import io.forestframework.core.http.HttpRequestHandler
 import io.forestframework.core.http.OptimizedHeaders
+import io.forestframework.core.http.RequestHandlerChain
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.GetJson
@@ -15,6 +19,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockkClass
 import io.mockk.verify
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
@@ -42,11 +47,17 @@ class FastRequestHandlerTest {
     @MockK
     lateinit var request: HttpServerRequest
 
+    @MockK
+    lateinit var configProvider: ConfigProvider
+
+    @MockK
+    lateinit var requestHandlerChain: RequestHandlerChain
+
     @RelaxedMockK
     lateinit var response: HttpServerResponse
 
     @RelaxedMockK
-    lateinit var next: RequestHandler
+    lateinit var next: HttpRequestHandler
 
     lateinit var fastRequestHandler: FastRequestHandler
 
@@ -62,10 +73,16 @@ class FastRequestHandlerTest {
                 .map { DefaultRouting(AnnotationMagic.getOneAnnotationOnMethodOrNull(it, Route::class.java), it) }
 
         every { request.response() } returns response
-        every { injector.getInstance(any() as Class<*>) } answers { firstArg<Class<*>>().getConstructor().newInstance() }
+        every { injector.getInstance(any() as Class<*>) } answers {
+            try {
+                firstArg<Class<*>>().getConstructor().newInstance()
+            } catch (e: Throwable) {
+                mockkClass(firstArg<Class<*>>().kotlin, relaxed = true)
+            }
+        }
 
-        fastRequestHandler = FastRequestHandler(injector, vertx, routings, "dev")
-        fastRequestHandler.setNext(next)
+        fastRequestHandler = FastRequestHandler(injector, vertx, routings, configProvider)
+//        fastRequestHandler.setNext(next)
     }
 
     @Test
@@ -73,7 +90,7 @@ class FastRequestHandlerTest {
         every { request.path() } returns "/fast1"
         every { request.method() } returns HttpMethod.GET
 
-        fastRequestHandler.handle(request)
+        fastRequestHandler.handle(request, requestHandlerChain)
 
         verify {
             response.end("[]")
@@ -85,7 +102,7 @@ class FastRequestHandlerTest {
         every { request.path() } returns "/exception"
         every { request.method() } returns HttpMethod.GET
 
-        fastRequestHandler.handle(request)
+        fastRequestHandler.handle(request, requestHandlerChain)
 
         verify {
             response.statusCode = 500
@@ -101,7 +118,7 @@ class FastRequestHandlerTest {
         every { request.path() } returns "/fast1"
         every { request.method() } returns HttpMethod.POST
 
-        fastRequestHandler.handle(request)
+        fastRequestHandler.handle(request, requestHandlerChain)
 
         verify {
             response.end("hello")
@@ -114,7 +131,7 @@ class FastRequestHandlerTest {
         every { request.path() } returns slowPath
         every { request.method() } returns HttpMethod.POST
 
-        fastRequestHandler.handle(request)
+        fastRequestHandler.handle(request, requestHandlerChain)
 
         verify { next.handle(request) }
     }

@@ -1,4 +1,4 @@
-package io.forestframework.core.http.socketjs;
+package io.forestframework.core.http.sockjs;
 
 import com.github.blindpirate.annotationmagic.Extends;
 
@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(SocketJS.class)
-@SocketJS(eventTypes = {SockJSEventType.OPEN})
-public @interface OnOpen {
+@Extends(SockJS.class)
+@SockJS(eventTypes = {SockJSEventType.ERROR})
+public @interface OnError {
     String value() default "";
 }

@@ -1,7 +1,8 @@
-package io.forestframework.core.http.socketjs;
+package io.forestframework.core.http.websocket;
 
 import com.github.blindpirate.annotationmagic.Extends;
-import io.vertx.ext.bridge.BridgeEventType;
+import io.forestframework.core.http.sockjs.SockJS;
+import io.forestframework.core.http.sockjs.SockJSEventType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,8 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(SocketJSBridge.class)
-@SocketJSBridge(eventTypes = {BridgeEventType.SEND})
-public @interface OnBridgeSend {
+@Extends(WebSocket.class)
+@WebSocket(eventTypes = {WebSocketEventType.MESSAGE})
+public @interface OnWSMessage {
     String value() default "";
 }

@@ -1,6 +1,7 @@
 package io.forestframework.core.http.routing;
 
 import io.forestframework.utils.Pair;
+import org.apiguardian.api.API;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Singleton
+@API(status = API.Status.INTERNAL, since = "0.1")
 public class DefaultRoutingManager implements RoutingManager {
     private Map<RoutingType, List<Routing>> routings = new HashMap<>();
     private Map<RoutingType, List<String>> routingPrefixes;

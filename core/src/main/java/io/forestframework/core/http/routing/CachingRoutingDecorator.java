@@ -7,6 +7,8 @@ import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.result.ResultProcessor;
 import io.forestframework.core.http.result.RoutingResultProcessor;
+import io.forestframework.core.http.websocket.WebSocketEventType;
+import io.forestframework.core.http.websocket.WebSocketRouting;
 import org.apiguardian.api.API;
 
 import javax.inject.Singleton;
@@ -19,7 +21,7 @@ import java.util.stream.Stream;
  * A decorator for {@link Routing}s, mainly for caching purpose.
  */
 @API(status = API.Status.INTERNAL)
-public class CachingRoutingDecorator implements Routing {
+public class CachingRoutingDecorator implements Routing, WebSocketRouting {
     private static final Object[] UNINITIALIZED = {};
     private final Routing delegate;
     private Object singletonHandlerInstance = UNINITIALIZED;
@@ -133,5 +135,13 @@ public class CachingRoutingDecorator implements Routing {
     @Override
     public String toString() {
         return delegate.toString();
+    }
+
+    @Override
+    public List<WebSocketEventType> getWebSocketEventTypes() {
+        if (delegate instanceof WebSocketRouting) {
+            return ((WebSocketRouting) delegate).getWebSocketEventTypes();
+        }
+        throw new UnsupportedOperationException();
     }
 }

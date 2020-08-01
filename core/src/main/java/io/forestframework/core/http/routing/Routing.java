@@ -52,8 +52,11 @@ public interface Routing {
     default RoutingParameterResolver<?> getParameterResolver(Injector injector, int index) {
         ParameterResolver resolver = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(getHandlerMethod(), index, ParameterResolver.class);
         if (resolver == null) {
-            throw new IllegalArgumentException("Don't know how to resolve param " + index + " of " + getHandlerMethod());
+            return null;
         }
+//        if (resolver == null) {
+//            throw new IllegalArgumentException("Don't know how to resolve param " + index + " of " + getHandlerMethod());
+//        }
         return injector.getInstance(resolver.resolver());
     }
 

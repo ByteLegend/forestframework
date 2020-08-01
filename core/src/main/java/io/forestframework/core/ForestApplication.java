@@ -9,6 +9,7 @@ import io.forestframework.ext.core.AutoRoutingScanExtension;
 import io.forestframework.ext.core.AutoScanComponentsExtension;
 import io.forestframework.ext.core.BannerExtension;
 
+import javax.inject.Scope;
 import javax.inject.Singleton;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -22,6 +23,7 @@ import java.lang.annotation.Target;
 @BindingAnnotation
 @Extends(EnableExtensions.class)
 @EnableExtensions(extensions = {BannerExtension.class, AutoScanComponentsExtension.class, AutoRoutingScanExtension.class})
-@CompositeOf({Singleton.class, com.google.inject.Singleton.class, Component.class, Router.class})
+@CompositeOf({Component.class, Router.class})
+@Scope
 public @interface ForestApplication {
 }

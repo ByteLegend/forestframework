@@ -1,4 +1,4 @@
-package io.forestframework.core.http.socketjs;
+package io.forestframework.core.http.sockjs;
 
 import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.core.http.routing.Route;
@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Extends(Route.class)
 @Route(type = RoutingType.SOCK_JS)
-public @interface SocketJS {
+public @interface SockJS {
     String value() default "";
 
     SockJSEventType[] eventTypes() default {

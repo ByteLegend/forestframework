@@ -2,11 +2,14 @@ package io.forestframework.core.http.routing;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.inject.Injector;
-import io.forestframework.core.config.Config;
+import io.forestframework.core.config.ConfigProvider;
+import io.forestframework.core.http.ChainedRequestHandler;
 import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpStatusCode;
+import io.forestframework.core.http.InjectableParameters;
 import io.forestframework.core.http.OptimizedHeaders;
+import io.forestframework.core.http.RequestHandlerChain;
 import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.result.ResultProcessor;
 import io.vertx.core.Vertx;
@@ -38,29 +41,30 @@ import static java.util.stream.Collectors.groupingBy;
  * Fast routing is matched by hashtable lookup and invoked directly, without {@link io.vertx.ext.web.Router}/{@link RoutingContext} creation.
  */
 @Singleton
-public class FastRequestHandler extends AbstractRequestHandler {
+public class FastRequestHandler extends AbstractRequestHandler implements ChainedRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(FastRequestHandler.class);
-    private final DefaultRoutingManager routings;
+    private final DefaultRoutingManager routingManager;
     private final Map<String, List<Routing>> pathToFastRoutingsMap;
 
     @Inject
     public FastRequestHandler(Injector injector,
                               Vertx vertx,
-                              RoutingManager routings,
-                              @Config("forest.environment") String environment) {
-        super(vertx, injector, routings, environment);
-        this.routings = (DefaultRoutingManager) routings;
+                              RoutingManager routingManager,
+                              ConfigProvider configProvider) {
+        super(vertx, injector, configProvider);
+        this.routingManager = (DefaultRoutingManager) routingManager;
         this.pathToFastRoutingsMap = createPathToFastRoutingsMap();
     }
 
+
     @Override
-    public void handle(HttpServerRequest request) {
+    public void handle(HttpServerRequest request, RequestHandlerChain handlerChain) {
         Routing routing = findFastRouting(request);
 
         if (routing != null) {
             doHandle(routing, request);
         } else {
-            next(request);
+            handlerChain.handleNext(request);
         }
     }
 
@@ -74,7 +78,7 @@ public class FastRequestHandler extends AbstractRequestHandler {
 
     private void doHandle(Routing routing, HttpServerRequest request) {
         RoutingContext context = new FastRoutingContext(vertx, request);
-        Object[] arguments = resolveArguments(routing, context);
+        Object[] arguments = resolveArguments(routing, new InjectableParameters(injector).with(context));
         CompletableFuture<Object> returnValueFuture = invokeHandler(routing, arguments);
         returnValueFuture.whenComplete((returnValue, failure) -> {
             if (failure == null) {
@@ -97,7 +101,7 @@ public class FastRequestHandler extends AbstractRequestHandler {
     }
 
     private Map<String, List<Routing>> createPathToFastRoutingsMap() {
-        return routings.getRouting(RoutingType.HANDLER)
+        return routingManager.getRouting(RoutingType.HANDLER)
                 .stream()
                 .filter(this::isFastRouting)
                 .collect(groupingBy(Routing::getPath));
@@ -136,7 +140,7 @@ public class FastRequestHandler extends AbstractRequestHandler {
     private boolean noPrefixMatchingInterceptors(Routing routing) {
         return Stream.of(RoutingType.values())
                 .filter(routingType -> routingType != RoutingType.HANDLER)
-                .map(routings::getRoutingPrefixes)
+                .map(routingManager::getRoutingPrefixes)
                 .flatMap(List::stream)
                 .noneMatch(prefix -> routing.getPath().startsWith(prefix));
     }
@@ -147,4 +151,5 @@ public class FastRequestHandler extends AbstractRequestHandler {
         context.response().putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_TEXT_PLAIN);
         context.response().end(ExceptionUtils.getStackTrace(failure));
     }
+
 }

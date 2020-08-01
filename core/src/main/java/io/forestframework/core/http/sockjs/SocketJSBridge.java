@@ -1,4 +1,4 @@
-package io.forestframework.core.http.socketjs;
+package io.forestframework.core.http.sockjs;
 
 import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.core.http.routing.Route;

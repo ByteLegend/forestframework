@@ -1,4 +1,4 @@
-package io.forestframework.core.http.socketjs;
+package io.forestframework.core.http.sockjs;
 
 public enum SockJSEventType {
     OPEN,

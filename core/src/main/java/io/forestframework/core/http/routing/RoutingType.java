@@ -57,6 +57,8 @@ public enum RoutingType {
      */
     POST_HANDLER,
 
+    WEB_SOCKET,
+
     // See https://vertx.io/docs/vertx-web/java/#_sockjs
     SOCK_JS,
     SOCK_JS_BRIDGE

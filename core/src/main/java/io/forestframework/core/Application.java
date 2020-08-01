@@ -10,6 +10,7 @@ import io.forestframework.core.config.Config;
 import io.forestframework.core.http.DefaultHttpVerticle;
 import io.forestframework.core.http.routing.DefaultRoutingManager;
 import io.forestframework.core.http.routing.RoutingManager;
+import io.forestframework.core.modules.CoreModule;
 import io.forestframework.ext.api.StartupContext;
 import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.DeploymentOptions;
@@ -17,6 +18,7 @@ import io.vertx.core.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package io.forestframework.core.http.socketjs;
+package io.forestframework.core.http.sockjs;
 
 import com.github.blindpirate.annotationmagic.Extends;
 import io.vertx.ext.bridge.BridgeEventType;
@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Extends(SocketJSBridge.class)
-@SocketJSBridge(eventTypes = {BridgeEventType.SOCKET_CREATED})
-public @interface OnBridgeSocketCreated {
+@SocketJSBridge(eventTypes = {BridgeEventType.REGISTER})
+public @interface OnBridgeRegister {
     String value() default "";
 }
