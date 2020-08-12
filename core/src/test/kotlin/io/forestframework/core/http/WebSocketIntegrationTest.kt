@@ -53,7 +53,7 @@ class WebSocketTestApp {
 
     private suspend fun webSocketWriteBackDirectly(socket: ServerWebSocket, eventType: RoutingType, message: Buffer) {
         // delay so that client can set up message handler
-        delay(500)
+        delay(1000)
 
         val messageText = when (eventType) {
             RoutingType.ON_WEB_SOCKET_OPEN -> "open"
@@ -151,7 +151,7 @@ class WebSocketIntegrationTest : AbstractForestIntegrationTest() {
             .close()
 
         // Wait for server receiving the close event
-        delay(500)
+        delay(1000)
 
         val expectedServerMessages = expectedClientMessages + listOf("close")
         assertEquals(expectedServerMessages, app.messages)
@@ -199,6 +199,6 @@ class WebSocketIntegrationTest : AbstractForestIntegrationTest() {
 
         alice.waitFor("User Bob left on error")
 
-        Assertions.assertEquals(1, router.errors.size)
+        assertEquals(1, router.errors.size)
     }
 }
