@@ -3,11 +3,16 @@ package io.forestframework.core.http;
 import io.forestframework.core.http.routing.Route;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingType;
+import org.apiguardian.api.API;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * For internal usage only.
+ */
+@API(status = API.Status.INTERNAL, since = "0.1")
 public class DefaultRouting implements Routing {
     private final RoutingType type;
 

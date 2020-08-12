@@ -1,7 +1,7 @@
 package io.forestframework.example.todo.java.sync;
 
-import io.forestframework.core.SingletonRouter;
 import io.forestframework.core.http.Blocking;
+import io.forestframework.core.http.Router;
 import io.forestframework.core.http.param.JsonRequestBody;
 import io.forestframework.core.http.param.PathParam;
 import io.forestframework.core.http.result.GetJson;
@@ -11,7 +11,7 @@ import io.forestframework.core.http.routing.Get;
 import io.forestframework.core.http.routing.Patch;
 import io.forestframework.core.http.routing.Post;
 import io.forestframework.example.todo.java.Todo;
-import io.vertx.ext.web.RoutingContext;
+import io.vertx.core.http.HttpServerRequest;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
  *
  * Try avoid using @Blocking, this has bad impacts on throughput.
  */
-@SingletonRouter
+@Router
 @Blocking
 public class TodoRouter {
     private final TodoService todoService;
@@ -44,8 +44,8 @@ public class TodoRouter {
 
     @Post("/todos")
     @JsonResponseBody(pretty = true)
-    public Todo handleCreateTodo(@JsonRequestBody Todo todo, RoutingContext routingContext) {
-        return todoService.insert(Todo.wrapTodo(todo, routingContext));
+    public Todo handleCreateTodo(@JsonRequestBody Todo todo, HttpServerRequest request) {
+        return todoService.insert(Todo.wrapTodo(todo, request));
     }
 
     @Patch("/todos/:todoId")

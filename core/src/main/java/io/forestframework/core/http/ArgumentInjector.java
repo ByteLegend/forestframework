@@ -2,13 +2,12 @@ package io.forestframework.core.http;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
-import io.forestframework.core.http.websocket.WebSocketRoutingContext;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.shareddata.SharedData;
-import io.vertx.ext.web.RoutingContext;
 import org.apiguardian.api.API;
 
 import java.nio.file.FileSystem;
@@ -17,8 +16,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+/**
+ * For internal usage only.
+ */
 @API(status = API.Status.INTERNAL, since = "0.1")
-public class InjectableParameters {
+public class ArgumentInjector {
     /**
      * The global singletons for parameter injection, see {@link io.forestframework.core.CoreModule}
      */
@@ -34,35 +36,58 @@ public class InjectableParameters {
     private final Injector injector;
     private final Map<Class<?>, Object> parameters = new HashMap<>();
 
-    public InjectableParameters(Injector injector) {
+    public ArgumentInjector(Injector injector) {
         this.injector = injector;
     }
 
-    public InjectableParameters with(RoutingContext routingContext) {
-        return withParameter(RoutingContext.class, routingContext)
-                .withParameter(HttpServerRequest.class, routingContext.request())
-                .withParameter(HttpServerResponse.class, routingContext.response());
+    public ArgumentInjector with(HttpContext context) {
+        return withParameter(WebContext.class, context)
+                .withParameter(HttpContext.class, context)
+                .withParameter(HttpServerRequest.class, context.request())
+                .withParameter(HttpServerResponse.class, context.response());
     }
 
-    public InjectableParameters with(WebSocketRoutingContext routingContext) {
-        return withParameter(RoutingContext.class, routingContext);
+    public ArgumentInjector with(WebSocketContext context) {
+        return withParameter(WebSocketContext.class, context)
+                .withParameter(WebContext.class, context)
+                .withParameter(ServerWebSocket.class, context.webSocket());
     }
 
-    public InjectableParameters with(RoutingContext routingContext, Throwable e) {
-        InjectableParameters ret = with(routingContext)
-                .withParameter(Throwable.class, e);
-        if (e instanceof Exception) {
-            ret.withParameter(Exception.class, (Exception) e);
+    public ArgumentInjector with(Throwable t) {
+        withParameter(Throwable.class, t);
+        if (t instanceof RuntimeException || t == null) {
+            withParameter(RuntimeException.class, ((RuntimeException) t));
         }
-        return ret;
+        if (t instanceof Exception || t == null) {
+            withParameter(Exception.class, ((Exception) t));
+        }
+        return this;
     }
+//
+//    public InjectableParameters with(WebSocketRoutingContext routingContext) {
+//        return withParameter(RoutingContext.class, routingContext);
+//    }
+//
+//    public InjectableParameters with(RoutingContext routingContext, Throwable e) {
+//        InjectableParameters ret = with(routingContext)
+//                .withParameter(Throwable.class, e);
+//        if (e instanceof Exception) {
+//            ret.withParameter(Exception.class, (Exception) e);
+//        }
+//        return ret;
+//    }
 
-    public <T> InjectableParameters withParameter(Class<T> klass, T argument) {
+    public <T> ArgumentInjector withParameter(Class<T> klass, T argument) {
         parameters.put(klass, argument);
         return this;
     }
 
-    @SuppressWarnings("unchecked")
+    public <T> ArgumentInjector withParameterSupplier(Class<T> klass, Supplier<T> supplier) {
+        parameters.put(klass, supplier);
+        return this;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T resolve(Class<T> klass, Supplier<String> errorMessage) {
         if (SUPPORTED_CLASSES.contains(klass)) {
             return injector.getInstance(klass);

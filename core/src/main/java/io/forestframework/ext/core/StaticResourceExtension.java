@@ -127,15 +127,15 @@ public class StaticResourceExtension implements Extension {
     }
 
     /**
-     * static/js -> @GetStaticResource("/js/*")
+     * static/js -> @GetStaticResource("/js/**")
      */
     private void registerDirectoryRouting(RoutingManager routings, String webrootDir, File resourceDir) {
         routings.getRouting(RoutingType.HANDLER).add(
-                new StaticResourceRouting("/" + resourceDir.getName() + "/*", webrootDir + "/" + resourceDir.getName() + "/", GET_RESOURCE_DIR_METHOD));
+                new StaticResourceRouting("/" + resourceDir.getName() + "/**", webrootDir + "/" + resourceDir.getName() + "/", GET_RESOURCE_DIR_METHOD));
     }
 
     @StaticResource
-    public String getResourceInDir(String resourceDirPath, @PathParam("*") String path) {
+    public String getResourceInDir(String resourceDirPath, @PathParam("**") String path) {
         return resourceDirPath + path;
     }
 

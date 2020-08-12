@@ -19,9 +19,11 @@ import java.lang.annotation.Target;
 @Documented
 @Inherited
 public @interface Route {
+    int order() default 0;
+
     RoutingType type() default RoutingType.HANDLER;
 
-    HttpMethod[] methods() default {HttpMethod.GET};
+    HttpMethod[] methods() default {HttpMethod.ALL};
 
     @AliasFor("path")
     String value() default "";

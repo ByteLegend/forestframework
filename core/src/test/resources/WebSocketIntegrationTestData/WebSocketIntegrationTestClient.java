@@ -10,16 +10,16 @@ import java.util.concurrent.CountDownLatch;
  *
  * It must only use JDK libraries.
  */
-public class SocketJSIntegrationTestClient {
+public class WebSocketIntegrationTestClient {
     private static final String port = System.getProperty("server.port");
     private static final String username = System.getProperty("user.name");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
         WebSocket ws = client.newWebSocketBuilder()
-                .buildAsync(URI.create("http://localhost:" + port + "/chat/" + username), new WebSocket.Listener() {
+                .buildAsync(URI.create("ws://localhost:" + port + "/chat/" + username), new WebSocket.Listener() {
                 }).join();
-        ws.sendText("Hello from " + username);
+        ws.sendText("Hello from " + username, false);
         new CountDownLatch(1).await();
     }
 }

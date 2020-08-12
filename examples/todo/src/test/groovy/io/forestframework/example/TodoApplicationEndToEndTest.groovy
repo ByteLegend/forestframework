@@ -1,9 +1,10 @@
 package io.forestframework.example
 
+import com.google.common.net.MediaType
 import geb.Browser
 import geb.Configuration
-import io.forestframework.core.SingletonRouter
 import io.forestframework.core.config.Config
+import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.staticresource.GetStaticResource
 import io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC
@@ -78,6 +79,7 @@ abstract class AbstractTodoApplicationEndToEndTest {
 class TodoApplicationKotlinCoroutinesJDBCEndToEndTest extends AbstractTodoApplicationEndToEndTest {
 }
 
+
 @ExtendWith(EmbeddedRedisExtension.class)
 @ExtendWith(RedisSetUpExtension.class)
 @ExtendWith(ForestExtension.class)
@@ -131,20 +133,20 @@ class RedisSetUpExtension implements BeforeAllCallback {
 }
 
 
-@SingletonRouter
+@Router
 class JsSpecRouter {
     @GetStaticResource("/js-spec/index.html")
     String index() {
         return "js-spec/index.html"
     }
 
-    @GetStaticResource("/js-spec/js/*")
-    String js(@PathParam("*") String path) {
+    @GetStaticResource("/js-spec/js/**")
+    String js(@PathParam("**") String path) {
         return "js-spec/js/$path"
     }
 
-    @GetStaticResource("/js-spec/css/*")
-    String css(@PathParam("*") String path) {
+    @GetStaticResource("/js-spec/css/**")
+    String css(@PathParam("**") String path) {
         return "js-spec/css/$path"
     }
 }

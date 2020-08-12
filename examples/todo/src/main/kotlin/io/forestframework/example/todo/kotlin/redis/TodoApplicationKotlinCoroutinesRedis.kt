@@ -2,9 +2,9 @@ package io.forestframework.example.todo.kotlin.redis
 
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
+import io.forestframework.core.Component
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
-import io.forestframework.core.SingletonComponent
 import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.TodoRouter
 import io.forestframework.example.todo.kotlin.TodoService
@@ -30,7 +30,7 @@ fun main() {
     Forest.run(TodoApplicationKotlinCoroutinesRedis::class.java)
 }
 
-@SingletonComponent
+@Component
 class RedisModule : AbstractModule() {
     @Provides
     @Singleton

@@ -6,16 +6,12 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import io.forestframework.core.ComponentClasses;
 import io.forestframework.core.http.DefaultRouting;
-import io.forestframework.core.http.DefaultSockJSRouting;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpRequestHandler;
 import io.forestframework.core.http.Router;
-import io.forestframework.core.http.routing.DefaultWebSocketRouting;
 import io.forestframework.core.http.routing.Route;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingManager;
-import io.forestframework.core.http.sockjs.SockJS;
-import io.forestframework.core.http.websocket.WebSocket;
 import io.forestframework.core.modules.WebRequestHandlingModule;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
@@ -88,13 +84,13 @@ public class AutoRoutingScanExtension implements Extension {
     }
 
     private Routing createRouting(Route route, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
-        if (AnnotationMagic.instanceOf(route, WebSocket.class)) {
-            return new DefaultWebSocketRouting(AnnotationMagic.cast(route, WebSocket.class), path, handlerMethod);
-        } else if (AnnotationMagic.instanceOf(route, SockJS.class)) {
-            return new DefaultSockJSRouting(AnnotationMagic.cast(route, SockJS.class), path, handlerMethod);
-        } else {
+//        if (AnnotationMagic.instanceOf(route, WebSocket.class)) {
+//            return new DefaultWebSocketRouting(AnnotationMagic.cast(route, WebSocket.class), path, handlerMethod);
+//        } else if (AnnotationMagic.instanceOf(route, SockJS.class)) {
+//            return new DefaultSockJSRouting(AnnotationMagic.cast(route, SockJS.class), path, handlerMethod);
+//        } else {
             return new DefaultRouting(route.type(), path, regexPath, methods, handlerMethod);
-        }
+//        }
     }
 
     private String getPath(Route route, Object target) {

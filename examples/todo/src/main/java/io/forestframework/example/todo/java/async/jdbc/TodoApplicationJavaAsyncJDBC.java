@@ -4,9 +4,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import io.forestframework.core.Component;
 import io.forestframework.core.Forest;
 import io.forestframework.core.ForestApplication;
-import io.forestframework.core.SingletonComponent;
 import io.forestframework.example.todo.java.async.TodoRouter;
 import io.forestframework.example.todo.java.async.TodoService;
 import io.forestframework.ext.api.EnableExtensions;
@@ -29,7 +29,7 @@ public class TodoApplicationJavaAsyncJDBC {
         Forest.run(TodoApplicationJavaAsyncJDBC.class);
     }
 
-    @SingletonComponent
+    @Component
     public static class JDBCModule extends AbstractModule {
         @Provides
         @Singleton

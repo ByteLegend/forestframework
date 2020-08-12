@@ -2,7 +2,7 @@ val libs: (String) -> String by rootProject.ext
 
 dependencies {
     api(libs("vertx-core"))
-    api(libs("vertx-web"))
+    implementation(libs("vertx-web"))
     api(libs("javax.inject"))
     api(libs("guice"))
     api(libs("annotation-magic"))

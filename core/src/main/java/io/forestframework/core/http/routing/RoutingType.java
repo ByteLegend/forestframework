@@ -18,6 +18,8 @@ import org.apiguardian.api.API;
  *         Handler2;
  *         Handler3;
  *         // ... more handlers
+ *     } catch(HTTP status code) {
+ *         errorHandler of specific HTTP status code;
  *     } finally {
  *         PostHandler1;
  *         PostHandler2;
@@ -48,6 +50,8 @@ public enum RoutingType {
      * {@link io.forestframework.core.http.result.RoutingResultProcessor} on handlers.
      */
     HANDLER,
+
+    ERROR_HANDLER,
     /**
      * An after-handler is like a finally block in Java programming language. It should return void and never throw exceptions.
      *
@@ -57,7 +61,10 @@ public enum RoutingType {
      */
     POST_HANDLER,
 
-    WEB_SOCKET,
+    ON_WEB_SOCKET_OPEN,
+    ON_WEB_SOCKET_MESSAGE,
+    ON_WEB_SOCKET_CLOSE,
+    ON_WEB_SOCKET_ERROR,
 
     // See https://vertx.io/docs/vertx-web/java/#_sockjs
     SOCK_JS,

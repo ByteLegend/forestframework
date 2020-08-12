@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Extends(SockJS.class)
 @SockJS(eventTypes = {SockJSEventType.ERROR})
-public @interface OnError {
+public @interface OnSockJSError {
     String value() default "";
 }

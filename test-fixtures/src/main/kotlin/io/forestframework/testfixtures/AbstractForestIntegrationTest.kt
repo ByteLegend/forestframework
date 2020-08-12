@@ -23,7 +23,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Timeout
 import java.util.Collections
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -47,11 +49,11 @@ class WebSocketClient(val socket: WebSocket) {
         return this
     }
 
-    suspend fun waitFor(vararg message: String, timeoutMillis: Int = 1000, stepMillis: Int = 100): WebSocketClient {
+    suspend fun waitFor(vararg message: String, timeoutMillis: Int = 5000, stepMillis: Int = 100): WebSocketClient {
         return waitFor(message.toList(), timeoutMillis, stepMillis)
     }
 
-    suspend fun waitFor(message: List<String>, timeoutMillis: Int = 1000, stepMillis: Int = 100): WebSocketClient {
+    suspend fun waitFor(message: List<String>, timeoutMillis: Int = 5000, stepMillis: Int = 100): WebSocketClient {
         var millis = 0
         while (millis < timeoutMillis) {
             val indexOfSubList = Collections.indexOfSubList(receivedMessages.subList(cursorIndex, receivedMessages.size), message)
@@ -64,12 +66,13 @@ class WebSocketClient(val socket: WebSocket) {
             millis += stepMillis
         }
 
-        throw IllegalStateException("Wait for '$message' timeout after $timeoutMillis ms")
+        throw IllegalStateException("Wait for '$message' timeout after $timeoutMillis ms, received messages: $receivedMessages")
     }
 
     suspend fun close() = socket.closeAwait()
 }
 
+@Timeout(value = 30, unit = TimeUnit.SECONDS)
 abstract class AbstractForestIntegrationTest {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     @Inject

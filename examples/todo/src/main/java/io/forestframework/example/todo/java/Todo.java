@@ -1,7 +1,7 @@
 package io.forestframework.example.todo.java;
 
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -195,9 +195,9 @@ public class Todo {
 
     private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
-    public static Todo wrapTodo(Todo todo, RoutingContext routingContext) {
+    public static Todo wrapTodo(Todo todo, HttpServerRequest request) {
         todo.id = COUNTER.incrementAndGet();
-        todo.url = routingContext.request().absoluteURI() + "/" + todo.id;
+        todo.url = request.absoluteURI() + "/" + todo.id;
         return todo;
     }
 }

@@ -11,13 +11,17 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 class KotlinSuspendFunctionBridge {
     companion object {
+        /**
+         * Invoke a Kotlin suspend function reflectively. Note that the passed args size equals the suspend function's
+         * real bytecode parameter list length, i.e. the last elements of args is {@code null}, which will be assigned with
+         * {@link Continuation} instance.
+         */
+        @Suppress("UNCHECKED_CAST")
         fun <T> invoke(vertx: Vertx, method: Method, instance: Any, vararg args: Any): CompletableFuture<T> =
             GlobalScope.future(vertx.dispatcher()) {
                 suspendCoroutineUninterceptedOrReturn<T> {
-                    val copy = arrayOfNulls<Any>(args.size + 1)
-                    args.copyInto(copy)
-                    copy[args.size] = it
-                    ReflectionUtils.invoke(method, instance, copy)
+                    (args as Array<Any>)[args.size - 1] = it
+                    ReflectionUtils.invoke(method, instance, args)
                 }
             }
     }

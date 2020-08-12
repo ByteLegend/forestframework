@@ -1,7 +1,6 @@
 package io.forestframework.example.todo.kotlin
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.forestframework.core.SingletonRouter
 import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
@@ -12,8 +11,8 @@ import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.Post
 import io.forestframework.core.http.staticresource.GetStaticResource
 import io.forestframework.core.http.staticresource.StaticResource
+import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.RoutingContext
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -48,7 +47,7 @@ class TodoRouter @Inject constructor(private val service: TodoService) {
 
     @Post("/todos")
     @JsonResponseBody(pretty = true)
-    suspend fun handleCreateTodo(@JsonRequestBody todo: Todo, routingContext: RoutingContext): Todo = service.insert(wrapTodo(todo, routingContext))
+    suspend fun handleCreateTodo(@JsonRequestBody todo: Todo, request: HttpServerRequest): Todo = service.insert(wrapTodo(todo, request))
 
     @Patch("/todos/:todoId")
     @JsonResponseBody(pretty = true)
@@ -63,9 +62,9 @@ class TodoRouter @Inject constructor(private val service: TodoService) {
 
 val counter = AtomicInteger(0)
 
-fun wrapTodo(todo: Todo, routingContext: RoutingContext): Todo {
+fun wrapTodo(todo: Todo, request: HttpServerRequest): Todo {
     todo.id = counter.incrementAndGet()
-    todo.url = routingContext.request().absoluteURI() + "/" + todo.id
+    todo.url = request.absoluteURI() + "/" + todo.id
     return todo
 }
 

@@ -4,17 +4,15 @@ import io.forestframework.benchmark.model.Fortune
 import io.forestframework.benchmark.model.Message
 import io.forestframework.benchmark.model.World
 import io.forestframework.core.Forest
-import io.forestframework.core.ForestApplication
+import io.forestframework.core.http.HttpContext
 import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.core.http.result.JsonResponseBody
 import io.forestframework.core.http.routing.Get
-import io.forestframework.ext.pg.PgClientExtension
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.buffer.impl.BufferImpl
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServerResponse
-import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.sqlclient.executeAwait
 import io.vertx.kotlin.sqlclient.executeBatchAwait
 import io.vertx.pgclient.PgPool
@@ -99,9 +97,9 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
 
     @Get("/queries")
     @JsonResponseBody
-    suspend fun multipleDatabaseQuery(routingContext: RoutingContext): List<World> {
-        val queries = parseParam(routingContext)
-        routingContext.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
+    suspend fun multipleDatabaseQuery(context: HttpContext): List<World> {
+        val queries = parseParam(context)
+        context.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         return (1..queries).map {
             val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(randomWorld()))
             val row: Tuple = result.iterator().next()
@@ -109,9 +107,9 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
         }
     }
 
-    private fun parseParam(routingContext: RoutingContext): Int {
+    private fun parseParam(context: HttpContext): Int {
         return try {
-            min(500, max(1, routingContext.request().getParam("queries").toInt()))
+            min(500, max(1, context.request().getParam("queries").toInt()))
         } catch (e: Exception) {
             1
         }
@@ -119,9 +117,9 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
 
     @Get("/updates")
     @JsonResponseBody
-    suspend fun updateDatabase(routingContext: RoutingContext): List<World> {
-        val queries = parseParam(routingContext)
-        routingContext.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
+    suspend fun updateDatabase(context: HttpContext): List<World> {
+        val queries = parseParam(context)
+        context.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         val worlds = (1..queries).map {
             val id = randomWorld()
             val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(id))

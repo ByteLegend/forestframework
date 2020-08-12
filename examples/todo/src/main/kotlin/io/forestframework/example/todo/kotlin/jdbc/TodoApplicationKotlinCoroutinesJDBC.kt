@@ -3,9 +3,9 @@ package io.forestframework.example.todo.kotlin.jdbc
 import com.google.inject.AbstractModule
 import com.google.inject.Injector
 import com.google.inject.Provides
+import io.forestframework.core.Component
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
-import io.forestframework.core.SingletonComponent
 import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.TodoRouter
 import io.forestframework.example.todo.kotlin.TodoService
@@ -36,7 +36,7 @@ fun main() {
     Forest.run(TodoApplicationKotlinCoroutinesJDBC::class.java)
 }
 
-@SingletonComponent
+@Component
 class JDBCModule : AbstractModule() {
     @Provides
     @Singleton

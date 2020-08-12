@@ -1,6 +1,6 @@
 package io.forestframework.example.todo.java.async;
 
-import io.forestframework.core.SingletonRouter;
+import io.forestframework.core.http.Router;
 import io.forestframework.core.http.param.JsonRequestBody;
 import io.forestframework.core.http.param.PathParam;
 import io.forestframework.core.http.result.GetJson;
@@ -11,12 +11,12 @@ import io.forestframework.core.http.routing.Patch;
 import io.forestframework.core.http.routing.Post;
 import io.forestframework.example.todo.java.Todo;
 import io.vertx.core.Future;
-import io.vertx.ext.web.RoutingContext;
+import io.vertx.core.http.HttpServerRequest;
 
 import javax.inject.Inject;
 import java.util.List;
 
-@SingletonRouter
+@Router
 public class TodoRouter {
     private final TodoService todoService;
 
@@ -38,8 +38,8 @@ public class TodoRouter {
 
     @Post("/todos")
     @JsonResponseBody(pretty = true)
-    public Future<Todo> handleCreateTodo(@JsonRequestBody Todo todo, RoutingContext routingContext) {
-        return todoService.insert(Todo.wrapTodo(todo, routingContext));
+    public Future<Todo> handleCreateTodo(@JsonRequestBody Todo todo, HttpServerRequest request) {
+        return todoService.insert(Todo.wrapTodo(todo, request));
     }
 
     @Patch("/todos/:todoId")

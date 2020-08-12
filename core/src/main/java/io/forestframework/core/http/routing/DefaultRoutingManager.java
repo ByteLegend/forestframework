@@ -1,5 +1,6 @@
 package io.forestframework.core.http.routing;
 
+import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.utils.Pair;
 import org.apiguardian.api.API;
 
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 @API(status = API.Status.INTERNAL, since = "0.1")
 public class DefaultRoutingManager implements RoutingManager {
     private Map<RoutingType, List<Routing>> routings = new HashMap<>();
-    private Map<RoutingType, List<String>> routingPrefixes;
+//    private Map<RoutingType, List<String>> routingPrefixes;
 
     @Override
     public List<Routing> getRouting(RoutingType routingType) {
@@ -29,9 +30,10 @@ public class DefaultRoutingManager implements RoutingManager {
         return ret;
     }
 
-    public List<String> getRoutingPrefixes(RoutingType routingType) {
-        return routingPrefixes.get(routingType);
-    }
+
+//    public List<String> getRoutingPrefixes(RoutingType routingType) {
+//        return routingPrefixes.get(routingType);
+//    }
 
     /**
      * Make routings unmodifiable after all extensions finish their work.
@@ -42,11 +44,11 @@ public class DefaultRoutingManager implements RoutingManager {
                         .map(routingType -> Pair.of(routingType, decorate(getRouting(routingType))))
                         .collect(Collectors.toMap(Pair::getLeft, Pair::getRight))
         );
-        routingPrefixes = Collections.unmodifiableMap(
-                routings.entrySet()
-                        .stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> createHandlerPathPrefixes(entry.getValue())))
-        );
+//        routingPrefixes = Collections.unmodifiableMap(
+//                routings.entrySet()
+//                        .stream()
+//                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> createHandlerPathPrefixes(entry.getValue())))
+//        );
     }
 
     /**

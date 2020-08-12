@@ -1,6 +1,7 @@
 package io.forestframework.core.http.routing;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
+import com.google.common.net.MediaType;
 import com.google.inject.Injector;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.param.ParameterResolver;
@@ -26,15 +27,28 @@ import java.util.stream.Collectors;
  * </ol>
  */
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
+@SuppressWarnings("UnstableApiUsage")
 public interface Routing {
     Method getHandlerMethod();
+
+    default int getOrder() {
+        return 0;
+    }
 
     default RoutingType getType() {
         return RoutingType.HANDLER;
     }
 
+    default List<String> getConsumes() {
+        return Collections.singletonList(MediaType.ANY_TYPE.toString());
+    }
+
+    default List<String> getProduces() {
+        return Collections.singletonList(MediaType.ANY_TYPE.toString());
+    }
+
     default List<HttpMethod> getMethods() {
-        return Collections.singletonList(HttpMethod.GET);
+        return Collections.singletonList(HttpMethod.ALL);
     }
 
     default Object getHandlerInstance(Injector injector) {
@@ -54,9 +68,6 @@ public interface Routing {
         if (resolver == null) {
             return null;
         }
-//        if (resolver == null) {
-//            throw new IllegalArgumentException("Don't know how to resolve param " + index + " of " + getHandlerMethod());
-//        }
         return injector.getInstance(resolver.resolver());
     }
 

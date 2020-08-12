@@ -20,11 +20,11 @@ public class DefaultHttpVerticle extends AbstractVerticle {
 
     @Inject
     public DefaultHttpVerticle(Vertx vertx,
-                               HttpRequestHandler routingEngine,
+                               HttpRequestHandler httpRequestHandler,
                                WebSocketRequestHandler webSocketRequestHandler,
                                @Config("forest.http") HttpServerOptions httpServerOptions) {
         this.vertx = vertx;
-        this.httpRequestHandler = routingEngine;
+        this.httpRequestHandler = httpRequestHandler;
         this.httpServerOptions = httpServerOptions;
         this.webSocketRequestHandler = webSocketRequestHandler;
     }

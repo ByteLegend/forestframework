@@ -2,6 +2,10 @@ package io.forestframework.core.http;
 
 public enum HttpMethod {
     /**
+     * A special enum value which matches all HTTP methods.
+     */
+    ALL,
+    /**
      * The RFC 2616 {@code OPTIONS} method, this instance is interned and uniquely used.
      */
     OPTIONS,

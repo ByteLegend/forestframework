@@ -6,6 +6,11 @@ public class HttpException extends RuntimeException {
     private final HttpStatusCode code;
 
     public HttpException(HttpStatusCode code) {
+        this(code, null);
+    }
+
+    public HttpException(HttpStatusCode code, String message) {
+        super(message == null ? code.name() : message);
         this.code = code;
     }
 
