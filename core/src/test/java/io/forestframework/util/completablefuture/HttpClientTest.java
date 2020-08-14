@@ -1,5 +1,6 @@
 package io.forestframework.util.completablefuture;
 
+import io.forestframework.testsupport.utils.FreePortFinder;
 import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
@@ -19,6 +20,7 @@ import org.junit.runner.RunWith;
 public class HttpClientTest {
 
   private Vertx vertx;
+  private int port = FreePortFinder.findFreeLocalPort();
 
   @Before
   public void setUp(TestContext tc) {
@@ -36,7 +38,7 @@ public class HttpClientTest {
               request.response().end("Hello");
           }
         }
-    ).listen(8080, tc.asyncAssertSuccess());
+    ).listen(port, tc.asyncAssertSuccess());
   }
 
   @After
@@ -48,7 +50,7 @@ public class HttpClientTest {
   public void test(TestContext tc) {
     Async async = tc.async();
 
-    HttpClientOptions options = new HttpClientOptions().setDefaultPort(8080).setDefaultHost("localhost");
+    HttpClientOptions options = new HttpClientOptions().setDefaultPort(port).setDefaultHost("localhost");
     HttpClient client1 = vertx.createHttpClient(options);
     HttpClient client2 = vertx.createHttpClient(options);
 
