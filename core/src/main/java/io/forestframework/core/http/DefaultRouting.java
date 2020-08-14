@@ -9,11 +9,15 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
+import static io.forestframework.utils.StartupUtils.isBlockingMethod;
+
 /**
  * For internal usage only.
  */
 @API(status = API.Status.INTERNAL, since = "0.1")
 public class DefaultRouting implements Routing {
+    private final boolean blocking;
+
     private final RoutingType type;
 
     private final String path;
@@ -25,15 +29,21 @@ public class DefaultRouting implements Routing {
     private final Method handlerMethod;
 
     public DefaultRouting(Route route, Method handlerMethod) {
-        this(route.type(), route.value(), route.regex(), Arrays.asList(route.methods()), handlerMethod);
+        this(isBlockingMethod(handlerMethod), route.type(), route.value(), route.regex(), Arrays.asList(route.methods()), handlerMethod);
     }
 
-    public DefaultRouting(RoutingType type, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
+    public DefaultRouting(boolean blocking, RoutingType type, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
+        this.blocking = blocking;
         this.type = type;
         this.path = path;
         this.regexPath = regexPath;
         this.methods = methods;
         this.handlerMethod = handlerMethod;
+    }
+
+    @Override
+    public boolean isBlocking() {
+        return blocking;
     }
 
     @Override

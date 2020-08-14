@@ -2,6 +2,9 @@ package io.forestframework.utils;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.Component;
+import io.forestframework.core.http.Blocking;
+
+import java.lang.reflect.Method;
 
 /**
  * For internal use only.
@@ -18,5 +21,11 @@ public class StartupUtils {
         } catch (Throwable e) {
             throw new RuntimeException("Can't instantiate " + klass + ", an class instantiated at startup time must have an accessible default constructor.");
         }
+    }
+
+
+    public static boolean isBlockingMethod(Method handlerMethod) {
+        return AnnotationMagic.isAnnotationPresent(handlerMethod, Blocking.class)
+                || AnnotationMagic.isAnnotationPresent(handlerMethod.getDeclaringClass(), Blocking.class);
     }
 }

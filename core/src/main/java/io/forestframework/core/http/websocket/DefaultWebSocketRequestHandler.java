@@ -21,42 +21,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-//import com.google.inject.Injector;
-//import io.forestframework.core.config.ConfigProvider;
-//import io.forestframework.core.http.ArgumentInjector;
-//import io.forestframework.core.http.routing.AbstractRequestHandler;
-//import io.forestframework.core.http.routing.PathMatcher;
-//import io.forestframework.core.http.routing.Routing;
-//import io.forestframework.core.http.routing.RoutingManager;
-//import io.forestframework.core.http.routing.RoutingType;
-//import io.vertx.core.Promise;
-//import io.vertx.core.Vertx;
-//import io.vertx.core.buffer.Buffer;
-//import io.vertx.core.http.ServerWebSocket;
-//import org.apiguardian.api.API;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//
-//import javax.inject.Inject;
-//import javax.inject.Singleton;
-//import java.lang.reflect.Method;
-//import java.util.ArrayList;
-//import java.util.Collections;
-//import java.util.HashMap;
-//import java.util.HashSet;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.Set;
-//import java.util.concurrent.CompletableFuture;
-//import java.util.stream.Collectors;
-//
-///**
-// * A default {@link WebSocketRequestHandler} implementation which supports:
-// *
-// * <ol>
-// *     <li>Plain WebSocket handling</li>
-// * </ol>
-// */
 @Singleton
 @API(status = API.Status.INTERNAL, since = "0.1")
 public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler implements WebSocketRequestHandler {

@@ -1,6 +1,5 @@
 package io.forestframework.core.http;
 
-import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.inject.Injector;
 import io.forestframework.KotlinSuspendFunctionBridge;
 import io.forestframework.core.http.param.RoutingParameterResolver;
@@ -51,7 +50,7 @@ public abstract class AbstractWebRequestHandler {
     private CompletableFuture<Object> invokeMethod(Routing routing, Object[] arguments) {
         if (isKotlinSuspendFunction(routing)) {
             return invokeViaKotlinBridge(routing, arguments);
-        } else if (isBlockingMethod(routing)) {
+        } else if (routing.isBlocking()) {
             return invokeBlockingViaJavaReflection(routing, arguments);
         } else {
             return invokeViaJavaReflection(routing, arguments);
@@ -70,11 +69,6 @@ public abstract class AbstractWebRequestHandler {
         CompletableFuture<T> failedFuture = new CompletableFuture<>();
         failedFuture.completeExceptionally(e);
         return failedFuture;
-    }
-
-    private boolean isBlockingMethod(Routing routing) {
-        return AnnotationMagic.isAnnotationPresent(routing.getHandlerMethod(), Blocking.class)
-                || AnnotationMagic.isAnnotationPresent(routing.getHandlerMethod().getDeclaringClass(), Blocking.class);
     }
 
     private <T> CompletableFuture<T> invokeBlockingViaJavaReflection(Routing routing, Object[] arguments) {

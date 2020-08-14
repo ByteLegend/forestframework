@@ -32,6 +32,10 @@ dependencies {
     testImplementation(libs("vertx-codegen"))  // Keep this or https://github.com/mockito/mockito/issues/366
     testImplementation(libs("vertx-redis-client"))
 
+    testImplementation(libs("geb-core"))
+    testImplementation(libs("selenium-firefox-driver"))
+    testImplementation(libs("selenium-chrome-driver"))
+    testImplementation(libs("selenium-support"))
 
 
     testImplementation(libs("junit"))

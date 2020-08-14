@@ -14,8 +14,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
 @Inherited
-@Extends(Intercept.class)
-@Intercept(type = RoutingType.PRE_HANDLER)
+@Extends(Route.class)
+@Route(type = RoutingType.PRE_HANDLER)
 public @interface PreHandler {
     HttpMethod[] methods() default {HttpMethod.GET};
 

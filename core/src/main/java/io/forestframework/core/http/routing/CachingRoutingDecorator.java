@@ -32,6 +32,11 @@ public class CachingRoutingDecorator implements Routing, Comparable<Routing> {
     }
 
     @Override
+    public boolean isBlocking() {
+        return delegate.isBlocking();
+    }
+
+    @Override
     public Method getHandlerMethod() {
         return delegate.getHandlerMethod();
     }

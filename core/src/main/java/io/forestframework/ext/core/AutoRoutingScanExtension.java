@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static io.forestframework.utils.StartupUtils.isBlockingMethod;
+
 /**
  * Manage routing-related work at startup.
  *
@@ -70,7 +72,7 @@ public class AutoRoutingScanExtension implements Extension {
     @SuppressWarnings("ConstantConditions")
     private Routing toRouting(Class<?> klass, Method method) {
         Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethodOrNull(method, Route.class);
-        Router routeOnClass = AnnotationMagic.getOneAnnotationOnClassOrNull(klass, Router.class);
+        Router routeOnClass = findRouterOnClass(klass);
         if (routeOnClass == null && routeOnMethod != null) {
             return new DefaultRouting(routeOnMethod, method);
         }
@@ -83,14 +85,19 @@ public class AutoRoutingScanExtension implements Extension {
         }
     }
 
+    private Router findRouterOnClass(Class<?> klass) {
+        List<Router> routers = AnnotationMagic.getAnnotationsOnClass(klass, Router.class);
+        if (routers.isEmpty()) {
+            return null;
+        } else {
+            // @Router("/balabala")
+            // @ForestApplication
+            return routers.stream().filter(r -> !r.value().isEmpty()).findFirst().orElse(routers.get(0));
+        }
+    }
+
     private Routing createRouting(Route route, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
-//        if (AnnotationMagic.instanceOf(route, WebSocket.class)) {
-//            return new DefaultWebSocketRouting(AnnotationMagic.cast(route, WebSocket.class), path, handlerMethod);
-//        } else if (AnnotationMagic.instanceOf(route, SockJS.class)) {
-//            return new DefaultSockJSRouting(AnnotationMagic.cast(route, SockJS.class), path, handlerMethod);
-//        } else {
-            return new DefaultRouting(route.type(), path, regexPath, methods, handlerMethod);
-//        }
+        return new DefaultRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod);
     }
 
     private String getPath(Route route, Object target) {

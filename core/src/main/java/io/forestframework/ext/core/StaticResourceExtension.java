@@ -5,8 +5,8 @@ import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.param.PathParam;
 import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.routing.Routing;
-import io.forestframework.core.http.routing.RoutingType;
 import io.forestframework.core.http.routing.RoutingManager;
+import io.forestframework.core.http.routing.RoutingType;
 import io.forestframework.core.http.staticresource.StaticResource;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
@@ -14,9 +14,11 @@ import io.forestframework.ext.api.StartupContext;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Scan classpath and register all classpath:/static/* resources
@@ -34,7 +36,7 @@ import java.util.List;
  * This extension is not enabled by default due to two reasons:
  *
  * 1. We don't want the static resource handling to be "magic". You have to enable this feature
- * explicitly via {@code @ForestApplication(extensions = StaticResourceExtension.class)}
+ * explicitly via {@code @WithStaticResource()}
  *
  * 2. Classpath scanning and wildcard route matching harms performance.
  *
@@ -56,16 +58,23 @@ public class StaticResourceExtension implements Extension {
 
     @Override
     public void beforeInjector(StartupContext startupContext) {
+        List<WithStaticResource> withStaticResources = startupContext.getEnableExtensionsAnnotation(WithStaticResource.class);
+        List<String> webroots = withStaticResources.stream().flatMap(withStaticResource -> {
+            String webroot = withStaticResource.webroot();
+            Stream<String> webrootsStream = Stream.of(withStaticResource.webroots());
+            return Stream.concat(Stream.of(webroot), webrootsStream);
+        }).collect(Collectors.toList());
+
         startupContext.getConfigProvider().addDefaultOptions("forest.static.webroot", () -> "static");
-        startupContext.getConfigProvider().addDefaultOptions("forest.static.webroots", ArrayList::new);
+        startupContext.getConfigProvider().addDefaultOptions("forest.static.webroots", () -> webroots);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void afterInjector(Injector injector) {
         ConfigProvider configProvider = injector.getInstance(ConfigProvider.class);
         String webroot = configProvider.getInstance("forest.static.webroot", String.class);
-        List<String> webroots = configProvider.getInstance("forest.static.webroots", List.class);
+        LinkedHashSet<String> webroots = new LinkedHashSet<>(configProvider.getInstance("forest.static.webroots", List.class));
 
         webroots.add(webroot);
 

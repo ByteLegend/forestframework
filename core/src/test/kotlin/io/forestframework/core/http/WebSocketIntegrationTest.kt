@@ -79,7 +79,7 @@ class WebSocketChatRoomRouter @Inject constructor(vertx: Vertx) {
                     try {
                         it.writePingAwait(Buffer.buffer("ping"))
                     } catch (t: Throwable) {
-                        if (!ExceptionUtils.getStackTrace(t)!!.contentEquals("WebSocket is closed")) {
+                        if (!ExceptionUtils.getStackTrace(t)!!.contains("WebSocket is closed")) {
                             throw t
                         }
                     }

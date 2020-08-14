@@ -31,6 +31,10 @@ import java.util.stream.Collectors;
 public interface Routing {
     Method getHandlerMethod();
 
+    default boolean isBlocking() {
+        return false;
+    }
+
     default int getOrder() {
         return 0;
     }

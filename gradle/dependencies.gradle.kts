@@ -15,8 +15,10 @@ val slf4jVersion = "1.7.30"
 val commonsLangVersion = "3.10"
 val junitExtensionsVersion = "2.4.0"
 val commonsIOVersion = "2.7"
-val annotationMagicVersion = "0.2.4"
+val annotationMagicVersion = "0.2.5"
 val jsr311ApiVersion = "1.1.1"
+val gebVersion = "3.4"
+val seleniumVersion = "3.141.59"
 
 val libs = listOf(
     "io.vertx:vertx-core:$vertxVersion",
@@ -64,7 +66,12 @@ val libs = listOf(
     "org.junit.jupiter:junit-jupiter-engine:$junitVersion",
     "org.junit.vintage:junit-vintage-engine:$junitVersion",
     "org.junit.jupiter:junit-jupiter-params:$junitVersion",
-    "io.github.glytching:junit-extensions:$junitExtensionsVersion"
+    "io.github.glytching:junit-extensions:$junitExtensionsVersion",
+
+    "org.gebish:geb-core:$gebVersion",
+    "org.seleniumhq.selenium:selenium-firefox-driver:${seleniumVersion}",
+    "org.seleniumhq.selenium:selenium-chrome-driver:${seleniumVersion}",
+    "org.seleniumhq.selenium:selenium-support:${seleniumVersion}"
 ).map { it.split(":")[1] to it }.toMap()
 
 rootProject.extensions.configure<org.gradle.api.plugins.ExtraPropertiesExtension>("ext") {

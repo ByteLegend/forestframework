@@ -20,11 +20,19 @@ allprojects {
     configureJavaProject()
 
     if (file("src/main/kotlin").isDirectory || file("src/test/kotlin").isDirectory) {
-        configureKotlinProject()
+        configureKotlin()
+    }
+
+    if (file("src/test/groovy").isDirectory) {
+        configureGroovy()
     }
 }
 
-fun Project.configureKotlinProject() {
+fun Project.configureGroovy() {
+    apply(plugin = "groovy")
+}
+
+fun Project.configureKotlin() {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     tasks.withType<KotlinCompile>() {
