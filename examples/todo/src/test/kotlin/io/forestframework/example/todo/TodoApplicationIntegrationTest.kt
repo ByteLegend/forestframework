@@ -1,5 +1,6 @@
 package io.forestframework.example.todo
 
+//import io.vertx.core.http.impl.headers.VertxHttpHeaders
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.forestframework.core.config.Config
@@ -12,12 +13,13 @@ import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.jdbc.TodoApplicationKotlinCoroutinesJDBC
 import io.forestframework.example.todo.kotlin.redis.TodoApplicationKotlinCoroutinesRedis
 import io.forestframework.ext.core.ExtraConfig
+import io.forestframework.testfixtures.EmbeddedRedisExtension
+import io.forestframework.testfixtures.RedisSetUpExtension
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.impl.headers.HeadersMultiMap
-//import io.vertx.core.http.impl.headers.VertxHttpHeaders
 import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.ext.web.client.sendAwait
@@ -27,12 +29,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.Extensions
-import se.svt.util.junit5.redis.EmbeddedRedisExtension
-import se.svt.util.junit5.redis.REDIS_PORT_PROPERTY
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.random.Random
@@ -115,6 +113,7 @@ abstract class TodoApplicationIntegrationTest {
         return this
     }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun createTodo(): Todo {
         val order = Random.nextInt()
         val title = UUID.randomUUID().toString()
@@ -203,12 +202,6 @@ abstract class TodoApplicationIntegrationTest {
             .bodyAsString()
             .toObject(object : TypeReference<List<Todo>>() {})
         assertTrue(allTodos.isEmpty())
-    }
-}
-
-class RedisSetUpExtension : BeforeAllCallback {
-    override fun beforeAll(context: ExtensionContext) {
-        System.setProperty("forest.redis.endpoints", "[\"redis://localhost:${System.getProperty(REDIS_PORT_PROPERTY)}\"]")
     }
 }
 

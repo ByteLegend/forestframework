@@ -1,6 +1,5 @@
 package io.forestframework.example
 
-import com.google.common.net.MediaType
 import geb.Browser
 import geb.Configuration
 import io.forestframework.core.config.Config
@@ -17,16 +16,14 @@ import io.forestframework.ext.api.EnableExtensions
 import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.StartupContext
 import io.forestframework.ext.core.ExtraConfig
+import io.forestframework.testfixtures.EmbeddedRedisExtension
+import io.forestframework.testfixtures.RedisSetUpExtension
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import se.svt.util.junit5.redis.EmbeddedRedisExtension
-import se.svt.util.junit5.redis.EmbeddedRedisExtensionKt
 
 import javax.inject.Inject
 
@@ -122,13 +119,6 @@ class JsSpecExtension implements Extension {
     @Override
     void beforeInjector(StartupContext context) {
         context.getComponentClasses().add(JsSpecRouter.class)
-    }
-}
-
-class RedisSetUpExtension implements BeforeAllCallback {
-    @Override
-    void beforeAll(ExtensionContext context) {
-        System.setProperty("forest.redis.endpoints", "[\"redis://localhost:${System.getProperty(EmbeddedRedisExtensionKt.REDIS_PORT_PROPERTY)}\"]")
     }
 }
 

@@ -34,15 +34,16 @@ class HttpClientResponseWrapper(private val delegate: HttpClientResponse) : Http
     lateinit var body: Buffer
 }
 
-class WebSocketClient(val socket: WebSocket) {
+class WebSocketClient(val socket: WebSocket, val url: String) {
+    var cursorIndex: Int = 0
+    private val receivedMessages = mutableListOf<String>()
+
     init {
         socket.textMessageHandler {
+            println("${System.nanoTime()} $url received message: $it")
             receivedMessages.add(it)
         }
     }
-
-    var cursorIndex: Int = 0
-    val receivedMessages = mutableListOf<String>()
 
     suspend fun sendMessage(message: String): WebSocketClient {
         socket.writeTextMessageAwait(message)
@@ -105,7 +106,7 @@ abstract class AbstractForestIntegrationTest {
             bodyAwait()
         }
 
-    suspend fun openWebsocket(uri: String) = WebSocketClient(client.webSocketAwait(port.toInt(), "localhost", uri))
+    suspend fun openWebsocket(uri: String) = WebSocketClient(client.webSocketAwait(port.toInt(), "localhost", uri), uri)
 
     // Set body handler before reading the whole response, otherwise
     // https://stackoverflow.com/questions/57957767/illegalstateexception-thrown-when-reading-the-vert-x-http-client-response-body

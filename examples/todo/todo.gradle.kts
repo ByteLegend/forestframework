@@ -17,7 +17,6 @@ tasks.withType<KotlinCompile>() {
 
 dependencies {
     val junitVersion = "5.6.2"
-    val junitRedisExtension = "2.0.0"
     val h2Version = "1.4.200"
     val groovyVersion = "2.5.12"
     val jedisVersion = "3.2.0"
@@ -29,11 +28,11 @@ dependencies {
     implementation("com.h2database:h2:$h2Version")
     testImplementation(project(":junit5-extension"))
     testImplementation("io.vertx:vertx-web-client:4.0.0.Beta1")
-    testImplementation("se.svt.oss.junit5:junit5-redis-extension:$junitRedisExtension")
     testImplementation("org.codehaus.groovy:groovy-all:$groovyVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
+    testImplementation(project(":test-fixtures"))
     testImplementation("org.gebish:geb-core:3.4")
     testImplementation("org.seleniumhq.selenium:selenium-firefox-driver:3.141.59")
     testImplementation("org.seleniumhq.selenium:selenium-chrome-driver:3.141.59")
