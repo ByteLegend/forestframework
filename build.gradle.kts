@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
-//
 plugins {
     kotlin("jvm") version "1.3.72"
 }
@@ -17,7 +16,7 @@ allprojects {
         maven { url = URI("https://oss.sonatype.org/content/repositories/snapshots") }
     }
 
-    configureJavaProject()
+    configureJava()
 
     if (file("src/main/kotlin").isDirectory || file("src/test/kotlin").isDirectory) {
         configureKotlin()
@@ -48,7 +47,7 @@ fun Project.configureKotlin() {
     }
 }
 
-fun Project.configureJavaProject() {
+fun Project.configureJava() {
     apply(plugin = "java-library")
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8

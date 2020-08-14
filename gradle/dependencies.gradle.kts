@@ -19,6 +19,7 @@ val annotationMagicVersion = "0.2.5"
 val jsr311ApiVersion = "1.1.1"
 val gebVersion = "3.4"
 val seleniumVersion = "3.141.59"
+val groovyVersion = "2.5.12"
 
 val libs = listOf(
     "io.vertx:vertx-core:$vertxVersion",
@@ -71,7 +72,8 @@ val libs = listOf(
     "org.gebish:geb-core:$gebVersion",
     "org.seleniumhq.selenium:selenium-firefox-driver:${seleniumVersion}",
     "org.seleniumhq.selenium:selenium-chrome-driver:${seleniumVersion}",
-    "org.seleniumhq.selenium:selenium-support:${seleniumVersion}"
+    "org.seleniumhq.selenium:selenium-support:${seleniumVersion}",
+    "org.codehaus.groovy:groovy-all:$groovyVersion"
 ).map { it.split(":")[1] to it }.toMap()
 
 rootProject.extensions.configure<org.gradle.api.plugins.ExtraPropertiesExtension>("ext") {
