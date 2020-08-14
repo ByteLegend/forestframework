@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
-@Extends(ErrorHandler.class)
-@ErrorHandler(statusCode = HttpStatusCode.NOT_FOUND)
+@Extends(OnError.class)
+@OnError(statusCode = HttpStatusCode.NOT_FOUND)
 public @interface On404 {
     int order() default 0;
 

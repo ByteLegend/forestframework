@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
-@Extends(ErrorHandler.class)
-@ErrorHandler(statusCode = HttpStatusCode.INTERNAL_SERVER_ERROR)
+@Extends(OnError.class)
+@OnError(statusCode = HttpStatusCode.INTERNAL_SERVER_ERROR)
 public @interface On500 {
     int order() default 0;
 

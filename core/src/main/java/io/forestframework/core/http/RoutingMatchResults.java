@@ -3,7 +3,7 @@ package io.forestframework.core.http;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.MediaType;
-import io.forestframework.core.http.routing.ErrorHandler;
+import io.forestframework.core.http.routing.OnError;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingType;
 import io.vertx.core.http.HttpServerRequest;
@@ -76,7 +76,7 @@ public class RoutingMatchResults {
     }
 
     private boolean canHandle(Routing routing, HttpStatusCode statusCode) {
-        ErrorHandler errorHandler = AnnotationMagic.getOneAnnotationOnMethodOrNull(routing.getHandlerMethod(), ErrorHandler.class);
+        OnError errorHandler = AnnotationMagic.getOneAnnotationOnMethodOrNull(routing.getHandlerMethod(), OnError.class);
         if (errorHandler.start() == -1 || errorHandler.end() == -1) {
             return errorHandler.statusCode() == statusCode;
         } else {

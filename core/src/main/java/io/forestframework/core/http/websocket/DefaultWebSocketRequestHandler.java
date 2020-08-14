@@ -110,81 +110,6 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
         }
         return matchedRoutings.isEmpty() ? null : matchedRoutings.get(0);
     }
-    // extends AbstractRequestHandler implements WebSocketRequestHandler {
-//    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultWebSocketRequestHandler.class);
-//    private final List<WebSocketRoutingGroup> websocketRoutings;
-//
-//    @Inject
-//    public DefaultWebSocketRequestHandler(Vertx vertx, Injector injector, ConfigProvider configProvider, RoutingManager routingManager) {
-//        super(vertx, injector, configProvider);
-//        this.websocketRoutings = createRoutings(routingManager.getRouting(RoutingType.WEB_SOCKET));
-//    }
-//
-//    private List<WebSocketRoutingGroup> createRoutings(List<Routing> routings) {
-//        Map<String, List<WebSocketRouting>> pathToHandlers = routings.stream()
-//                .map(r -> (WebSocketRouting) r)
-//                .collect(Collectors.groupingBy(WebSocketRouting::getPath));
-//
-//        List<WebSocketRoutingGroup> result = new ArrayList<>();
-//
-//        for (Map.Entry<String, List<WebSocketRouting>> entry : pathToHandlers.entrySet()) {
-//            String path = entry.getKey();
-//            Map<WebSocketEventType, WebSocketRouting> eventTypeToRouting = validateAndRemapWebSocketRoutings(path, entry.getValue());
-//            result.add(new WebSocketRoutingGroup(path, eventTypeToRouting));
-//        }
-//        return Collections.unmodifiableList(result);
-//    }
-//
-//    private Map<WebSocketEventType, WebSocketRouting> validateAndRemapWebSocketRoutings(String path, List<WebSocketRouting> routings) {
-//        Map<WebSocketEventType, WebSocketRouting> ret = new HashMap<>();
-//        for (WebSocketRouting routing : validateWebSocketRoutingsFor(path, routings)) {
-//            for (WebSocketEventType type : routing.getWebSocketEventTypes()) {
-//                ret.put(type, routing);
-//            }
-//        }
-//        return Collections.unmodifiableMap(ret);
-//    }
-//
-//    private List<WebSocketRouting> validateWebSocketRoutingsFor(String path, List<WebSocketRouting> routings) {
-//        Set<WebSocketEventType> eventTypes = new HashSet<>();
-//        for (WebSocketRouting routing : routings) {
-//            for (WebSocketEventType eventType : routing.getWebSocketEventTypes()) {
-//                if (!eventTypes.add(eventType)) {
-//                    List<Method> conflictHandlers = routings.stream()
-//                            .filter(it -> it.getWebSocketEventTypes().contains(eventType))
-//                            .map(WebSocketRouting::getHandlerMethod)
-//                            .collect(Collectors.toList());
-//                    throw new IllegalArgumentException("Found more than one SockJS handler mapped to " + path + ": " + conflictHandlers);
-//                }
-//            }
-//        }
-//
-//        return routings;
-//    }
-//
-//    /**
-//     * A group of {@link WebSocketRouting}s with same path, but different {@link WebSocketEventType}s.
-//     */
-//    private static class WebSocketRoutingGroup {
-//        private final PathMatcher pathMatcher;
-//        private final Map<WebSocketEventType, WebSocketRouting> routings;
-//
-//        private WebSocketRoutingGroup(String path, Map<WebSocketEventType, WebSocketRouting> routings) {
-//            this.pathMatcher = PathMatcher.fromPattern(path);
-//            this.routings = routings;
-//        }
-//
-//        private boolean matches(String path) {
-//            return pathMatcher.matches(path);
-//        }
-//
-//        private Map<WebSocketEventType, WebSocketRouting> getRoutings() {
-//            return routings;
-//        }
-//    }
-//
-//
-
 
     private void invokeWebSocketHandler(Routing routing, DefaultWebSocketContext context, Buffer buffer, Throwable throwable) {
         if (routing != null) {
@@ -201,14 +126,5 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
             });
         }
     }
-
-//    private Map<WebSocketEventType, WebSocketRouting> findMatchingPath(String path) {
-//        return websocketRoutings.stream()
-//                .filter(it -> it.matches(path))
-//                .findFirst()
-//                .map(WebSocketRoutingGroup::getRoutings)
-//                .orElse(null);
-//    }
-//}
 
 }

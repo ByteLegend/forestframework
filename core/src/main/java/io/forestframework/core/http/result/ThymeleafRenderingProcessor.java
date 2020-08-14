@@ -1,13 +1,11 @@
 package io.forestframework.core.http.result;
 
 import io.forestframework.core.http.WebContext;
-import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.routing.Routing;
 
 import javax.inject.Singleton;
 
 @Singleton
-@FastRoutingCompatible
 public class ThymeleafRenderingProcessor implements RoutingResultProcessor {
     @Override
     public Object processResponse(WebContext context, Routing routing, Object returnValue) {

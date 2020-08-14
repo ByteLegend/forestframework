@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Extends(Route.class)
 @Route(type = RoutingType.ERROR_HANDLER)
-public @interface ErrorHandler {
+public @interface OnError {
     HttpStatusCode statusCode() default HttpStatusCode.INTERNAL_SERVER_ERROR;
 
     int start() default -1;

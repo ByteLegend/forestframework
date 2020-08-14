@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -53,7 +54,8 @@ public class DefaultHttpRequestHandler extends AbstractWebRequestHandler impleme
                 HandlerMatchResult matchResult = context.getRoutingMatchResults().getHandlerMatchResult();
                 if (matchResult.getStatusCode() != HttpStatusCode.OK) {
                     return invokeMatchedErrorHandler(context, new HttpException(matchResult.getStatusCode(), "Resource not found: " + request.path()))
-                            .whenComplete((__, throwableInErrorHandler) -> invokePostHandlers(context, throwableInErrorHandler));
+                            .whenComplete((__, throwableInErrorHandler) -> invokePostHandlers(context, throwableInErrorHandler))
+                            .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
                 } else {
                     return invokeHandlers(context)
                             .whenComplete((__, throwableInHandler) -> {
@@ -64,10 +66,14 @@ public class DefaultHttpRequestHandler extends AbstractWebRequestHandler impleme
                                                     .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, throwableInHandler, throwableInErrorHandler));
                                         }
                                     }
-                            );
+                            )
+                            .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
                 }
             }
-        }).exceptionally(throwableInPreHandlers -> invokePostHandlers(context, throwableInPreHandlers));
+        }).exceptionally(throwableInPreHandlers ->
+                invokeMatchedErrorHandler(context, throwableInPreHandlers)
+                        .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, throwableInPreHandlers, throwableInErrorHandler))
+        );
     }
 
     private CompletableFuture<Boolean> invokePreHandlers(DefaultHttpContext context) {
@@ -101,6 +107,8 @@ public class DefaultHttpRequestHandler extends AbstractWebRequestHandler impleme
     //   If the error handler exit abnormally, returns CompletableFuture with that failure
     // If matched error handler not found, returns a CompletableFuture with the original failure
     private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultHttpContext context, Throwable throwable) {
+        throwable = unwrap(throwable);
+
         HttpStatusCode statusCode = (throwable instanceof HttpException) ? ((HttpException) throwable).getCode() : HttpStatusCode.INTERNAL_SERVER_ERROR;
         context.getArgumentInjector().with(throwable).withParameter(HttpStatusCode.class, statusCode);
 
@@ -109,6 +117,14 @@ public class DefaultHttpRequestHandler extends AbstractWebRequestHandler impleme
             return failedFuture(throwable);
         } else {
             return invokeRouting(context.getRoutingMatchResults().getMatchedErrorHandler(statusCode), context);
+        }
+    }
+
+    private Throwable unwrap(Throwable t) {
+        if (t instanceof CompletionException) {
+            return t.getCause();
+        } else {
+            return t;
         }
     }
 
@@ -148,7 +164,7 @@ public class DefaultHttpRequestHandler extends AbstractWebRequestHandler impleme
 
     /**
      * Invoke the post handlers with the potential throwables thrown from previous handlers.
-     * It's guaranteed to exit normally.
+     * It's guaranteed to return a CompletableFuture which exit normally.
      */
     private CompletableFuture<Object> invokePostHandlers(DefaultHttpContext context, Throwable... throwableThrownInPreviousHandlers) {
         CompletableFuture<Object> current = NIL_FUTURE;

@@ -12,7 +12,8 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.StreamPriority;
 
 public class EndForbiddenHttpServerResponseWrapper implements HttpServerResponse {
-    HttpServerResponse delegate;
+    private HttpServerResponse delegate;
+    private boolean written;
 
     public EndForbiddenHttpServerResponseWrapper(HttpServerResponse delegate) {
         this.delegate = delegate;
@@ -141,25 +142,25 @@ public class EndForbiddenHttpServerResponseWrapper implements HttpServerResponse
 
     @Override
     public Future<Void> write(String chunk, String enc) {
-        delegate.setChunked(true);
+        setChunkedIfNecessary();
         return delegate.write(chunk, enc);
     }
 
     @Override
     public void write(String chunk, String enc, Handler<AsyncResult<Void>> handler) {
-        delegate.setChunked(true);
+        setChunkedIfNecessary();
         delegate.write(chunk, enc, handler);
     }
 
     @Override
     public Future<Void> write(String chunk) {
-        delegate.setChunked(true);
+        setChunkedIfNecessary();
         return delegate.write(chunk);
     }
 
     @Override
     public void write(String chunk, Handler<AsyncResult<Void>> handler) {
-        delegate.setChunked(true);
+        setChunkedIfNecessary();
         delegate.write(chunk, handler);
     }
 
@@ -167,6 +168,13 @@ public class EndForbiddenHttpServerResponseWrapper implements HttpServerResponse
     public HttpServerResponse writeContinue() {
         delegate.writeContinue();
         return this;
+    }
+
+    private void setChunkedIfNecessary() {
+        if (!written) {
+            written = true;
+            delegate.setChunked(true);
+        }
     }
 
     public Future<Void> realEnd(String chunk) {

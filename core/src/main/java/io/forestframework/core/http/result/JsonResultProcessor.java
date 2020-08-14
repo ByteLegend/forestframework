@@ -2,7 +2,6 @@ package io.forestframework.core.http.result;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
-import io.forestframework.core.http.FastRoutingCompatible;
 import io.forestframework.core.http.HttpContext;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.OptimizedHeaders;
@@ -14,7 +13,6 @@ import io.vertx.core.http.HttpServerResponse;
 import javax.inject.Singleton;
 
 @Singleton
-@FastRoutingCompatible
 public class JsonResultProcessor implements RoutingResultProcessor {
     private final ObjectMapper objectMapper = new ObjectMapper();
     public static final String NOT_FOUND_JSON = "{\"message\":\"NOT_FOUND\"";
