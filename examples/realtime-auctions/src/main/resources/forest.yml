@@ -1,0 +1,6 @@
+forest:
+  http:
+    port: 8080
+  bridge:
+    outboundPermitteds:
+      - addressRegex: auction\.[0-9]+

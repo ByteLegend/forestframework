@@ -67,6 +67,7 @@ public enum RoutingType {
     ON_WEB_SOCKET_ERROR,
 
     // See https://vertx.io/docs/vertx-web/java/#_sockjs
-    SOCK_JS,
-    SOCK_JS_BRIDGE
+//    SOCK_JS,
+
+    BRIDGE
 }

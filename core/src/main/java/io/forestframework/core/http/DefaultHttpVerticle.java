@@ -33,7 +33,7 @@ public class DefaultHttpVerticle extends AbstractVerticle {
     public void start(Promise<Void> startPromise) {
         try {
             vertx.createHttpServer(httpServerOptions)
-                    .webSocketHandler(webSocketRequestHandler)
+//                    .webSocketHandler(webSocketRequestHandler)
                     .requestHandler(httpRequestHandler)
                     .exceptionHandler(e -> LOGGER.error("", e))
                     .listen(result -> {

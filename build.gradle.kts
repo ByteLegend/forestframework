@@ -38,12 +38,10 @@ fun Project.configureKotlin() {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    if (file("src/test/kotlin").isDirectory) {
-        dependencies {
-            testImplementation(libs("kotlinx-coroutines-jdk8"))
-            testImplementation(libs("kotlinx-coroutines-core"))
-            testImplementation(libs("kotlin-stdlib-jdk8"))
-        }
+    dependencies {
+        testImplementation(libs("kotlinx-coroutines-jdk8"))
+        testImplementation(libs("kotlinx-coroutines-core"))
+        testImplementation(libs("kotlin-stdlib-jdk8"))
     }
 }
 

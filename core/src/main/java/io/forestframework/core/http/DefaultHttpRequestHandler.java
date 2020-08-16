@@ -3,6 +3,7 @@ package io.forestframework.core.http;
 import com.google.inject.Injector;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingType;
+import io.forestframework.core.http.sockjs.BridgeRequestHandler;
 import io.forestframework.ext.core.HttpException;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -29,18 +30,38 @@ public class DefaultHttpRequestHandler extends AbstractWebRequestHandler impleme
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHttpRequestHandler.class);
 
     private final RoutingMatcher routingMatcher;
+    private final BridgeRequestHandler bridgeRequestHandler;
 
     @Inject
     public DefaultHttpRequestHandler(Vertx vertx,
                                      Injector injector,
-                                     RoutingMatcher routingMatcher) {
+                                     RoutingMatcher routingMatcher,
+                                     BridgeRequestHandler bridgeRequestHandler) {
         super(vertx, injector);
         this.routingMatcher = routingMatcher;
+        this.bridgeRequestHandler = bridgeRequestHandler;
     }
 
     @Override
     public void handle(HttpServerRequest request) {
         RoutingMatchResults matchResults = routingMatcher.match(request);
+
+        if (isBridge(matchResults)) {
+            bridgeRequestHandler.handle(request);
+        } else {
+            doHandle(request, matchResults);
+        }
+    }
+
+    private boolean isWebSocket(HttpServerRequest matchResults) {
+        return false;
+    }
+
+    private boolean isBridge(RoutingMatchResults matchResults) {
+        return !matchResults.getMatchedRoutings(RoutingType.BRIDGE).isEmpty();
+    }
+
+    private void doHandle(HttpServerRequest request, RoutingMatchResults matchResults) {
         DefaultHttpContext context = new DefaultHttpContext(injector, request, matchResults);
 
         CompletableFuture<Boolean> preHandlerFuture = invokePreHandlers(context);
@@ -199,122 +220,4 @@ public class DefaultHttpRequestHandler extends AbstractWebRequestHandler impleme
 
         return current;
     }
-
-
-//    private final List<ChainedRequestHandler> handlers;
-//
-//    @Inject
-//    public DefaultHttpRequestHandler(@ChainedHttpRequestHandlers List<ChainedRequestHandler> handlers) {
-//        this.handlers = handlers;
-//    }
-//
-//    @Override
-//    public void handle(HttpServerRequest request) {
-//        new DefaultRequestHandlerChain(handlers).handleNext(request);
-//    }
 }
-
-
-//class RoutingTrace {
-//    private static final Map<RoutingType, Predicate<RoutingTrace>> PREDICATES = ImmutableMap.of(
-//            RoutingType.PRE_HANDLER, RoutingTrace::shouldSkipPreHandler,
-//            RoutingType.HANDLER, RoutingTrace::shouldSkipHandler,
-//            RoutingType.POST_HANDLER, RoutingTrace::shouldSkipPostHandler
-//    );
-//    private final Context context;
-//    private final Queue<io.forestframework.core.http.routing.RoutingPath.RoutingPathNode> nodes = new LinkedList<>();
-//
-//    public RoutingPath(RerouteNextAwareRoutingContextDecorator context) {
-//        this.context = context;
-//    }
-//
-//    public io.forestframework.core.http.routing.RoutingPath.RoutingPathNode addNode(Routing routing) {
-//        io.forestframework.core.http.routing.RoutingPath.RoutingPathNode ret = new io.forestframework.core.http.routing.RoutingPath.RoutingPathNode(routing);
-//        ret.skipped = PREDICATES.get(routing.getType()).test(this);
-//        nodes.add(ret);
-//        return ret;
-//    }
-//
-//    public void next() {
-//        // User invokes next()/reroute() already
-//        if (context.isNextInvoked() || context.isRerouteInvoked()) {
-//            return;
-//        }
-//        context.next();
-//    }
-//
-//    private boolean shouldSkipPreHandler() {
-//        return nodes.stream().anyMatch(io.forestframework.core.http.routing.RoutingPath.RoutingPathNode::isPreHandlerWhichReturnsFalseOrThrowsExceptions);
-//    }
-//
-//    private boolean shouldSkipHandler() {
-//        return nodes.stream().anyMatch(node -> node.isPreHandlerWhichReturnsFalseOrThrowsExceptions() || node.isHandlerWhichThrowsExceptions());
-//    }
-//
-//    private boolean shouldSkipPostHandler() {
-//        return nodes.stream().anyMatch(io.forestframework.core.http.routing.RoutingPath.RoutingPathNode::isPostHandlerWhichThrowsExceptions);
-//    }
-//
-//    public boolean noHandlerInvoked() {
-//        return nodes.stream().noneMatch(node -> node.routing.getType() == RoutingType.HANDLER);
-//    }
-//
-//    public boolean hasFailures() {
-//        return nodes.stream().anyMatch(node -> node.failure != null);
-//    }
-//
-//    public void respond500(boolean devMode) {
-//        Throwable failure = nodes.stream().filter(node -> node.failure != null).findFirst().get().failure;
-//        context.response().setStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-//        if (devMode) {
-//            context.response().putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_TEXT_PLAIN);
-//            context.response().end(ExceptionUtils.getStackTrace(failure));
-//        }
-//
-//    }
-//
-//    public static class RoutingPathNode {
-//        private final Routing routing;
-//        private boolean skipped;
-//        private Object result;
-//        private Throwable failure;
-//
-//        private RoutingPathNode(Routing routing) {
-//            this.routing = routing;
-//        }
-//
-//        public boolean isSkipped() {
-//            return skipped;
-//        }
-//
-//        public Object getResult() {
-//            return result;
-//        }
-//
-//        public void setResult(Object result) {
-//            this.result = result;
-//        }
-//
-//        public Throwable getFailure() {
-//            return failure;
-//        }
-//
-//        public void setFailure(Throwable failure) {
-//            this.failure = failure;
-//        }
-//
-//        private boolean isPreHandlerWhichReturnsFalseOrThrowsExceptions() {
-//            return routing.getType() == RoutingType.PRE_HANDLER &&
-//                    result == Boolean.FALSE &&
-//                    failure != null;
-//        }
-//
-//        private boolean isHandlerWhichThrowsExceptions() {
-//            return routing.getType() == RoutingType.HANDLER && failure != null;
-//        }
-//
-//        private boolean isPostHandlerWhichThrowsExceptions() {
-//            return routing.getType() == RoutingType.POST_HANDLER && failure != null;
-//        }
-//    }
-//}

@@ -1,6 +1,9 @@
 package io.forestframework.core.http.param;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.MediaType;
+import io.forestframework.core.http.HttpContext;
+import io.forestframework.core.http.OptimizedHeaders;
 import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.routing.Routing;
 
@@ -16,16 +19,6 @@ public class ContentTypeNegotiatingRequestBodyParser implements ContentTypeAware
     public ContentTypeNegotiatingRequestBodyParser(JsonRequestBodyParser jsonRequestBodyParser) {
         this.requestBodyParsers = ImmutableMap.of(jsonRequestBodyParser.contentType(), jsonRequestBodyParser);
     }
-//
-//    @Override
-//    public Object resolveArgument(Routing routing, Context context, int paramIndex) {
-//        String contentType = context.parsedHeaders().contentType().value();
-//        ContentTypeAwareRoutingParameterResolver<?> parser = requestBodyParsers.get(contentType);
-//        if (parser == null) {
-//            throw new UnsupportedOperationException("Can't find parser to process " + contentType);
-//        }
-//        return parser.resolveParameter(routing, context, paramIndex);
-//    }
 
     @Override
     public String contentType() {
@@ -34,6 +27,12 @@ public class ContentTypeNegotiatingRequestBodyParser implements ContentTypeAware
 
     @Override
     public Object resolveParameter(WebContext context, Routing routing, int paramIndex) {
+//        MediaType contentType = MediaType.parse(((HttpContext) context).request().getHeader(OptimizedHeaders.HEADER_CONTENT_TYPE));
+//        ContentTypeAwareRoutingParameterResolver<?> parser = requestBodyParsers.get(contentType.);
+//        if (parser == null) {
+//            throw new UnsupportedOperationException("Can't find parser to process " + contentType);
+//        }
+//        return parser.resolveParameter(context, routing, paramIndex);
         return null;
     }
 }

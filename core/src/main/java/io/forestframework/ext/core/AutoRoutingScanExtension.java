@@ -12,6 +12,9 @@ import io.forestframework.core.http.Router;
 import io.forestframework.core.http.routing.Route;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingManager;
+import io.forestframework.core.http.sockjs.Bridge;
+import io.forestframework.core.http.sockjs.BridgeEventType;
+import io.forestframework.core.http.sockjs.DefaultBridgeRouting;
 import io.forestframework.core.modules.WebRequestHandlingModule;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
@@ -21,6 +24,7 @@ import org.apiguardian.api.API;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static io.forestframework.utils.StartupUtils.isBlockingMethod;
@@ -35,6 +39,8 @@ import static io.forestframework.utils.StartupUtils.isBlockingMethod;
  */
 @API(status = API.Status.INTERNAL)
 public class AutoRoutingScanExtension implements Extension {
+    private static final Pattern BRIDGE_ROUTING_PATH_PATTERN = Pattern.compile("(/|[^*:])*/?");
+
     @Override
     public void beforeInjector(StartupContext startupContext) {
         startupContext.getComponentClasses().add(WebRequestHandlingModule.class);
@@ -73,11 +79,8 @@ public class AutoRoutingScanExtension implements Extension {
     private Routing toRouting(Class<?> klass, Method method) {
         Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethodOrNull(method, Route.class);
         Router routeOnClass = findRouterOnClass(klass);
-        if (routeOnClass == null && routeOnMethod != null) {
-            return new DefaultRouting(routeOnMethod, method);
-        }
         String methodPath = getPath(routeOnMethod, method);
-        String path = routeOnClass.value() + methodPath;
+        String path = (routeOnClass == null ? "" : routeOnClass.value()) + methodPath;
         if (StringUtils.isNotBlank(routeOnMethod.regex())) {
             return createRouting(routeOnMethod, "", path, Arrays.asList(routeOnMethod.methods()), method);
         } else {
@@ -97,7 +100,23 @@ public class AutoRoutingScanExtension implements Extension {
     }
 
     private Routing createRouting(Route route, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
-        return new DefaultRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod);
+        if (AnnotationMagic.instanceOf(route, Bridge.class)) {
+            List<BridgeEventType> eventTypes = Arrays.asList(AnnotationMagic.cast(route, Bridge.class).eventTypes());
+            if (!regexPath.isEmpty()) {
+                throw new IllegalArgumentException("Bridge routing doesn't support regex, but you used " + regexPath + " for " + handlerMethod);
+            } else if (!BRIDGE_ROUTING_PATH_PATTERN.matcher(path).matches()) {
+                throw new IllegalArgumentException("Bridge routing doesn't support wildcard, but you used " + path + " for " + handlerMethod);
+            } else {
+                if (path.endsWith("/")) {
+                    path = path + "**";
+                } else {
+                    path = path + "/**";
+                }
+                return new DefaultBridgeRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod, eventTypes);
+            }
+        } else {
+            return new DefaultRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod);
+        }
     }
 
     private String getPath(Route route, Object target) {
@@ -107,10 +126,17 @@ public class AutoRoutingScanExtension implements Extension {
         if (StringUtils.isNotBlank(route.value()) && StringUtils.isNotBlank(route.regex())) {
             throw new IllegalArgumentException("Path and regexPath are both non-empty: " + target);
         } else if (StringUtils.isBlank(route.value())) {
-            return route.regex();
+            return verify(route.regex());
         } else {
-            return route.value();
+            return verify(route.value());
         }
+    }
+
+    private String verify(String path) {
+        if (!path.startsWith("/")) {
+            throw new IllegalArgumentException("All paths must starts with /, got " + path);
+        }
+        return path;
     }
 }
 

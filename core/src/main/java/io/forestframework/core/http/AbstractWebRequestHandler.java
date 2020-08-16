@@ -87,15 +87,19 @@ public abstract class AbstractWebRequestHandler {
     }
 
     private CompletableFuture<Object[]> resolveParameters(Routing routing, AbstractWebContext context) {
-        Class<?>[] parameterTypes = routing.getHandlerMethod().getParameterTypes();
-        Object[] arguments = new Object[parameterTypes.length];
-        CompletableFuture<?>[] futures = new CompletableFuture[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; ++i) {
-            int iCopy = i;
-            futures[i] = adapt(resolveParameter(routing, i, parameterTypes[i], context))
-                    .thenAccept(result -> arguments[iCopy] = result);
+        try {
+            Class<?>[] parameterTypes = routing.getHandlerMethod().getParameterTypes();
+            Object[] arguments = new Object[parameterTypes.length];
+            CompletableFuture<?>[] futures = new CompletableFuture[parameterTypes.length];
+            for (int i = 0; i < parameterTypes.length; ++i) {
+                int iCopy = i;
+                futures[i] = adapt(resolveParameter(routing, i, parameterTypes[i], context))
+                        .thenAccept(result -> arguments[iCopy] = result);
+            }
+            return CompletableFuture.allOf(futures).thenApply(v -> arguments);
+        } catch (Throwable t) {
+            return failedFuture(t);
         }
-        return CompletableFuture.allOf(futures).thenApply(v -> arguments);
     }
 
     @SuppressWarnings("unchecked")

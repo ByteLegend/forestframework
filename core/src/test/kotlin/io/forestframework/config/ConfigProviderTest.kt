@@ -9,6 +9,7 @@ import io.vertx.core.http.Http2Settings
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetClientOptions
+import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions
 import io.vertx.redis.client.RedisClientType
 import io.vertx.redis.client.RedisOptions
 import io.vertx.redis.client.RedisRole
@@ -268,6 +269,23 @@ forest:
 
             assertEquals(8192, provider.getInstance("forest.http.initialSettings.headerTableSize", Integer::class.java))
         }
+    }
+
+    @Test
+    @SystemProperty(name = "forest.bridge", value = """
+        {
+            "outboundPermitteds": [
+              {
+                 "addressRegex": "auction\\.[0-9]+" 
+              }
+            ] 
+        }
+        """)
+    fun `can configure option list`(@TempDir tempDir: File) {
+        val provider = ConfigProvider.load()
+
+        val options = provider.getInstance("forest.bridge", SockJSBridgeOptions::class.java)
+        assertEquals(listOf("auction\\.[0-9]+"), options.outboundPermitteds.map { it.addressRegex })
     }
 
     private fun withSystemPropertyConfigFile(tempDir: File, fileContent: String, function: () -> Unit) {

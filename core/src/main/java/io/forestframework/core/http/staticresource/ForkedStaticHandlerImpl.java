@@ -1,5 +1,6 @@
 package io.forestframework.core.http.staticresource;
 
+import io.forestframework.core.http.EndForbiddenHttpServerResponseWrapper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -12,6 +13,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.HttpVersion;
+import io.vertx.core.http.impl.Http1xServerResponse;
 import io.vertx.core.http.impl.HttpUtils;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.impl.logging.Logger;
@@ -159,9 +161,9 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                 final long lastModified = Utils.secondsFactor(entry.props.lastModifiedTime());
 
                 if (Utils.fresh(context, lastModified)) {
-                    context.response()
-                            .setStatusCode(NOT_MODIFIED.code())
-                            .end();
+                    ((EndForbiddenHttpServerResponseWrapper) context.response()
+                            .setStatusCode(NOT_MODIFIED.code()))
+                            .realEnd();
                     return;
                 }
             }

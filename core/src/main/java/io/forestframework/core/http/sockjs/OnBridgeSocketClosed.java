@@ -1,7 +1,6 @@
 package io.forestframework.core.http.sockjs;
 
 import com.github.blindpirate.annotationmagic.Extends;
-import io.vertx.ext.bridge.BridgeEventType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,8 +9,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(SocketJSBridge.class)
-@SocketJSBridge(eventTypes = {BridgeEventType.SOCKET_CLOSED})
+@Extends(Bridge.class)
+@Bridge(eventTypes = {BridgeEventType.SOCKET_CLOSED})
 public @interface OnBridgeSocketClosed {
     String value() default "";
 }

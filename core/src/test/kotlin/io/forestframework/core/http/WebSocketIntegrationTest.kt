@@ -3,7 +3,6 @@ package io.forestframework.core.http
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.routing.RoutingType
-import io.forestframework.core.http.sockjs.OnClose
 import io.forestframework.core.http.websocket.OnWSClose
 import io.forestframework.core.http.websocket.OnWSError
 import io.forestframework.core.http.websocket.OnWSMessage
@@ -49,7 +48,7 @@ class WebSocketTestApp {
     @OnWSMessage("/ws1")
     suspend fun onMessage(socket: ServerWebSocket, message: Buffer) = webSocketWriteBackDirectly(socket, RoutingType.ON_WEB_SOCKET_MESSAGE, message)
 
-    @OnClose("/ws1")
+    @OnWSClose("/ws1")
     suspend fun onError(socket: ServerWebSocket, message: Buffer) = webSocketWriteBackDirectly(socket, RoutingType.ON_WEB_SOCKET_ERROR, message)
 
     private suspend fun webSocketWriteBackDirectly(socket: ServerWebSocket, eventType: RoutingType, message: Buffer) {

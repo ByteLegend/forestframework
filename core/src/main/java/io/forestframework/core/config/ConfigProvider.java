@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import org.apache.commons.io.IOUtils;
 import org.apiguardian.api.API;
 
@@ -90,7 +90,7 @@ public class ConfigProvider {
         defaultOptions.put("forest.http", HttpServerOptions::new);
         defaultOptions.put("forest.vertx", VertxOptions::new);
         defaultOptions.put("forest.deploy", DeploymentOptions::new);
-        defaultOptions.put("forest.sockjs", SockJSHandlerOptions::new);
+        defaultOptions.put("forest.bridge", SockJSBridgeOptions::new);
         defaultOptions.put("forest.environment", () -> "dev");
     }
 
@@ -176,7 +176,7 @@ public class ConfigProvider {
             try {
                 current.put(path[path.length - 1], JSON_PARSER.readValue(value, Object.class));
             } catch (JsonProcessingException e) {
-                throw new IllegalArgumentException(String.format("Can't deserialize %s=%s", key, value));
+                throw new IllegalArgumentException(String.format("Can't deserialize %s=%s", key, value), e);
             }
         } else {
             current.put(path[path.length - 1], value);

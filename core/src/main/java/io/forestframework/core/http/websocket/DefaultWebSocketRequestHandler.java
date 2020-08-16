@@ -82,12 +82,12 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
                     .withParameterSupplier(String.class, buffer == null ? null : buffer::toString)
                     .with(throwable);
 
-            CompletableFuture<Object> returnValueFuture = invokeRouting(routing, context);
-            returnValueFuture.whenComplete((returnValue, failure) -> {
-                if (failure != null) {
-                    LOGGER.error("", failure);
-                }
-            });
+            invokeRouting(routing, context)
+                    .whenComplete((returnValue, failure) -> {
+                        if (failure != null) {
+                            LOGGER.error("", failure);
+                        }
+                    });
         }
     }
 

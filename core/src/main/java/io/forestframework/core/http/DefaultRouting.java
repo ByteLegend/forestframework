@@ -1,15 +1,11 @@
 package io.forestframework.core.http;
 
-import io.forestframework.core.http.routing.Route;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingType;
 import org.apiguardian.api.API;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-
-import static io.forestframework.utils.StartupUtils.isBlockingMethod;
 
 /**
  * For internal usage only.
@@ -27,10 +23,6 @@ public class DefaultRouting implements Routing {
     private final List<HttpMethod> methods;
 
     private final Method handlerMethod;
-
-    public DefaultRouting(Route route, Method handlerMethod) {
-        this(isBlockingMethod(handlerMethod), route.type(), route.value(), route.regex(), Arrays.asList(route.methods()), handlerMethod);
-    }
 
     public DefaultRouting(boolean blocking, RoutingType type, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
         this.blocking = blocking;

@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(SockJS.class)
-@SockJS(eventTypes = {SockJSEventType.CLOSE})
-public @interface OnClose {
+@Extends(Bridge.class)
+@Bridge(eventTypes = {BridgeEventType.SOCKET_ERROR})
+public @interface OnBridgeSocketError {
     String value() default "";
 }

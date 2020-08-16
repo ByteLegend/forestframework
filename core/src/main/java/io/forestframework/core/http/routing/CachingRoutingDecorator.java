@@ -7,6 +7,7 @@ import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.result.ResultProcessor;
 import io.forestframework.core.http.result.RoutingResultProcessor;
+import io.forestframework.core.http.sockjs.BridgeEventType;
 import org.apiguardian.api.API;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +21,7 @@ import java.util.stream.Stream;
  * A decorator for {@link Routing}s, mainly for caching purpose.
  */
 @API(status = API.Status.INTERNAL)
-public class CachingRoutingDecorator implements Routing, Comparable<Routing> {
+public class CachingRoutingDecorator implements BridgeRouting, Routing, Comparable<Routing> {
     private static final Object[] UNINITIALIZED = {};
     private final Routing delegate;
     private Object singletonHandlerInstance = UNINITIALIZED;
@@ -144,5 +145,14 @@ public class CachingRoutingDecorator implements Routing, Comparable<Routing> {
     @Override
     public int compareTo(@NotNull Routing o) {
         return 0;
+    }
+
+    @Override
+    public List<BridgeEventType> getEventTypes() {
+        if (delegate instanceof BridgeRouting) {
+            return ((BridgeRouting) delegate).getEventTypes();
+        } else {
+            throw new UnsupportedOperationException("Can't get event type from " + delegate.getClass());
+        }
     }
 }

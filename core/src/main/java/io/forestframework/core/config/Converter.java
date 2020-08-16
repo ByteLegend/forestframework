@@ -5,6 +5,8 @@ import io.forestframework.utils.Pair;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,8 +31,10 @@ enum DefaultConverter implements Converter<Object, Object> {
             .put(Pair.of(Object.class, int.class), new ObjectToInteger())
             .put(Pair.of(Object.class, Boolean.class), new ObjectToBoolean())
             .put(Pair.of(Object.class, boolean.class), new ObjectToBoolean())
+            .put(Pair.of(Map.class, Object.class), new JsonObjectConstructorConverter())
             .build();
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Object convert(Object obj, Class<?> inType, Class<?> outType) {
         if (outType.isAssignableFrom(inType)) {
@@ -42,6 +46,21 @@ enum DefaultConverter implements Converter<Object, Object> {
             }
         }
         throw new RuntimeException("Can't find matching converter: in: " + inType + ", out: " + outType);
+    }
+}
+
+@SuppressWarnings("rawtypes")
+class JsonObjectConstructorConverter implements Converter<Map, Object> {
+    @Override
+    public Object convert(Map map, Class<? extends Map> inType, Class<?> outType) {
+        try {
+            Constructor<?> constructor = outType.getConstructor(JsonObject.class);
+            return constructor.newInstance(new JsonObject(map));
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Can't convert " + map + " to type " + outType + " because constructor accepting JsonObject not found");
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException("Can't convert " + map + " to type " + outType, e);
+        }
     }
 }
 
@@ -67,6 +86,7 @@ class ObjectToString implements Converter<Object, String> {
     }
 }
 
+@SuppressWarnings("rawtypes")
 class StringToEnum implements Converter<String, Enum> {
     @Override
     public Enum convert(String s, Class<? extends String> inType, Class<? extends Enum> outType) {

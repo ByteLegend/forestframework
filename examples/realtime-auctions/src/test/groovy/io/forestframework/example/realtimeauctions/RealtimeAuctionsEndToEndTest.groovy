@@ -5,12 +5,11 @@ import geb.Configuration
 import io.forestframework.testfixtures.AbstractEndToEndTest
 import io.forestframework.testfixtures.EndToEndTest
 import io.forestframework.testsupport.ForestExtension
-import org.junit.jupiter.api.Disabled
+import io.forestframework.testsupport.ForestTest
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(ForestExtension.class)
-@Disabled
-//@ForestTest(appClass = WebSocketChatRoomEndToEndTestApp.class)
+@ForestTest(appClass = RealtimeAuctionsApp.class)
 class RealtimeAuctionsEndToEndTest extends AbstractEndToEndTest {
     @EndToEndTest
     void 'realtime auctions test'(Configuration configuration) {
@@ -21,23 +20,26 @@ class RealtimeAuctionsEndToEndTest extends AbstractEndToEndTest {
             assert title == 'The best realtime auctions!'
 
             waitFor {
-                $('#current_price').text() == "EUR 0.00"
+                $('#current_price').text().contains("EUR")
             }
 
-            $("#my_bid_value").value "1"
+            // EUR (\d+).00
+            int initPrice = (($('#current_price').text() =~ /EUR (\d+)\.00/)[0][1]).toString().toInteger()
+
+            $("#my_bid_value").value(initPrice + 1)
 
             $("#bid_button").click()
 
             waitFor {
-                $("#feed").value().toString().contains("New offer: EUR 1.00")
+                $("#feed").value().toString().contains("New offer: EUR ${initPrice + 1}.00")
             }
 
-            $("#my_bid_value").value "2"
+            $("#my_bid_value").value(initPrice + 2)
 
             $("#bid_button").click()
 
             waitFor {
-                $("#feed").value().toString().contains("New offer: EUR 2.00")
+                $("#feed").value().toString().contains("New offer: EUR ${initPrice + 2}.00")
             }
 
             $("#bid_button").click()

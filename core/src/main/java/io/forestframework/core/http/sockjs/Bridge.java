@@ -10,16 +10,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Extends(Route.class)
-@Route(type = RoutingType.SOCK_JS)
-public @interface SockJS {
+@Route(type = RoutingType.BRIDGE)
+public @interface Bridge {
     String value() default "";
 
-    SockJSEventType[] eventTypes() default {
-            SockJSEventType.OPEN,
-            SockJSEventType.CLOSE,
-            SockJSEventType.MESSAGE,
-            SockJSEventType.ERROR
+    BridgeEventType[] eventTypes() default {
+            BridgeEventType.SOCKET_CREATED,
+            BridgeEventType.SOCKET_CLOSED,
+            BridgeEventType.SEND,
+            BridgeEventType.PUBLISH,
+            BridgeEventType.PUBLISH,
+            BridgeEventType.RECEIVE,
+            BridgeEventType.UNREGISTER
     };
 }

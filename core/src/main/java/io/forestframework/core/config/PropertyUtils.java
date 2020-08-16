@@ -57,6 +57,7 @@ class PropertyUtils {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private static void setListProperty(Object bean, String key, List<?> list) throws Exception {
         Optional<Method> setter = getPropertySetter(bean, key);
         if (setter.isPresent()) {
@@ -67,7 +68,8 @@ class PropertyUtils {
                 setter.get().invoke(bean, getListOrSet(list, pType.getRawType(), pType.getActualTypeArguments()[0]));
             } else {
                 assertTrue(paramRawType == List.class || paramRawType == Set.class, "Setter " + setter.get() + " raw type must be List or Set!");
-                setter.get().invoke(bean, getListOrSet(list, paramRawType, Object.class));
+                Class genericType = getPropertyAdder(bean, key).map(method -> (Class) method.getParameterTypes()[0]).orElse(Object.class);
+                setter.get().invoke(bean, getListOrSet(list, paramRawType, genericType));
             }
         } else {
             // clear() then add
