@@ -2,7 +2,7 @@ package io.forestframework.core.http.param;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.MediaType;
-import io.forestframework.core.http.HttpContext;
+import io.forestframework.core.http.PlainHttpContext;
 import io.forestframework.core.http.OptimizedHeaders;
 import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.routing.Routing;
@@ -26,7 +26,7 @@ public class JsonRequestBodyParser implements ContentTypeAwareRoutingParameterRe
     @Override
     @SuppressWarnings("ALL")
     public Object resolveParameter(WebContext webContext, Routing routing, int paramIndex) {
-        HttpContext context = (HttpContext) webContext;
+        PlainHttpContext context = (PlainHttpContext) webContext;
 
         String contentType = context.request().getHeader(OptimizedHeaders.HEADER_CONTENT_TYPE);
         if (contentType != null) {

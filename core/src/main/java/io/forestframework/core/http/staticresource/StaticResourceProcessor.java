@@ -1,6 +1,6 @@
 package io.forestframework.core.http.staticresource;
 
-import io.forestframework.core.http.HttpContext;
+import io.forestframework.core.http.PlainHttpContext;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.result.RoutingResultProcessor;
@@ -56,7 +56,7 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
             path = path.substring(1);
         }
 
-        EndAwareRoutingContextDecorator endAwareRoutingContext = new EndAwareRoutingContextDecorator(vertx, (HttpContext) context);
+        EndAwareRoutingContextDecorator endAwareRoutingContext = new EndAwareRoutingContextDecorator(vertx, (PlainHttpContext) context);
         staticHandler.sendStatic(endAwareRoutingContext, path);
         return endAwareRoutingContext.getFuture();
     }
@@ -67,7 +67,7 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
         private final HttpServerResponse response;
         private final Promise<Void> promise = Promise.promise();
 
-        public EndAwareRoutingContextDecorator(Vertx vertx, HttpContext context) {
+        public EndAwareRoutingContextDecorator(Vertx vertx, PlainHttpContext context) {
             this.vertx = vertx;
             this.request = context.request();
             this.response = context.response();

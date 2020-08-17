@@ -2,7 +2,7 @@ package io.forestframework.core.http.param;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.config.Converter;
-import io.forestframework.core.http.HttpContext;
+import io.forestframework.core.http.PlainHttpContext;
 import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.routing.Routing;
 
@@ -16,7 +16,7 @@ public class QueryParamResolver implements RoutingParameterResolver<Object> {
         QueryParam anno = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), paramIndex, QueryParam.class);
         Class<?> paramType = routing.getHandlerMethod().getParameterTypes()[paramIndex];
 
-        String param = ((HttpContext) context).request().getParam(anno.value());
+        String param = ((PlainHttpContext) context).request().getParam(anno.value());
         if (param == null) {
             if (anno.optional()) {
                 return Converter.getDefaultConverter().convert(anno.defaultValue(), String.class, paramType);

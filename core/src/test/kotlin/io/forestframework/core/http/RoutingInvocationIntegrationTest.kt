@@ -105,7 +105,7 @@ class HalfSecondResultProcessor @Inject constructor(val vertx: Vertx, val orderT
 class OneAndHalfSecondResultProcessor @Inject constructor(val vertx: Vertx, val orderTestRouter: OrderTestRouter) : RoutingResultProcessor {
     override fun processResponse(context: WebContext?, routing: Routing?, returnValue: Any?): Any {
         return delayFuture(vertx, 1500) {
-            context as HttpContext
+            context as PlainHttpContext
             orderTestRouter.list.add(OneAndHalfSecondResultProcessor::class.java.simpleName)
         }
     }

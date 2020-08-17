@@ -8,14 +8,12 @@ import io.forestframework.core.http.HttpStatusCode
 import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
-import io.forestframework.core.http.param.RequestBody
 import io.forestframework.core.http.result.GetJson
-import io.forestframework.core.http.routing.Intercept
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.PreHandler
-import io.forestframework.core.http.sockjs.Bridge
-import io.forestframework.core.http.sockjs.BridgeEvent
-import io.forestframework.core.http.sockjs.BridgeEventType
+import io.forestframework.core.http.bridge.Bridge
+import io.forestframework.core.http.bridge.BridgeEvent
+import io.forestframework.core.http.bridge.BridgeEventType
 import io.forestframework.ext.core.EnableStaticResource
 import io.forestframework.ext.core.HttpException
 import io.vertx.core.eventbus.EventBus

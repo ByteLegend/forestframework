@@ -13,6 +13,7 @@ import javax.inject.Inject
 annotation class EndToEndTest
 
 abstract class AbstractEndToEndTest {
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     @Inject
     @Config("forest.http.port")
     lateinit var port: Integer

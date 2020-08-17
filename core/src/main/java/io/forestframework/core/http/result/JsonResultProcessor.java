@@ -2,7 +2,7 @@ package io.forestframework.core.http.result;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
-import io.forestframework.core.http.HttpContext;
+import io.forestframework.core.http.PlainHttpContext;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.OptimizedHeaders;
 import io.forestframework.core.http.WebContext;
@@ -31,7 +31,7 @@ public class JsonResultProcessor implements RoutingResultProcessor {
 
     @Override
     public Object processResponse(WebContext webContext, Routing routing, Object returnValue) {
-        HttpContext context = (HttpContext) webContext;
+        PlainHttpContext context = (PlainHttpContext) webContext;
         JsonResponseBody anno = AnnotationMagic.getOneAnnotationOnMethodOrNull(routing.getHandlerMethod(), JsonResponseBody.class);
         HttpServerResponse response = context.response();
         response.putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON);

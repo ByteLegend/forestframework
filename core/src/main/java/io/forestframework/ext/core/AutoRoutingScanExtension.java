@@ -5,16 +5,19 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import io.forestframework.core.ComponentClasses;
-import io.forestframework.core.http.DefaultRouting;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpRequestHandler;
 import io.forestframework.core.http.Router;
+import io.forestframework.core.http.bridge.Bridge;
+import io.forestframework.core.http.bridge.BridgeEventType;
+import io.forestframework.core.http.routing.DefaultBridgeRouting;
+import io.forestframework.core.http.routing.DefaultRouting;
+import io.forestframework.core.http.routing.DefaultWebSocketRouting;
 import io.forestframework.core.http.routing.Route;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingManager;
-import io.forestframework.core.http.sockjs.Bridge;
-import io.forestframework.core.http.sockjs.BridgeEventType;
-import io.forestframework.core.http.sockjs.DefaultBridgeRouting;
+import io.forestframework.core.http.websocket.WebSocket;
+import io.forestframework.core.http.websocket.WebSocketEventType;
 import io.forestframework.core.modules.WebRequestHandlingModule;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
@@ -108,12 +111,13 @@ public class AutoRoutingScanExtension implements Extension {
                 throw new IllegalArgumentException("Bridge routing doesn't support wildcard, but you used " + path + " for " + handlerMethod);
             } else {
                 if (path.endsWith("/")) {
-                    path = path + "**";
-                } else {
-                    path = path + "/**";
+                    path = path.substring(0, path.length() - 1);
                 }
                 return new DefaultBridgeRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod, eventTypes);
             }
+        } else if (AnnotationMagic.instanceOf(route, WebSocket.class)) {
+            List<WebSocketEventType> eventTypes = Arrays.asList(AnnotationMagic.cast(route, WebSocket.class).eventTypes());
+            return new DefaultWebSocketRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod, eventTypes);
         } else {
             return new DefaultRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod);
         }
@@ -126,14 +130,15 @@ public class AutoRoutingScanExtension implements Extension {
         if (StringUtils.isNotBlank(route.value()) && StringUtils.isNotBlank(route.regex())) {
             throw new IllegalArgumentException("Path and regexPath are both non-empty: " + target);
         } else if (StringUtils.isBlank(route.value())) {
-            return verify(route.regex());
+            return route.regex();
         } else {
             return verify(route.value());
         }
     }
 
     private String verify(String path) {
-        if (!path.startsWith("/")) {
+        // @Router("/websocket")
+        if (!path.startsWith("/") && !path.isEmpty()) {
             throw new IllegalArgumentException("All paths must starts with /, got " + path);
         }
         return path;

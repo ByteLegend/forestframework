@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(Route.class)
-@Route(type = RoutingType.ON_WEB_SOCKET_CLOSE)
+@Extends(WebSocket.class)
+@WebSocket(eventTypes = WebSocketEventType.CLOSE)
 public @interface OnWSClose {
     String value() default "";
 }

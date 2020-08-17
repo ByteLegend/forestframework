@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(Route.class)
-@Route(type = RoutingType.ON_WEB_SOCKET_ERROR)
+@Extends(WebSocket.class)
+@WebSocket(eventTypes = WebSocketEventType.ERROR)
 public @interface OnWSError {
     String value() default "";
 }

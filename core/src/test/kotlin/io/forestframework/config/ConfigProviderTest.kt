@@ -281,9 +281,10 @@ forest:
             ] 
         }
         """)
-    fun `can configure option list`(@TempDir tempDir: File) {
+    fun `can configure option list`() {
         val provider = ConfigProvider.load()
 
+        provider.addDefaultOptions("forest.bridge", ::SockJSBridgeOptions)
         val options = provider.getInstance("forest.bridge", SockJSBridgeOptions::class.java)
         assertEquals(listOf("auction\\.[0-9]+"), options.outboundPermitteds.map { it.addressRegex })
     }

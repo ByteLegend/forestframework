@@ -9,7 +9,7 @@ import org.apiguardian.api.API;
  * A handler which can process {@link HttpServerRequest}s and generate {@link io.vertx.core.http.HttpServerResponse}s.
  */
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
-@DefaultImplementedBy(DefaultHttpRequestHandler.class)
+@DefaultImplementedBy(DefaultHttpRequestDispatcher.class)
 public interface HttpRequestHandler extends Handler<HttpServerRequest> {
 }
 

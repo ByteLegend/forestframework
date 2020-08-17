@@ -3,7 +3,9 @@ package io.forestframework.core.http;
 import com.google.inject.Injector
 import io.forestframework.core.http.routing.Routing
 import io.forestframework.core.http.websocket.AbstractWebContext
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.vertx.core.Vertx
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -23,7 +25,7 @@ class AbstractWebRequestHandlerTest {
     @MockK
     lateinit var injector: Injector
 
-    @MockK
+    @RelaxedMockK
     lateinit var context: AbstractWebContext
 
     lateinit var routing: Routing

@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Extends(Route.class)
-@Route(type = RoutingType.ON_WEB_SOCKET_MESSAGE)
+@Extends(WebSocket.class)
+@WebSocket(eventTypes = WebSocketEventType.MESSAGE)
 public @interface OnWSMessage {
     String value() default "";
 }

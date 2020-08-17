@@ -2,8 +2,8 @@ package io.forestframework.core.http.websocket;
 
 import com.google.inject.Injector;
 import io.forestframework.core.http.ArgumentInjector;
-import io.forestframework.core.http.RoutingMatchResults;
 import io.forestframework.core.http.WebContext;
+import io.forestframework.core.http.routing.Routing;
 import org.apiguardian.api.API;
 
 import java.util.Map;
@@ -14,21 +14,28 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 public abstract class AbstractWebContext implements WebContext {
-    private final RoutingMatchResults routingMatchResults;
     private final ArgumentInjector argumentInjector;
     private final ConcurrentHashMap<String, Object> data = new ConcurrentHashMap<>();
+    private Routing routing;
 
-    public AbstractWebContext(Injector injector, RoutingMatchResults routingMatchResults) {
+    public AbstractWebContext(Injector injector) {
         this.argumentInjector = new ArgumentInjector(injector);
-        this.routingMatchResults = routingMatchResults;
     }
 
     public ArgumentInjector getArgumentInjector() {
         return argumentInjector;
     }
 
-    public RoutingMatchResults getRoutingMatchResults() {
-        return routingMatchResults;
+    public ConcurrentHashMap<String, Object> getData() {
+        return data;
+    }
+
+    public Routing getRouting() {
+        return routing;
+    }
+
+    public void setRouting(Routing routing) {
+        this.routing = routing;
     }
 
     @Override

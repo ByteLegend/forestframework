@@ -1,5 +1,6 @@
 package io.forestframework.core.http;
 
+import io.forestframework.core.http.routing.RoutingMatchResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -26,12 +27,23 @@ import javax.security.cert.X509Certificate;
 import java.util.Map;
 
 public class HttpServerRequestWrapper implements HttpServerRequest {
-    private HttpServerRequest delegate;
-    private EndForbiddenHttpServerResponseWrapper response;
+    private final HttpServerRequest delegate;
+    private final HttpServerResponse response;
+    private final RoutingMatchResult routingMatchResult;
 
-    public HttpServerRequestWrapper(HttpServerRequest delegate) {
+    public HttpServerRequestWrapper(HttpServerRequest delegate, RoutingMatchResult routingMatchResult) {
+        this(delegate, routingMatchResult, false);
+    }
+
+    public HttpServerRequestWrapper(HttpServerRequest delegate, RoutingMatchResult routingMatchResult, boolean forbidEnd) {
         this.delegate = delegate;
-        this.response = new EndForbiddenHttpServerResponseWrapper(delegate.response());
+        this.response = forbidEnd ? new EndForbiddenHttpServerResponseWrapper(delegate.response()) : delegate.response();
+        this.routingMatchResult = routingMatchResult;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends RoutingMatchResult> T getRoutingMatchResult() {
+        return (T) routingMatchResult;
     }
 
     @Override

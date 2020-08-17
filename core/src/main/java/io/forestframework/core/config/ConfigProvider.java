@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -90,7 +91,6 @@ public class ConfigProvider {
         defaultOptions.put("forest.http", HttpServerOptions::new);
         defaultOptions.put("forest.vertx", VertxOptions::new);
         defaultOptions.put("forest.deploy", DeploymentOptions::new);
-        defaultOptions.put("forest.bridge", SockJSBridgeOptions::new);
         defaultOptions.put("forest.environment", () -> "dev");
     }
 

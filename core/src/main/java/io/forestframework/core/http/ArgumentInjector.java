@@ -2,6 +2,7 @@ package io.forestframework.core.http;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
+import io.forestframework.core.http.websocket.WebSocketContext;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
@@ -40,9 +41,9 @@ public class ArgumentInjector {
         this.injector = injector;
     }
 
-    public ArgumentInjector with(HttpContext context) {
+    public ArgumentInjector with(PlainHttpContext context) {
         return withParameter(WebContext.class, context)
-                .withParameter(HttpContext.class, context)
+                .withParameter(PlainHttpContext.class, context)
                 .withParameter(HttpServerRequest.class, context.request())
                 .withParameter(HttpServerResponse.class, context.response());
     }

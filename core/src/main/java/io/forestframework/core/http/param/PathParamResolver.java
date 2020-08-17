@@ -3,12 +3,8 @@ package io.forestframework.core.http.param;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.routing.Routing;
-import io.forestframework.core.http.websocket.AbstractWebContext;
 
 import javax.inject.Singleton;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 /**
  * Resolve parameters from request url path. Three kins of path parameters are supported:
@@ -18,53 +14,9 @@ import java.util.regex.Pattern;
  */
 @Singleton
 public class PathParamResolver implements RoutingParameterResolver<Object> {
-//    private Map<String, Pattern> wildcardPatternCache = new ConcurrentHashMap<>();
-//
-//    @Override
-//    public Object resolveArgument(Context context, Routing routing, int paramIndex) {
-//        PathParam pathParam = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), paramIndex, PathParam.class);
-//
-//        if ("*".equals(pathParam.value())) {
-//            return resolveWildcardFromUrl(routing, routingContext);
-//        } else {
-//            return routingContext.pathParam(pathParam.value());
-//        }
-//    }
-//
-//    private String resolveWildcardFromUrl(Routing routing, RoutingContext routingContext) {
-//        if (StringUtils.isNotBlank(routing.getRegexPath())) {
-//            throw new IllegalArgumentException("* parameter is not supported in regexPath!");
-//        }
-//        if (StringUtils.countMatches(routing.getPath(), '*') > 1) {
-//            throw new IllegalArgumentException("Found more than 1 wildcard in " + routing.getPath() + ", can't decide which one.");
-//        }
-//        if (!routing.getPath().contains("*")) {
-//            return null;
-//        }
-//
-//        Matcher matcher = getPattern(routing.getPath()).matcher(routingContext.request().absoluteURI());
-//        if (matcher.find()) {
-//            return matcher.group("wildcard");
-//        } else {
-//            return null;
-//        }
-//    }
-//
-//    private Pattern getPattern(String path) {
-//        Pattern ret = wildcardPatternCache.get(path);
-//        if (ret == null) {
-//            int wildcardIndex = path.indexOf('*');
-//
-//            String regex = "\\Q" + path.substring(0, wildcardIndex) + "\\E" + "(?<wildcard>.*)" + "\\Q" + path.substring(wildcardIndex + 1) + "\\E";
-//            ret = Pattern.compile(regex);
-//            wildcardPatternCache.put(path, ret);
-//        }
-//        return ret;
-//    }
-
     @Override
     public Object resolveParameter(WebContext context, Routing routing, int paramIndex) {
         PathParam pathParam = AnnotationMagic.getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), paramIndex, PathParam.class);
-        return ((AbstractWebContext) context).getRoutingMatchResults().getRoutingMatchResult(routing).getPathParams().get(pathParam.value());
+        return context.pathParam(pathParam.value());
     }
 }

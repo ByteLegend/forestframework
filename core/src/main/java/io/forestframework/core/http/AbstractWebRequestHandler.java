@@ -31,6 +31,7 @@ public abstract class AbstractWebRequestHandler {
     }
 
     protected <T> CompletableFuture<T> invokeRouting(Routing routing, AbstractWebContext context) {
+        context.setRouting(routing);
         return resolveParameters(routing, context)
                 .thenCompose(arguments -> invokeMethod(routing, arguments))
                 .thenCompose(returnValue -> processResult(routing, context, returnValue));
