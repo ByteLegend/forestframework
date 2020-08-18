@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER")
+
 package io.forestframework.core.http
 
 import com.github.blindpirate.annotationmagic.Extends
@@ -17,13 +19,13 @@ import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @ForestApplication
 class RoutingInvocationIntegrationTestApp
@@ -195,10 +197,8 @@ class RoutingInvocationIntegrationTest : AbstractForestIntegrationTest() {
 
     @Test
     fun `param resolvers can throw 4xx and 5xx HttpException`() {
-
     }
 
     fun `exceptions in result processor can be caught and later processors are not called`() {
-
     }
 }

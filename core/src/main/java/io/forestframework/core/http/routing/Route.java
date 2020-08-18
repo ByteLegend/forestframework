@@ -32,21 +32,3 @@ public @interface Route {
 
     String regex() default "";
 }
-
-
-// Known sub-annotations
-//
-// +--- Get/Post/Patch/Delete
-// +--- StaticResource
-// +--- SocketJS
-// +--- SocketJSBridge
-// +--- Intercept
-//   +--- PreHandler
-//   +--- AfterSuccess
-//   +--- AfterFailure
-//   +--- AfterCompletion
-//
-// extension sub-annotations
-// +--- GET
-// +--- POST
-// ...

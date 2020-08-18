@@ -6,14 +6,14 @@ import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.HttpStatusCode
 import io.forestframework.core.http.Router
+import io.forestframework.core.http.bridge.Bridge
+import io.forestframework.core.http.bridge.BridgeEvent
+import io.forestframework.core.http.bridge.BridgeEventType
 import io.forestframework.core.http.param.JsonRequestBody
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.GetJson
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.PreHandler
-import io.forestframework.core.http.bridge.Bridge
-import io.forestframework.core.http.bridge.BridgeEvent
-import io.forestframework.core.http.bridge.BridgeEventType
 import io.forestframework.ext.core.EnableStaticResource
 import io.forestframework.ext.core.HttpException
 import io.vertx.core.eventbus.EventBus
@@ -25,8 +25,7 @@ import javax.inject.Inject
 
 @ForestApplication
 @EnableStaticResource
-class RealtimeAuctionsApp {
-}
+class RealtimeAuctionsApp
 
 fun main() {
     Forest.run(RealtimeAuctionsApp::class.java)
@@ -54,10 +53,12 @@ class AuctionHandler @Inject constructor(private val repository: AuctionReposito
     }
 
     @Patch("/auctions/:id")
-    fun handleChangeAuctionPrice(eventBus: EventBus,
-                                 @PathParam("id") auctionId: String,
-                                 @JsonRequestBody body: Map<String, Any>,
-                                 @JsonRequestBody bodyString: String) {
+    fun handleChangeAuctionPrice(
+        eventBus: EventBus,
+        @PathParam("id") auctionId: String,
+        @JsonRequestBody body: Map<String, Any>,
+        @JsonRequestBody bodyString: String
+    ) {
         val auctionRequest = Auction(
             auctionId,
             BigDecimal(body["price"].toString())
@@ -78,7 +79,6 @@ class AuctionHandler @Inject constructor(private val repository: AuctionReposito
         }
     }
 }
-
 
 @Component
 class AuctionRepository @Inject constructor(private val sharedData: SharedData) {

@@ -82,8 +82,8 @@ data class Todo(
 ) {
     constructor(jsonStr: String) : this(JsonObject(jsonStr))
 
-    constructor(jsonObject: JsonObject)
-        : this(
+    constructor(jsonObject: JsonObject) :
+        this(
         jsonObject.getInteger("id"),
         jsonObject.getString("title"),
         jsonObject.getAutoBoolean("completed"),

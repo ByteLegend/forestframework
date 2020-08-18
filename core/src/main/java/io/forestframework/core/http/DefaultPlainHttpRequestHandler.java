@@ -105,8 +105,8 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
     //   If the error handler exit normally, returns a CompletableFuture which completes normally
     //   If the error handler exit abnormally, returns CompletableFuture with that failure
     // If matched error handler not found, returns a CompletableFuture with the original failure
-    private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultPlainHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, Throwable throwable) {
-        throwable = unwrap(throwable);
+    private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultPlainHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, Throwable t) {
+        Throwable throwable = unwrap(t);
 
         HttpStatusCode statusCode = (throwable instanceof HttpException) ? ((HttpException) throwable).getCode() : HttpStatusCode.INTERNAL_SERVER_ERROR;
         context.getArgumentInjector().with(throwable).withParameter(HttpStatusCode.class, statusCode);
@@ -145,8 +145,7 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                         .findFirst()
                         .orElse(HttpStatusCode.INTERNAL_SERVER_ERROR);
                 if (!context.response().ended()) {
-                    context.response().setStatusCode(statusCode.getCode());
-                    context.response().write(statusCode.name());
+                    context.response().setStatusCode(statusCode.getCode()).write(statusCode.name());
                     ((EndForbiddenHttpServerResponseWrapper) context.response()).realEnd();
                 }
             } else {

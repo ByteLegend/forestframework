@@ -3,14 +3,13 @@ package io.forestframework.core.http.routing;
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.inject.Injector;
 import io.forestframework.core.http.HttpMethod;
+import io.forestframework.core.http.bridge.BridgeEventType;
 import io.forestframework.core.http.param.ParameterResolver;
 import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.result.ResultProcessor;
 import io.forestframework.core.http.result.RoutingResultProcessor;
-import io.forestframework.core.http.bridge.BridgeEventType;
 import io.forestframework.core.http.websocket.WebSocketEventType;
 import org.apiguardian.api.API;
-import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Singleton;
 import java.lang.reflect.Method;
@@ -22,7 +21,7 @@ import java.util.stream.Stream;
  * A decorator for {@link Routing}s, mainly for caching purpose.
  */
 @API(status = API.Status.INTERNAL)
-public class CachingRoutingDecorator implements BridgeRouting, WebSocketRouting, Routing, Comparable<Routing> {
+public class CachingRoutingDecorator implements BridgeRouting, WebSocketRouting, Routing {
     private static final Object[] UNINITIALIZED = {};
     private final Routing delegate;
     private Object singletonHandlerInstance = UNINITIALIZED;
@@ -141,11 +140,6 @@ public class CachingRoutingDecorator implements BridgeRouting, WebSocketRouting,
     @Override
     public String toString() {
         return delegate.toString();
-    }
-
-    @Override
-    public int compareTo(@NotNull Routing o) {
-        return 0;
     }
 
     @Override

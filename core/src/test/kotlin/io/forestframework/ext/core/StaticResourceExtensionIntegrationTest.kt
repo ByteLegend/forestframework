@@ -47,7 +47,7 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
                     assertThat(bodyAsString(), containsString(expectedContent))
                 } else {
                     // At least 100 bytes
-                    assertTrue(bodyAsBinary().length() > 100);
+                    assertTrue(bodyAsBinary().length() > 100)
                 }
             }
     }

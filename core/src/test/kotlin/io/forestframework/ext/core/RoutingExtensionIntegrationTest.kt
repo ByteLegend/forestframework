@@ -6,7 +6,6 @@ import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.GetJson
 import io.forestframework.testsupport.ForestTest
 
-
 data class User(val id: Int)
 
 @Router("/users")
@@ -18,10 +17,8 @@ class TestRouter {
     fun getUserById(@PathParam("userid") userId: Int) = User(userId)
 }
 
-
 @ForestApplication
-class RouterTestApplication {
-}
+class RouterTestApplication
 
 @ForestTest(appClass = RouterTestApplication::class)
 class RoutingExtensionIntegrationTest {

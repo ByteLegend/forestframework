@@ -5,7 +5,7 @@ import com.google.inject.ImplementedBy
 annotation class Param(val value: String)
 
 @ImplementedBy(JdbcOwnerRepository::class)
-interface OwnerRepository { //: Repository<Owner?, Int?> {
+interface OwnerRepository { // : Repository<Owner?, Int?> {
     /**
      * Retrieve [Owner]s from the data store by last name, returning all owners
      * whose last name *starts* with the given name.

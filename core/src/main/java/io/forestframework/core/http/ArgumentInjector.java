@@ -57,10 +57,10 @@ public class ArgumentInjector {
     public ArgumentInjector with(Throwable t) {
         withParameter(Throwable.class, t);
         if (t instanceof RuntimeException || t == null) {
-            withParameter(RuntimeException.class, ((RuntimeException) t));
+            withParameter(RuntimeException.class, (RuntimeException) t);
         }
         if (t instanceof Exception || t == null) {
-            withParameter(Exception.class, ((Exception) t));
+            withParameter(Exception.class, (Exception) t);
         }
         return this;
     }

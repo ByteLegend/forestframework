@@ -14,7 +14,7 @@ import com.google.inject.ImplementedBy
  * @author Michael Isvy
  */
 @ImplementedBy(JdbcPetRepository::class)
-interface PetRepository {//: Repository<Pet?, Int?> {
+interface PetRepository { // : Repository<Pet?, Int?> {
     /**
      * Retrieve all [PetType]s from the data store.
      * @return a Collection of [PetType]s.
@@ -50,5 +50,4 @@ class JdbcPetRepository : PetRepository {
     override suspend fun save(pet: Pet) {
         TODO("Not yet implemented")
     }
-
 }

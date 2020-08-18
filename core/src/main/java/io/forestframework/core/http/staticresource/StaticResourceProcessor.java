@@ -1,7 +1,8 @@
 package io.forestframework.core.http.staticresource;
 
-import io.forestframework.core.http.PlainHttpContext;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.forestframework.core.http.HttpStatusCode;
+import io.forestframework.core.http.PlainHttpContext;
 import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.result.RoutingResultProcessor;
 import io.forestframework.core.http.routing.Routing;
@@ -40,6 +41,7 @@ import java.util.Set;
  * "file:///home/lib/my.jar", the "relative/path/to/resource.txt" inside that jar will be located and sent.
  */
 @Singleton
+@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 public class StaticResourceProcessor implements RoutingResultProcessor {
     private final ForkedStaticHandlerImpl staticHandler = new ForkedStaticHandlerImpl();
     private final Vertx vertx;

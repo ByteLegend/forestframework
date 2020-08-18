@@ -9,14 +9,14 @@ import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.ext.web.handler.sockjs.SockJSSocket
+import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledOnJre
 import org.junit.jupiter.api.condition.JRE.JAVA_11
 import org.junit.jupiter.api.extension.ExtendWith
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Inject
 
 @ForestApplication
 class WebSocketTestApp {
@@ -44,13 +44,13 @@ class SockJSRouter {
     }
 
     @OnWSClose
-    fun onClose(socket: SockJSSocket, @PathParam("username") username: String) {
+    fun onClose(@PathParam("username") username: String) {
         sessions.remove(username)
         broadcast("User $username left")
     }
 
     @OnWSError
-    fun onError(socket: SockJSSocket, @PathParam("username") username: String, throwable: Throwable) {
+    fun onError(@PathParam("username") username: String, throwable: Throwable) {
         sessions.remove(username)
         broadcast("User $username left on error: $throwable")
     }
@@ -114,7 +114,7 @@ class SockJSIntegrationTest : AbstractForestIntegrationTest() {
         val wsClientJavaFile = Paths.get(javaClass.getResource("/SockJSIntegrationTestData/SocketJSIntegrationTestClient.java").toURI()).toFile()
         val process = ProcessBuilder()
             .inheritIO()
-            .command(System.getProperty("java.home") + "/bin/java", "-Dserver.port=${port}", "-Duser.name=Bob", wsClientJavaFile.absolutePath)
+            .command(System.getProperty("java.home") + "/bin/java", "-Dserver.port=$port", "-Duser.name=Bob", wsClientJavaFile.absolutePath)
             .start()
 
         alice.waitFor("User Bob joined", ">> Bob: Hello from Bob")

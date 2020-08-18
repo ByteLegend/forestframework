@@ -1,8 +1,10 @@
 package io.forestframework.core.http.bridge;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+@SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
 public class BridgeOptionsConverter {
     public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, BridgeOptions obj) {
         for (java.util.Map.Entry<String, Object> member : json) {

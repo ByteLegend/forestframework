@@ -72,3 +72,5 @@ extra["rockerVersion"] = "1.3.0"
 //    }
 //}
 
+// Template can contain unused imports
+tasks.named("checkstyleMain").configure { enabled = false }

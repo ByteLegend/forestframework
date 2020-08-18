@@ -29,7 +29,7 @@ import java.util.Map;
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 @Singleton
 public class DefaultBridgeRequestHandler extends AbstractWebRequestHandler implements HttpRequestHandler {
-    private final Logger LOGGER = LoggerFactory.getLogger(DefaultBridgeRequestHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBridgeRequestHandler.class);
     private final Router router;
     private final ConfigProvider configProvider;
 

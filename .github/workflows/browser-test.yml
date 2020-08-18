@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         java: [8, 11]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.java }}
@@ -31,6 +31,10 @@ jobs:
             ${{ runner.os }}-
       - name: Show Gradle version
         run: ./gradlew --version
+      - name: Start Xvfb
+        run: Xvfb :99 -screen 0 2560x1600x24 &
       - name: Build with Gradle
-        run: ./gradlew check --scan
+        run: ./gradlew browserTest --scan
+        env:
+          DISPLAY: ':99'
 

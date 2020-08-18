@@ -75,9 +75,9 @@ public final class FreePortFinder {
      * method to use. The port return is immediately marked in use and doesn't rely on the caller actually opening
      * the port.
      *
+     * @return the available port
      * @throws IllegalArgumentException is thrown if the port number is out of range
      * @throws NoSuchElementException if there are no ports available
-     * @return the available port
      */
     public static synchronized int findFreeLocalPort() {
         return findFreeLocalPort(null);
@@ -89,9 +89,9 @@ public final class FreePortFinder {
      * the port.
      *
      * @param bindAddress the address that will try to bind
+     * @return the available port
      * @throws IllegalArgumentException is thrown if the port number is out of range
      * @throws NoSuchElementException if there are no ports available
-     * @return the available port
      */
     public static synchronized int findFreeLocalPort(InetAddress bindAddress) {
         int next = findFreeLocalPort(currentMinPort.get(), bindAddress);
@@ -104,9 +104,9 @@ public final class FreePortFinder {
      * method to use. The port return is immediately marked in use and doesn't rely on the caller actually opening
      * the port.
      *
+     * @return the available port
      * @throws IllegalArgumentException is thrown if the port number is out of range
      * @throws NoSuchElementException if there are no ports available
-     * @return the available port
      */
     public static synchronized int findFreeLocalPort(int fromPort) {
         return findFreeLocalPort(fromPort, null);
@@ -117,9 +117,9 @@ public final class FreePortFinder {
      *
      * @param fromPort the from port to scan for availability
      * @param bindAddress the address that will try to bind
+     * @return the available port
      * @throws IllegalArgumentException is thrown if the port number is out of range
      * @throws NoSuchElementException if there are no ports available
-     * @return the available port
      */
     public static synchronized int findFreeLocalPort(int fromPort, InetAddress bindAddress) {
         if (fromPort < currentMinPort.get() || fromPort > MAX_PORT_NUMBER) {
@@ -139,18 +139,18 @@ public final class FreePortFinder {
      * Gets the next available port starting at a given from port.
      *
      * @param bindAddresses the addresses that will try to bind
+     * @return the available port
      * @throws IllegalArgumentException is thrown if the port number is out of range
      * @throws NoSuchElementException if there are no ports available
-     * @return the available port
      */
-    public static synchronized int findFreeLocalPortOnAddresses(InetAddress ... bindAddresses) {
+    public static synchronized int findFreeLocalPortOnAddresses(InetAddress... bindAddresses) {
         int fromPort = currentMinPort.get();
         if (fromPort < currentMinPort.get() || fromPort > MAX_PORT_NUMBER) {
             throw new IllegalArgumentException("From port number not in valid range: " + fromPort);
         }
         if (bindAddresses != null) {
             for (int j = fromPort; j <= MAX_PORT_NUMBER; j++) {
-                for (int i = 0; i < bindAddresses.length ; i++) {
+                for (int i = 0; i < bindAddresses.length; i++) {
                     if (available(j, bindAddresses[i])) {
                         currentMinPort.set(j + 1);
                         return j;
@@ -161,6 +161,7 @@ public final class FreePortFinder {
 
         throw new NoSuchElementException("Could not find an available port above " + fromPort);
     }
+
     /**
      * Checks to see if a specific port is available.
      *

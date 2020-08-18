@@ -16,6 +16,8 @@ dependencies {
     compileOnly(libs("kotlinx-coroutines-core"))
     compileOnly(libs("kotlin-stdlib-jdk8"))
     compileOnly(libs("vertx-lang-kotlin-coroutines"))
+    // com.google.code.findbugs:annotations
+    compileOnly(libs("annotations"))
 
     implementation(libs("reflectasm"))
     implementation(libs("commons-lang3"))
@@ -31,12 +33,6 @@ dependencies {
     testImplementation(libs("vertx-unit"))
     testImplementation(libs("vertx-codegen"))  // Keep this or https://github.com/mockito/mockito/issues/366
     testImplementation(libs("vertx-redis-client"))
-
-    testImplementation(libs("geb-core"))
-    testImplementation(libs("selenium-firefox-driver"))
-    testImplementation(libs("selenium-chrome-driver"))
-    testImplementation(libs("selenium-support"))
-
 
     testImplementation(libs("junit"))
     testImplementation(libs("junit-extensions"))

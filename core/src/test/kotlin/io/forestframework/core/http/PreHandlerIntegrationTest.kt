@@ -6,5 +6,4 @@ import io.forestframework.core.http.routing.Get
 class PreHandlerIntegrationTest : AbstractTracingRouter() {
     @Get("/get")
     fun preHandle1() = runUnderTrace("preHandler1") {}
-
 }

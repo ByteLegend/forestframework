@@ -15,16 +15,16 @@ import io.forestframework.ext.api.EnableExtensions
 import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.StartupContext
 import io.forestframework.ext.core.ExtraConfig
-import io.forestframework.testfixtures.AbstractEndToEndTest
+import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.EmbeddedRedisExtension
-import io.forestframework.testfixtures.EndToEndTest
+import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testfixtures.RedisSetUpExtension
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import org.junit.jupiter.api.extension.ExtendWith
 
-abstract class AbstractTodoApplicationEndToEndTest extends AbstractEndToEndTest {
-    @EndToEndTest
+abstract class AbstractTodoApplicationBrowserTest extends AbstractBrowserTest {
+    @BrowserTest
     void 'run js spec successfully'(Configuration configuration) {
         Browser.drive(configuration) {
             baseUrl = "http://localhost:${port}/js-spec/"
@@ -53,9 +53,9 @@ abstract class AbstractTodoApplicationEndToEndTest extends AbstractEndToEndTest 
 
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = TodoApplicationKotlinCoroutinesJDBC.class)
-@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCEndToEndTest;DATABASE_TO_UPPER=false"])
+@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCBrowserTest;DATABASE_TO_UPPER=false"])
 @EnableExtensions(extensions = JsSpecExtension.class)
-class TodoApplicationKotlinCoroutinesJDBCEndToEndTest extends AbstractTodoApplicationEndToEndTest {
+class TodoApplicationKotlinCoroutinesJDBCBrowserTest extends AbstractTodoApplicationBrowserTest {
 }
 
 
@@ -64,14 +64,14 @@ class TodoApplicationKotlinCoroutinesJDBCEndToEndTest extends AbstractTodoApplic
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = TodoApplicationKotlinCoroutinesRedis.class)
 @EnableExtensions(extensions = JsSpecExtension.class)
-class TodoApplicationRedisKotlinCoroutinesEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
+class TodoApplicationRedisKotlinCoroutinesBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = TodoApplicationJavaAsyncJDBC.class)
 @ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
 @EnableExtensions(extensions = JsSpecExtension.class)
-class TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
+class TodoApplicationJavaAsyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
 @ExtendWith(EmbeddedRedisExtension.class)
@@ -79,14 +79,14 @@ class TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest extends AbstractTodoAp
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = TodoApplicationJavaAsyncRedis.class)
 @EnableExtensions(extensions = JsSpecExtension.class)
-class TodoApplicationJavaAsyncRedisEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
+class TodoApplicationJavaAsyncRedisBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = TodoApplicationJavaSyncJDBC.class)
 @ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
 @EnableExtensions(extensions = JsSpecExtension.class)
-class TodoApplicationJavaSyncJDBCEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
+class TodoApplicationJavaSyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
 @ExtendWith(EmbeddedRedisExtension.class)
@@ -94,7 +94,7 @@ class TodoApplicationJavaSyncJDBCEndToEndIntegrationTest extends AbstractTodoApp
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = TodoApplicationJavaSyncRedis.class)
 @EnableExtensions(extensions = JsSpecExtension.class)
-class TodoApplicationJavaSyncEndToEndIntegrationTest extends AbstractTodoApplicationEndToEndTest {
+class TodoApplicationJavaSyncBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
 class JsSpecExtension implements Extension {

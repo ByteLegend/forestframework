@@ -19,6 +19,9 @@ import io.vertx.core.http.ServerWebSocket
 import io.vertx.kotlin.core.http.writePingAwait
 import io.vertx.kotlin.core.http.writeTextMessageAwait
 import io.vertx.kotlin.coroutines.dispatcher
+import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,9 +35,6 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.condition.EnabledOnJre
 import org.junit.jupiter.api.condition.JRE.JAVA_11
 import org.junit.jupiter.api.extension.ExtendWith
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Inject
 
 @ForestApplication
 class WebSocketTestApp {
@@ -189,7 +189,7 @@ class WebSocketIntegrationTest : AbstractForestIntegrationTest() {
         val wsClientJavaFile = Paths.get(javaClass.getResource("/WebSocketIntegrationTestData/WebSocketIntegrationTestClient.java").toURI()).toFile()
         val process = ProcessBuilder()
             .inheritIO()
-            .command(System.getProperty("java.home") + "/bin/java", "-Dserver.port=${port}", "-Duser.name=Bob", wsClientJavaFile.absolutePath)
+            .command(System.getProperty("java.home") + "/bin/java", "-Dserver.port=$port", "-Duser.name=Bob", wsClientJavaFile.absolutePath)
             .start()
 
         alice.waitFor("User Bob joined", ">> Bob: Hello from Bob", timeoutMillis = 10000)

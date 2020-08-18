@@ -12,8 +12,8 @@ import io.forestframework.core.http.websocket.OnWSError
 import io.forestframework.core.http.websocket.OnWSMessage
 import io.forestframework.core.http.websocket.OnWSOpen
 import io.forestframework.ext.core.WithStaticResource
-import io.forestframework.testfixtures.AbstractEndToEndTest
-import io.forestframework.testfixtures.EndToEndTest
+import io.forestframework.testfixtures.AbstractBrowserTest
+import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
@@ -26,10 +26,10 @@ import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
 
 @ForestApplication
-@WithStaticResource(webroot = "WebSocketChatRoomEndToEndTestData")
-class WebSocketChatRoomEndToEndTestApp {
+@WithStaticResource(webroot = "WebSocketChatRoomBrowserTestData")
+class WebSocketChatRoomBrowserTestApp {
     static void main(String[] args) {
-        Forest.run(WebSocketChatRoomEndToEndTestApp.class)
+        Forest.run(WebSocketChatRoomBrowserTestApp.class)
     }
 }
 
@@ -40,7 +40,7 @@ class WebSocketChatRoomRouter {
     private List<Throwable> errors = []
 
     @Inject
-    WebSocketChatRoomEndToEndTestApp(Vertx vertx) {
+    WebSocketChatRoomRouter(Vertx vertx) {
         vertx.setPeriodic(100) {
             sessions.values().forEach {
                 try {
@@ -88,10 +88,10 @@ class WebSocketChatRoomRouter {
 
 
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = WebSocketChatRoomEndToEndTestApp.class)
-class WebSocketChatRoomEndToEndTest extends AbstractEndToEndTest {
-    @EndToEndTest
-    void runEndToEndTest(Configuration configuration) {
+@ForestTest(appClass = WebSocketChatRoomBrowserTestApp.class)
+class WebSocketChatRoomBrowserTest extends AbstractBrowserTest {
+    @BrowserTest
+    void chatroomTest(Configuration configuration) {
         Browser.drive(configuration) {
             baseUrl = "http://localhost:${port}/"
             go "/index.html"

@@ -47,13 +47,15 @@ class RoutingMatcherTest {
         every { request.getHeader(any<CharSequence>()) } returns "*/*"
     }
 
-    private fun mockRouting(path: String,
-                            order: Int = 0,
-                            method: HttpMethod = ALL,
-                            methods: List<HttpMethod>? = null,
-                            type: RoutingType = HANDLER,
-                            consumes: String = "*/*",
-                            produces: String = "*/*"): Routing {
+    private fun mockRouting(
+        path: String,
+        order: Int = 0,
+        method: HttpMethod = ALL,
+        methods: List<HttpMethod>? = null,
+        type: RoutingType = HANDLER,
+        consumes: String = "*/*",
+        produces: String = "*/*"
+    ): Routing {
         val ret = mockk<Routing>()
         every { ret.path } returns path
         every { ret.regexPath } returns ""
@@ -196,7 +198,6 @@ class RoutingMatcherTest {
         }
     }
 
-
     @Test
     fun `get 404 if not found`() {
         every { routingManager.getRouting(HANDLER) } returns listOf(
@@ -231,7 +232,6 @@ class RoutingMatcherTest {
         assertEquals(HttpStatusCode.METHOD_NOT_ALLOWED, results.mainHandlerMatchResult.statusCode)
         assertTrue(results.mainHandlerMatchResult.exactlyMatchedHandlers.isEmpty())
     }
-
 
     @Test
     fun `can process if handler accepts multiple methods`() {

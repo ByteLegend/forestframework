@@ -11,6 +11,7 @@ import io.forestframework.core.http.bridge.DefaultBridgeRequestHandler;
 import io.forestframework.core.http.websocket.DefaultWebSocketRequestHandler;
 import io.vertx.core.http.HttpServerRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +20,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -208,8 +210,25 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
         }
 
         @Override
-        public int compareTo(PlainHttpHandlerMatchResult that) {
+        public int compareTo(@NotNull PlainHttpHandlerMatchResult that) {
             return ROUTING_COMPARATOR.compare(this.routing, that.routing);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            PlainHttpHandlerMatchResult that = (PlainHttpHandlerMatchResult) o;
+            return routing.equals(that.routing);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(routing);
         }
     }
 }

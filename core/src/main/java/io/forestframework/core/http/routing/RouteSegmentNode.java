@@ -47,7 +47,7 @@ abstract class RouteSegmentNode {
 
     public RouteSegmentNode addRouting(Routing routing) {
         if (routing.getType() == RoutingType.WEB_SOCKET) {
-            webSocketRoutings.add(((WebSocketRouting) routing));
+            webSocketRoutings.add((WebSocketRouting) routing);
         } else {
             plainHttpRoutings.add(routing);
         }

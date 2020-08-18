@@ -14,7 +14,7 @@ import com.google.inject.ImplementedBy
  * @author Michael Isvy
  */
 @ImplementedBy(JdbcVisitRepository::class)
-interface VisitRepository {//: Repository<Visit?, Int?> {
+interface VisitRepository { // : Repository<Visit?, Int?> {
     /**
      * Save a `Visit` to the data store, either inserting or updating it.
      * @param visit the `Visit` to save

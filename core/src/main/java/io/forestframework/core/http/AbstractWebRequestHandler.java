@@ -42,7 +42,7 @@ public abstract class AbstractWebRequestHandler {
         List<RoutingResultProcessor> resultProcessors = routing.getResultProcessors(injector, returnValue);
         CompletableFuture<Object> current = CompletableFuture.completedFuture(returnValue);
         for (RoutingResultProcessor processor : resultProcessors) {
-            current = current.thenCompose((processReturnValue) -> adapt(processor.processResponse(context, routing, processReturnValue)));
+            current = current.thenCompose(processReturnValue -> adapt(processor.processResponse(context, routing, processReturnValue)));
         }
 
         return (CompletableFuture) current;

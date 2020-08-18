@@ -1,6 +1,6 @@
 package io.forestframework.example.todo
 
-//import io.vertx.core.http.impl.headers.VertxHttpHeaders
+// import io.vertx.core.http.impl.headers.VertxHttpHeaders
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.forestframework.core.config.Config
@@ -24,6 +24,9 @@ import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.ext.web.client.sendAwait
 import io.vertx.kotlin.ext.web.client.sendBufferAwait
+import java.util.UUID
+import javax.inject.Inject
+import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -31,10 +34,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.Extensions
-import java.util.UUID
-import javax.inject.Inject
-import kotlin.random.Random
-
 
 @Extensions(
     ExtendWith(EmbeddedRedisExtension::class),
@@ -74,7 +73,6 @@ class TodoApplicationJavaAsyncJDBCIntegrationTest : TodoApplicationIntegrationTe
 @ForestTest(appClass = TodoApplicationJavaSyncJDBC::class)
 @ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
 class TodoApplicationJavaSyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
-
 
 abstract class TodoApplicationIntegrationTest {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
@@ -126,7 +124,7 @@ abstract class TodoApplicationIntegrationTest {
             .toObject(Todo::class.java)
     }
 
-    private fun todoUri(id: Int? = null) = "/todos${if (id == null) "" else "/${id}"}"
+    private fun todoUri(id: Int? = null) = "/todos${if (id == null) "" else "/$id"}"
 
     @Test
     fun `insert then fetch`() = runBlocking {
@@ -204,4 +202,3 @@ abstract class TodoApplicationIntegrationTest {
         assertTrue(allTodos.isEmpty())
     }
 }
-

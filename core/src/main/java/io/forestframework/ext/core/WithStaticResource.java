@@ -1,6 +1,5 @@
 package io.forestframework.ext.core;
 
-import com.github.blindpirate.annotationmagic.AliasFor;
 import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.ext.api.EnableExtensions;
 

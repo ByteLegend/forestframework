@@ -1,6 +1,5 @@
 package io.forestframework.core.http.routing;
 
-import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.websocket.WebSocketEventType;
 import org.apiguardian.api.API;
 

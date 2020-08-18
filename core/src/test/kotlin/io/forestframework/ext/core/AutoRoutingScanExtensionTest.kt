@@ -16,21 +16,15 @@ class RouterWithoutAnno {
 }
 
 @Router
-class RouterWithRouterAnno {
-}
+class RouterWithRouterAnno
 
 @Router("/routerPath")
-class RouterWithRouterAnnoPath {
-}
+class RouterWithRouterAnnoPath
 
 @Component
-class RouterWithComponentAnno {
-}
+class RouterWithComponentAnno
 
 @ForestApplication
-class RouterWithForestApplicationAnno {
-}
+class RouterWithForestApplicationAnno
 
-class AutoRoutingScanExtensionTest {
-
-}
+class AutoRoutingScanExtensionTest

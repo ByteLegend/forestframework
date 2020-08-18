@@ -27,7 +27,6 @@ import javax.inject.Singleton
 import kotlin.math.max
 import kotlin.math.min
 
-
 fun main() {
     Forest.run(App::class.java)
 }
@@ -45,7 +44,7 @@ val HELLO_WORLD_LENGTH = HttpHeaders.createOptimized("" + HELLO_WORLD.length)
 val SERVER = HttpHeaders.createOptimized("forest")
 val HELLO_WORLD_BUFFER: Buffer = BufferImpl.directBuffer(HELLO_WORLD, "UTF-8")
 
-//@ForestApplication(extensions = [PgClientExtension::class])
+// @ForestApplication(extensions = [PgClientExtension::class])
 @Singleton
 class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     var dateString = createDateHeader()
@@ -145,7 +144,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
             val row = rows.next()
             fortunes.add(Fortune(row.getInteger(0), row.getString(1)))
         }
-        fortunes.add(Fortune(0, "Additional fortune added at request time."));
+        fortunes.add(Fortune(0, "Additional fortune added at request time."))
         return fortunes.sorted()
     }
 
@@ -153,6 +152,4 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     fun randomWorld(): Int {
         return 1 + ThreadLocalRandom.current().nextInt(10000)
     }
-
 }
-

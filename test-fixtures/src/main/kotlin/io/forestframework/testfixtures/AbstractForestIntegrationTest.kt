@@ -18,17 +18,17 @@ import io.vertx.kotlin.core.http.closeAwait
 import io.vertx.kotlin.core.http.webSocketAwait
 import io.vertx.kotlin.core.http.writeTextMessageAwait
 import io.vertx.kotlin.coroutines.awaitResult
+import java.util.Collections
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Timeout
-import java.util.Collections
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 class HttpClientResponseWrapper(private val delegate: HttpClientResponse) : HttpClientResponse by delegate {
     lateinit var body: Buffer
@@ -158,4 +158,3 @@ abstract class AbstractForestIntegrationTest {
 
     fun runBlockingUnit(context: CoroutineContext = EmptyCoroutineContext, block: suspend CoroutineScope.() -> Unit) = runBlocking(context, block)
 }
-

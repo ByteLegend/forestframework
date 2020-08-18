@@ -1,10 +1,7 @@
 package io.forestframework.core.http.routing;
 
-import io.forestframework.core.http.bridge.BridgeEventType;
-import io.forestframework.core.http.routing.DefaultRouting;
 import io.forestframework.core.http.HttpMethod;
-import io.forestframework.core.http.routing.BridgeRouting;
-import io.forestframework.core.http.routing.RoutingType;
+import io.forestframework.core.http.bridge.BridgeEventType;
 import org.apiguardian.api.API;
 
 import java.lang.reflect.Method;

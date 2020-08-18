@@ -1,7 +1,10 @@
 package io.forestframework.core.http.bridge;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.vertx.core.json.JsonObject;
 
+@SuppressWarnings("all")
+@SuppressFBWarnings("MS_SHOULD_BE_FINAL")
 public class PermittedOptions {
 
     /**

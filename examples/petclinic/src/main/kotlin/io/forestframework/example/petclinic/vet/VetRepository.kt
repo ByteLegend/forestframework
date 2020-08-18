@@ -14,9 +14,8 @@ interface VetRepository {
     suspend fun findAll(): Collection<Vet>
 }
 
-class JdbcVetRepository: VetRepository {
+class JdbcVetRepository : VetRepository {
     override suspend fun findAll(): Collection<Vet> {
         TODO("Not yet implemented")
     }
 }
-

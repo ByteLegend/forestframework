@@ -2,16 +2,16 @@ package io.forestframework.example.realtimeauctions
 
 import geb.Browser
 import geb.Configuration
-import io.forestframework.testfixtures.AbstractEndToEndTest
-import io.forestframework.testfixtures.EndToEndTest
+import io.forestframework.testfixtures.AbstractBrowserTest
+import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = RealtimeAuctionsApp.class)
-class RealtimeAuctionsEndToEndTest extends AbstractEndToEndTest {
-    @EndToEndTest
+class RealtimeAuctionsBrowserTest extends AbstractBrowserTest {
+    @BrowserTest
     void 'realtime auctions test'(Configuration configuration) {
         Browser.drive(configuration) {
             baseUrl = "http://localhost:${port}/"

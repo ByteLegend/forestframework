@@ -10,10 +10,10 @@ import io.forestframework.ext.core.AutoRoutingScanExtension
 import io.forestframework.ext.core.AutoScanComponentsExtension
 import io.forestframework.ext.core.BannerExtension
 import io.forestframework.ext.core.ExtraConfig
+import javax.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import javax.inject.Inject
 
 class Extension1 : Extension
 class Extension2 : Extension
@@ -25,23 +25,23 @@ class Extension7 : Extension
 
 @Extends(EnableExtensions::class)
 @EnableExtensions(extensions = [Extension1::class])
-annotation class EnableExtension1 {}
+annotation class EnableExtension1
 
 @Extends(EnableExtensions::class)
 @EnableExtensions(extensions = [Extension2::class])
-annotation class EnableExtension2 {}
+annotation class EnableExtension2
 
 @Extends(EnableExtensions::class)
 @EnableExtensions(extensions = [Extension4::class])
-annotation class EnableExtension4 {}
+annotation class EnableExtension4
 
 @Extends(EnableExtensions::class)
 @EnableExtensions(extensions = [Extension5::class])
-annotation class EnableExtension5 {}
+annotation class EnableExtension5
 
 @Extends(EnableExtensions::class)
 @EnableExtensions(extensions = [Extension7::class])
-annotation class EnableExtension7 {}
+annotation class EnableExtension7
 
 @EnableExtension2
 @ForestApplication
@@ -49,7 +49,6 @@ annotation class EnableExtension7 {}
 @EnableExtension4
 @EnableExtension5
 class App
-
 
 @ExtendWith(ForestExtension::class)
 @EnableExtension1
@@ -78,8 +77,6 @@ class ForestExtensionOrderTest {
             ),
             startupContext.extensions.map { it.javaClass })
     }
-
-
 }
 
 @ForestApplication

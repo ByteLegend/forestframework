@@ -102,6 +102,7 @@ public class AutoRoutingScanExtension implements Extension {
         }
     }
 
+    @SuppressWarnings("checkstyle:parameterassignment")
     private Routing createRouting(Route route, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
         if (AnnotationMagic.instanceOf(route, Bridge.class)) {
             List<BridgeEventType> eventTypes = Arrays.asList(AnnotationMagic.cast(route, Bridge.class).eventTypes());

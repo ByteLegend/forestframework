@@ -9,8 +9,8 @@ import io.forestframework.core.ForestApplication
 import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.TodoRouter
 import io.forestframework.example.todo.kotlin.TodoService
-import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.EnableExtensions
+import io.forestframework.ext.api.Extension
 import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.extensions.jdbc.EnableJDBCClient
 import io.vertx.core.json.JsonArray
@@ -21,10 +21,10 @@ import io.vertx.kotlin.ext.sql.queryAwait
 import io.vertx.kotlin.ext.sql.queryWithParamsAwait
 import io.vertx.kotlin.ext.sql.updateAwait
 import io.vertx.kotlin.ext.sql.updateWithParamsAwait
-import kotlinx.coroutines.runBlocking
 import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.runBlocking
 
 @ForestApplication
 @IncludeComponents(classes = [TodoRouter::class])

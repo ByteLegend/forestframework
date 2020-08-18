@@ -1,22 +1,22 @@
 package io.forestframework.example.petclinic.owner
 
-//import io.vertx.ext.web.RoutingContext
-//import io.forestframework.core.http.param.Form
-//import io.forestframework.core.http.routing.Get
-//import io.forestframework.core.http.param.PathParam
-//import io.forestframework.core.http.routing.Post
-//import io.forestframework.example.petclinic.visit.VisitRepository
-//import javax.inject.Inject
-//import javax.validation.Valid
+// import io.vertx.ext.web.RoutingContext
+// import io.forestframework.core.http.param.Form
+// import io.forestframework.core.http.routing.Get
+// import io.forestframework.core.http.param.PathParam
+// import io.forestframework.core.http.routing.Post
+// import io.forestframework.example.petclinic.visit.VisitRepository
+// import javax.inject.Inject
+// import javax.validation.Valid
 //
-//class OwnRouter @Inject constructor(val owners: OwnerRepository, val visits: VisitRepository) {
+// class OwnRouter @Inject constructor(val owners: OwnerRepository, val visits: VisitRepository) {
 //
 //    private val VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm"
 //
-////    @InitBinder
-////    fun setAllowedFields(dataBinder: WebDataBinder) {
-////        dataBinder.setDisallowedFields("id")
-////    }
+// //    @InitBinder
+// //    fun setAllowedFields(dataBinder: WebDataBinder) {
+// //        dataBinder.setDisallowedFields("id")
+// //    }
 //
 //    @Get("/owners/new")
 //    fun initCreationForm(routingContext: RoutingContext) = VIEWS_OWNER_CREATE_OR_UPDATE_FORM.also { routingContext.put("owner", Owner()) }
@@ -47,7 +47,7 @@ package io.forestframework.example.petclinic.owner
 //        val results: Collection<Owner> = owners.findByLastName(owner.getLastName())
 //        return if (results.isEmpty()) {
 //            // no owners found
-////            result.rejectValue("lastName", "notFound", "not found")
+// //            result.rejectValue("lastName", "notFound", "not found")
 //            "owners/findOwners"
 //        } else if (results.size == 1) {
 //            // 1 owner found
@@ -88,6 +88,6 @@ package io.forestframework.example.petclinic.owner
 //        owner.pets.forEach { pet -> pet.setVisitsInternal(visits.findByPetId(pet.id)) }
 //        routingContext.put("owner", owner)
 //    }
-//}
+// }
 //
 //

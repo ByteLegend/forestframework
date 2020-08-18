@@ -12,6 +12,8 @@ import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.kotlin.core.http.writeAwait
+import java.util.Collections
+import javax.inject.Inject
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions
@@ -20,9 +22,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import java.util.Collections
-import javax.inject.Inject
-
 
 @ForestApplication
 class CustomErrorHandlerApp {
@@ -40,7 +39,6 @@ class CustomErrorHandlerApp {
 
     @OnWSError
     fun errorHandler() {
-
     }
 }
 
@@ -106,9 +104,9 @@ class HandlerExecutionIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest
     @ValueSource(strings = ["errorInHandler", "errorInPreHandler"])
     fun `exceptions in pre handlers and handlers are captured by custom 500 handler`(handler: String) = runBlockingUnit {
-        get("/custom500/${handler}").bodyAsString().apply {
+        get("/custom500/$handler").bodyAsString().apply {
             Assertions.assertEquals(listOf(handler, "custom500Handler"), custom500HandlerRouter.traces)
-            assertThat(this, containsString(handler));
+            assertThat(this, containsString(handler))
             assertThat(this, containsString(custom500HandlerMessage))
         }
     }
@@ -122,7 +120,6 @@ class HandlerExecutionIntegrationTest : AbstractForestIntegrationTest() {
 
     @Test
     fun `pre handlers continue when previous ones return void or true`() {
-
     }
 
     @Test

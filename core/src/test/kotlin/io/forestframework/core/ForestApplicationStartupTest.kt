@@ -7,4 +7,3 @@ class ForestApplicationStartupTest {
     fun `EnableExtensions annotations are strictly ordered`() {
     }
 }
-

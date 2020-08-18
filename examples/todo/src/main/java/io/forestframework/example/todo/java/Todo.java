@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Todo {
 
-    private static final AtomicInteger acc = new AtomicInteger(0);
+    private static final AtomicInteger ACC = new AtomicInteger(0);
 
     private int id;
     private String title;
@@ -57,15 +57,15 @@ public class Todo {
     }
 
     public void setIncId() {
-        this.id = acc.incrementAndGet();
+        this.id = ACC.incrementAndGet();
     }
 
     public static int getIncId() {
-        return acc.get();
+        return ACC.get();
     }
 
     public static void setIncIdWith(int n) {
-        acc.set(n);
+        ACC.set(n);
     }
 
     public String getTitle() {

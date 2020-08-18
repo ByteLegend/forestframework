@@ -8,8 +8,6 @@ import io.forestframework.core.ComponentClasses;
 import io.forestframework.core.ForestApplication;
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.http.Router;
-import io.forestframework.core.http.routing.DefaultRoutingManager;
-import io.forestframework.core.http.routing.RoutingManager;
 import io.forestframework.ext.api.StartupContext;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -44,7 +42,7 @@ public class CoreModule extends AbstractModule {
 
         // @formatter:off
         // components are unmodifiable after injector is created
-        bind(new TypeLiteral<List<Class<?>>>() {}).annotatedWith(ComponentClasses.class).toInstance(Collections.unmodifiableList(startupContext.getComponentClasses()));
+        bind(new TypeLiteral<List<Class<?>>>() { }).annotatedWith(ComponentClasses.class).toInstance(Collections.unmodifiableList(startupContext.getComponentClasses()));
         // @formatter:on
     }
 }

@@ -1,5 +1,6 @@
 package io.forestframework.core.http.staticresource;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.forestframework.core.http.EndForbiddenHttpServerResponseWrapper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -13,7 +14,6 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.HttpVersion;
-import io.vertx.core.http.impl.Http1xServerResponse;
 import io.vertx.core.http.impl.HttpUtils;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.impl.logging.Logger;
@@ -46,8 +46,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * A fork of default StaticHandlerImpl with tweaking.
  */
+@SuppressWarnings("all")
+@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 public class ForkedStaticHandlerImpl implements StaticHandler {
-
     private static final Logger log = LoggerFactory.getLogger(ForkedStaticHandlerImpl.class);
 
     private String webRoot = DEFAULT_WEB_ROOT;
@@ -81,7 +82,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
      * Create all required header so content can be cache by Caching servers or Browsers
      *
      * @param request base HttpServerRequest
-     * @param props   file properties
+     * @param props file properties
      */
     private void writeCacheHeaders(HttpServerRequest request, FileProps props) {
 
@@ -106,7 +107,9 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
     public void handle(RoutingContext context) {
         HttpServerRequest request = context.request();
         if (request.method() != HttpMethod.GET && request.method() != HttpMethod.HEAD) {
-            if (log.isTraceEnabled()) log.trace("Not GET or HEAD so ignoring request");
+            if (log.isTraceEnabled()) {
+                log.trace("Not GET or HEAD so ignoring request");
+            }
             context.next();
         } else {
             String path = HttpUtils.removeDots(URIDecoder.decodeURIComponent(context.normalizedPath(), false));
@@ -282,8 +285,9 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
         Long end = null;
         MultiMap headers = null;
 
-        if (response.closed())
+        if (response.closed()) {
             return;
+        }
 
         if (rangeSupport) {
             // check if the client is making a range request
