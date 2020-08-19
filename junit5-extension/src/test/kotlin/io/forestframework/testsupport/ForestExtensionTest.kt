@@ -11,10 +11,10 @@ import io.forestframework.ext.core.AutoScanComponentsExtension
 import io.forestframework.ext.core.BannerExtension
 import io.forestframework.ext.core.ExtraConfig
 import io.forestframework.ext.core.HttpServerExtension
+import javax.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import javax.inject.Inject
 
 class Extension1 : Extension
 class Extension2 : Extension

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.forestframework.core.Component
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
+import io.forestframework.core.http.HttpException
 import io.forestframework.core.http.HttpStatusCode
 import io.forestframework.core.http.Router
 import io.forestframework.core.http.bridge.Bridge
@@ -15,7 +16,6 @@ import io.forestframework.core.http.result.GetJson
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.PreHandler
 import io.forestframework.ext.core.EnableStaticResource
-import io.forestframework.core.http.HttpException
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.shareddata.LocalMap
 import io.vertx.core.shareddata.SharedData
@@ -35,7 +35,7 @@ fun main() {
 class EventBusHandler @Inject constructor(private val repository: AuctionRepository) {
     val objectMapper = ObjectMapper()
     @Bridge("/eventbus")
-    fun bridgeEvent(event: BridgeEvent, eventBus: EventBus) {
+    fun bridgeEvent(event: BridgeEvent) {
         if (event.type() == BridgeEventType.SOCKET_CREATED) {
             println("A socket was created")
         }

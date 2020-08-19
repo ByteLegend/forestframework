@@ -2,7 +2,6 @@ package io.forestframework.ext.api;
 
 import org.apiguardian.api.API;
 
-import javax.inject.Inject;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
