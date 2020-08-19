@@ -56,10 +56,12 @@ public class HttpClientTest {
 
     VertxCompletableFuture<Integer> requestA = new VertxCompletableFuture<>(vertx);
     client1.get("/A").onSuccess(resp -> {
+      resp.pause();
       resp.exceptionHandler(requestA::completeExceptionally)
           .bodyHandler(buffer -> {
             requestA.complete(Integer.parseInt(buffer.toString()));
           });
+      resp.resume();
     }).onFailure(requestA::completeExceptionally);
 
     VertxCompletableFuture<Integer> requestB = new VertxCompletableFuture<>(vertx);
