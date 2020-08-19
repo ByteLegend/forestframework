@@ -31,7 +31,7 @@ abstract class AbstractBrowserTest {
             }
 
     private fun runOn(method: Method, browserName: String, envName: String, driverName: String, driverClass: String) = DynamicTest.dynamicTest("$method $browserName") {
-        Assumptions.assumeFalse(System.getenv(envName).isEmpty())
+        Assumptions.assumeFalse(System.getenv(envName).isNullOrEmpty())
         System.setProperty("webdriver.$driverName.driver", "${System.getenv(envName)}/${driverName}driver")
         val conf = Configuration(mapOf("driver" to driverClass))
         method.invoke(this, conf)

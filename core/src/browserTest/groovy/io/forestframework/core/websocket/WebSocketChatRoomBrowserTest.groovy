@@ -25,8 +25,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
 
-@ForestApplication
 @WithStaticResource(webroot = "WebSocketChatRoomBrowserTestData")
+@ForestApplication
 class WebSocketChatRoomBrowserTestApp {
     static void main(String[] args) {
         Forest.run(WebSocketChatRoomBrowserTestApp.class)

@@ -23,8 +23,8 @@ import java.math.BigDecimal
 import java.util.Optional
 import javax.inject.Inject
 
-@ForestApplication
 @EnableStaticResource
+@ForestApplication
 class RealtimeAuctionsApp
 
 fun main() {
