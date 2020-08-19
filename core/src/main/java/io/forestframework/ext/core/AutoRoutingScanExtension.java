@@ -16,6 +16,7 @@ import io.forestframework.core.http.routing.DefaultWebSocketRouting;
 import io.forestframework.core.http.routing.Route;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingManager;
+import io.forestframework.core.http.routing.RoutingType;
 import io.forestframework.core.http.websocket.WebSocket;
 import io.forestframework.core.http.websocket.WebSocketEventType;
 import io.forestframework.core.modules.WebRequestHandlingModule;
@@ -60,7 +61,15 @@ public class AutoRoutingScanExtension implements Extension {
         componentClasses.stream()
                 .filter(AutoRoutingScanExtension::isRouter)
                 .flatMap(this::findRoutingHandlers)
+                .peek(routing -> deleteExistingRootStaticResourceRoutingIfNecessary(routing, routings))
                 .forEach(routing -> routings.getRouting(routing.getType()).add(routing));
+    }
+
+    // If user defined / mapping, delete the /index.html mapping, if necessary.
+    private void deleteExistingRootStaticResourceRoutingIfNecessary(Routing routing, RoutingManager routings) {
+        if (routing.getType() == RoutingType.HANDLER && "/".equals(routing.getPath())) {
+            routings.getRouting(RoutingType.HANDLER).removeIf(item -> item instanceof StaticResourceExtension.RootPathRouting);
+        }
     }
 
     private static boolean isRouter(Class<?> klass) {
@@ -78,7 +87,6 @@ public class AutoRoutingScanExtension implements Extension {
         return !AnnotationMagic.getAnnotationsOnMethod(method, Route.class).isEmpty();
     }
 
-    @SuppressWarnings("ConstantConditions")
     private Routing toRouting(Class<?> klass, Method method) {
         Route routeOnMethod = AnnotationMagic.getOneAnnotationOnMethodOrNull(method, Route.class);
         Router routeOnClass = findRouterOnClass(klass);

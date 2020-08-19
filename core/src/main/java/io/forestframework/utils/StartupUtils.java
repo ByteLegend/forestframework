@@ -1,6 +1,7 @@
 package io.forestframework.utils;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
+import io.forestframework.core.Application;
 import io.forestframework.core.Component;
 import io.forestframework.core.http.Blocking;
 
@@ -12,6 +13,14 @@ import java.lang.reflect.Method;
 public class StartupUtils {
     public static boolean isComponentClass(Class<?> klass) {
         return AnnotationMagic.isAnnotationPresent(klass, Component.class);
+    }
+
+    public static Class<?> loadClass(String className) {
+        try {
+            return Application.class.getClassLoader().loadClass(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SuppressWarnings("unchecked")

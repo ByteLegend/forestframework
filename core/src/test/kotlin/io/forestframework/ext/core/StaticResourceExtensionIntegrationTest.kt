@@ -16,8 +16,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
-@ForestApplication
 @EnableStaticResource
+@ForestApplication
 class StaticResourceExtensionTestApplication
 
 @ExtendWith(ForestExtension::class)
@@ -118,8 +118,8 @@ class StaticResourceExtensionTestApplicationWithPredefinedRoot : AbstractForestI
     }
 }
 
-@ForestApplication
 @EnableStaticResource
+@ForestApplication
 class RouterWithPredefinedRoot {
     @GetPlainText("/")
     fun index() = "HelloWorld"

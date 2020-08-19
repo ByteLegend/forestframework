@@ -20,10 +20,10 @@ import java.net.URISyntaxException;
 
 import static io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRedis.RedisModule;
 
-@ForestApplication
-@IncludeComponents(classes = {TodoRouter.class, RedisModule.class})
 @EnableStaticResource
+@IncludeComponents(classes = {TodoRouter.class, RedisModule.class})
 @EnableRedisClient
+@ForestApplication
 public class TodoApplicationJavaSyncRedis {
     public static void main(String[] args) {
         Forest.run(TodoApplicationJavaSyncRedis.class);

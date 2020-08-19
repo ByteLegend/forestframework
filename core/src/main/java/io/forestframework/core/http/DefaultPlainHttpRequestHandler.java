@@ -4,7 +4,6 @@ import com.google.inject.Injector;
 import io.forestframework.core.http.routing.PlainHttpRoutingMatchResult;
 import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingType;
-import io.forestframework.ext.core.HttpException;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import org.apiguardian.api.API;

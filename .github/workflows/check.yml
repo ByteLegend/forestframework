@@ -1,4 +1,4 @@
-name: forestframework
+name: check
 
 on:
   push:

@@ -21,9 +21,9 @@ import io.vertx.ext.jdbc.JDBCClient;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.JDBCModule;
 
+@EnableExtensions(extensions = {JDBCClientExtension.class, InitDataExtension.class, StaticResourceExtension.class})
 @ForestApplication
 @IncludeComponents(classes = {JDBCModule.class, TodoRouter.class})
-@EnableExtensions(extensions = {JDBCClientExtension.class, InitDataExtension.class, StaticResourceExtension.class})
 public class TodoApplicationJavaAsyncJDBC {
     public static void main(String[] args) {
         Forest.run(TodoApplicationJavaAsyncJDBC.class);

@@ -14,9 +14,9 @@ import io.forestframework.ext.core.StaticResourceExtension;
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.JDBCModule;
 
+@EnableExtensions(extensions = {StaticResourceExtension.class, InitDataExtension.class})
 @ForestApplication
 @IncludeComponents(classes = {TodoRouter.class, JDBCModule.class})
-@EnableExtensions(extensions = {StaticResourceExtension.class, InitDataExtension.class})
 public class TodoApplicationJavaSyncJDBC {
     public static void main(String[] args) {
         Forest.run(TodoApplicationJavaSyncJDBC.class);

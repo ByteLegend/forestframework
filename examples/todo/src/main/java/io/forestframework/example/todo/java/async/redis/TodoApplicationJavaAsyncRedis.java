@@ -14,9 +14,9 @@ import io.vertx.redis.client.RedisAPI;
 
 import static io.forestframework.example.todo.java.async.redis.TodoApplicationJavaAsyncRedis.RedisModule;
 
+@EnableStaticResource
 @ForestApplication
 @IncludeComponents(classes = {RedisModule.class, TodoRouter.class})
-@EnableStaticResource
 @EnableRedisClient
 public class TodoApplicationJavaAsyncRedis {
     public static void main(String[] args) {

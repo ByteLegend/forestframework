@@ -7,7 +7,7 @@ import org.apiguardian.api.API;
  * Allows customization for Forest application.
  */
 @API(status = API.Status.STABLE, since = "1.0")
-public interface Extension {
+public interface Extension extends AutoCloseable {
     /**
      * Configure the context which is used to create the injector.
      */
@@ -18,5 +18,9 @@ public interface Extension {
      * Configure the services inside the injector.
      */
     default void afterInjector(Injector injector) {
+    }
+
+    @Override
+    default void close() throws Exception {
     }
 }

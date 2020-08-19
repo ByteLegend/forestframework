@@ -1,6 +1,4 @@
-package io.forestframework.ext.core;
-
-import io.forestframework.core.http.HttpStatusCode;
+package io.forestframework.core.http;
 
 public class HttpException extends RuntimeException {
     private final HttpStatusCode code;

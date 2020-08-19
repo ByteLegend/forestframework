@@ -15,7 +15,7 @@ import io.forestframework.core.http.result.GetJson
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.PreHandler
 import io.forestframework.ext.core.EnableStaticResource
-import io.forestframework.ext.core.HttpException
+import io.forestframework.core.http.HttpException
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.shareddata.LocalMap
 import io.vertx.core.shareddata.SharedData

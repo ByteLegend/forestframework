@@ -10,10 +10,11 @@ import io.forestframework.ext.core.AutoRoutingScanExtension
 import io.forestframework.ext.core.AutoScanComponentsExtension
 import io.forestframework.ext.core.BannerExtension
 import io.forestframework.ext.core.ExtraConfig
-import javax.inject.Inject
+import io.forestframework.ext.core.HttpServerExtension
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import javax.inject.Inject
 
 class Extension1 : Extension
 class Extension2 : Extension
@@ -68,6 +69,7 @@ class ForestExtensionOrderTest {
                 BannerExtension::class.java,
                 AutoScanComponentsExtension::class.java,
                 AutoRoutingScanExtension::class.java,
+                HttpServerExtension::class.java,
                 Extension3::class.java,
                 Extension4::class.java,
                 Extension5::class.java,

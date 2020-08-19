@@ -7,20 +7,20 @@ import com.google.inject.LookupInterceptor;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 import io.forestframework.core.config.Config;
-import io.forestframework.core.http.DefaultHttpVerticle;
-import io.forestframework.core.http.routing.DefaultRoutingManager;
-import io.forestframework.core.http.routing.RoutingManager;
 import io.forestframework.core.modules.CoreModule;
+import io.forestframework.ext.api.After;
+import io.forestframework.ext.api.Before;
+import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
-import io.forestframework.utils.completablefuture.VertxCompletableFuture;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
+import io.forestframework.utils.StartupUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static io.forestframework.utils.StartupUtils.instantiateWithDefaultConstructor;
 
@@ -31,17 +31,49 @@ public class Application implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
     private final StartupContext startupContext;
     private Injector injector;
-    private String deploymentId;
 
     public Application(StartupContext startupContext) {
         this.startupContext = startupContext;
     }
 
     public void start() {
+        verifyOrder();
         configureComponents();
         createInjector();
         configureApplication();
-        startHttpServer();
+    }
+
+    private void verifyOrder() {
+        Map<Class<? extends Extension>, Integer> extensionClassToIndexMap = IntStream.range(0, startupContext.getExtensions().size())
+                .boxed()
+                .collect(Collectors.toMap(i -> startupContext.getExtensions().get(i).getClass(), i -> i));
+        for (int i = 0; i < startupContext.getExtensions().size(); ++i) {
+            int iCopy = i;
+            Extension extension = startupContext.getExtensions().get(i);
+            After after = extension.getClass().getAnnotation(After.class);
+            if (after != null) {
+                Stream<Class<?>> classesShouldHappenEarlier = Stream.concat(Stream.of(after.classes()), Stream.of(after.classNames()).map(StartupUtils::loadClass));
+                classesShouldHappenEarlier.filter(klass -> extensionClassToIndexMap.getOrDefault(klass, Integer.MIN_VALUE) > iCopy)
+                        .findFirst()
+                        .ifPresent(klass -> {
+                            throw new RuntimeException("Can't start application. Extension " + extension.getClass() + " should be after extension " + klass + ", extension classes: " +
+                                    startupContext.getExtensions().stream().map(Object::getClass).collect(Collectors.toList())
+                            );
+                        });
+            }
+
+            Before before = extension.getClass().getAnnotation(Before.class);
+            if (before != null) {
+                Stream<Class<?>> classesShouldHappenLater = Stream.concat(Stream.of(before.classes()), Stream.of(before.classNames()).map(StartupUtils::loadClass));
+                classesShouldHappenLater.filter(klass -> extensionClassToIndexMap.getOrDefault(klass, Integer.MAX_VALUE) < iCopy)
+                        .findFirst()
+                        .ifPresent(klass -> {
+                            throw new RuntimeException("Can't start application. Extension " + extension.getClass() + " should be before extension " + klass + ", extension classes: " +
+                                    startupContext.getExtensions().stream().map(Object::getClass).collect(Collectors.toList())
+                            );
+                        });
+            }
+        }
     }
 
     public Injector getInjector() {
@@ -75,25 +107,11 @@ public class Application implements AutoCloseable {
         startupContext.getExtensions().forEach(extension -> extension.afterInjector(injector));
     }
 
-    protected void startHttpServer() {
-        // 5. Start the HTTP server
-        DeploymentOptions deploymentOptions = startupContext.getConfigProvider().getInstance("forest.deploy", DeploymentOptions.class);
-        ((DefaultRoutingManager) injector.getInstance(RoutingManager.class)).finalizeRoutings();
-
-        Future<String> vertxFuture = startupContext.getVertx().deployVerticle(() -> injector.getInstance(DefaultHttpVerticle.class), deploymentOptions);
-        CompletableFuture<String> future = VertxCompletableFuture.from(startupContext.getVertx().getOrCreateContext(), vertxFuture);
-        try {
-            deploymentId = future.get();
-            LOGGER.info("Http server successful started on {} with {} instances", startupContext.getConfigProvider().getInstance("forest.http.port", String.class), deploymentOptions.getInstances());
-        } catch (Throwable e) {
-            LOGGER.error("", e);
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public void close() throws Exception {
-        VertxCompletableFuture.from(startupContext.getVertx().getOrCreateContext(), startupContext.getVertx().undeploy(deploymentId)).get();
+        for (Extension extension : startupContext.getExtensions()) {
+            extension.close();
+        }
     }
 
     private static Injector createInjector(StartupContext startupContext, List<Module> modules) {

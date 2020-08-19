@@ -25,6 +25,7 @@ public class TestApplicationStartupContext extends DefaultStartupContext {
         return enableExtensionsAnnotations.stream()
                 .map(EnableExtensions::extensions)
                 .flatMap(Stream::of)
+                .distinct()
                 .map(klass -> (Extension) StartupUtils.instantiateWithDefaultConstructor(klass))
                 .collect(Collectors.toList());
     }

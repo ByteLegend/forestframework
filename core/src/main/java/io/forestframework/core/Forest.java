@@ -37,6 +37,7 @@ public class Forest {
                 .stream()
                 .map(EnableExtensions::extensions)
                 .flatMap(Stream::of)
+                .distinct()
                 .map(StartupUtils::instantiateWithDefaultConstructor)
                 .map(it -> (Extension) it)
                 .collect(Collectors.toList());

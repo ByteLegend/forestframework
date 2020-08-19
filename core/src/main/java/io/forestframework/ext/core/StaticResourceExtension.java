@@ -8,6 +8,7 @@ import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingManager;
 import io.forestframework.core.http.routing.RoutingType;
 import io.forestframework.core.http.staticresource.StaticResource;
+import io.forestframework.ext.api.Before;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.StartupContext;
 
@@ -43,6 +44,7 @@ import java.util.stream.Stream;
  *
  * Also see {@link io.forestframework.core.http.staticresource.StaticResourceProcessor}
  */
+@Before(classes = AutoRoutingScanExtension.class)
 public class StaticResourceExtension implements Extension {
     private static final Method GET_RESOURCE_FILE_METHOD;
     private static final Method GET_RESOURCE_DIR_METHOD;
@@ -84,10 +86,6 @@ public class StaticResourceExtension implements Extension {
         }
     }
 
-    private boolean rootPathNotConfigured(RoutingManager routings) {
-        return routings.getRouting(RoutingType.HANDLER).stream().noneMatch(it -> it.getPath().equals("/"));
-    }
-
     private void configureOne(String webrootDir, RoutingManager routings) {
         if (webrootDir.startsWith("/")) {
             webrootDir = webrootDir.substring(1);
@@ -110,7 +108,7 @@ public class StaticResourceExtension implements Extension {
                             registerDirectoryRouting(routings, webrootDir, staticResource);
                         } else {
                             registerResourceRouting(routings, webrootDir, staticResource);
-                            if ("index.html".equals(staticResource.getName()) && rootPathNotConfigured(routings)) {
+                            if ("index.html".equals(staticResource.getName())) {
                                 registerRootPathRouting(routings, webrootDir);
                             }
                         }
@@ -131,8 +129,7 @@ public class StaticResourceExtension implements Extension {
     }
 
     private void registerRootPathRouting(RoutingManager routings, String webrootDir) {
-        routings.getRouting(RoutingType.HANDLER).add(
-                new StaticResourceRouting("/", webrootDir + "/index.html", GET_RESOURCE_FILE_METHOD));
+        routings.getRouting(RoutingType.HANDLER).add(new RootPathRouting(webrootDir + "/index.html"));
     }
 
     /**
@@ -151,6 +148,12 @@ public class StaticResourceExtension implements Extension {
     @StaticResource
     public String getResourceFile(String resourceFilePath) {
         return resourceFilePath;
+    }
+
+    public class RootPathRouting extends StaticResourceRouting {
+        public RootPathRouting(String mappedResourcePath) {
+            super("/", mappedResourcePath, GET_RESOURCE_FILE_METHOD);
+        }
     }
 
     public class StaticResourceRouting implements Routing {

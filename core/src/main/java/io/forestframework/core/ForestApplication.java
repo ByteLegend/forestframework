@@ -8,6 +8,7 @@ import io.forestframework.ext.api.EnableExtensions;
 import io.forestframework.ext.core.AutoRoutingScanExtension;
 import io.forestframework.ext.core.AutoScanComponentsExtension;
 import io.forestframework.ext.core.BannerExtension;
+import io.forestframework.ext.core.HttpServerExtension;
 
 import javax.inject.Scope;
 import javax.inject.Singleton;
@@ -21,7 +22,7 @@ import java.lang.annotation.Target;
 @Scope
 @BindingAnnotation
 @Extends(EnableExtensions.class)
-@EnableExtensions(extensions = {BannerExtension.class, AutoScanComponentsExtension.class, AutoRoutingScanExtension.class})
+@EnableExtensions(extensions = {BannerExtension.class, AutoScanComponentsExtension.class, AutoRoutingScanExtension.class, HttpServerExtension.class})
 @CompositeOf({Component.class, Router.class, Singleton.class})
 public @interface ForestApplication {
 }
