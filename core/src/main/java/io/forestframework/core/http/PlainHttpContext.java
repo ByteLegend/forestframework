@@ -17,13 +17,13 @@ public interface PlainHttpContext extends WebContext {
      *
      * Perform a 302 redirect to {@code url}. If a custom 3xx code is already defined, then that
      * one will be preferred.
-     * <p/>
+     *
      * The string "back" is special-cased
      * to provide Referrer support, when Referrer
      * is not present "/" is used.
-     * <p/>
+     *
      * Examples:
-     * <p/>
+     *
      * redirect('back');
      * redirect('/login');
      * redirect('http://google.com');

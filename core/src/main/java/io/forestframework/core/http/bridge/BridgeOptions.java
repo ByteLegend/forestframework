@@ -76,7 +76,7 @@ public class BridgeOptions {
     /**
      * Sets the list of inbound permitted options.
      *
-     * @param inboundPermitted the list to use, must not be {@link null}. This method use the direct list reference
+     * @param inboundPermitted the list to use, must not be {@code null}. This method use the direct list reference
      * (and doesn't create a copy).
      * @return the current {@link BridgeOptions}.
      */
@@ -106,7 +106,7 @@ public class BridgeOptions {
     /**
      * Sets the list of outbound permitted options.
      *
-     * @param outboundPermitted the list to use, must not be {@link null}. This method use the direct list reference
+     * @param outboundPermitted the list to use, must not be {@code null}. This method use the direct list reference
      * (and doesn't create a copy).
      * @return the current {@link BridgeOptions}.
      */

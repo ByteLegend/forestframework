@@ -13,14 +13,14 @@ import java.lang.annotation.Target;
  *
  * For example, if you have:
  * <pre>
- *     @literal @Before(classes = AnotherExtension.class)
+ *     {@literal @}Before(classes = AnotherExtension.class)
  *     class IShouldBeTheFirstExtension implements Extension {
  *     }
  *     class AnotherExtension implements Extension {
  *     }
  *
- *     @literal @EnableExtensions(AnotherExtension.class, IShouldBeTheFirstExtension.class)
- *     @literal @ForestApplication
+ *     {@literal @}EnableExtensions(AnotherExtension.class, IShouldBeTheFirstExtension.class)
+ *     {@literal @}ForestApplication
  *     class App {
  *     }
  * </pre>

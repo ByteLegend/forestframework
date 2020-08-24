@@ -8,9 +8,9 @@ import javax.inject.Singleton;
 
 /**
  * Resolve parameters from request url path. Three kins of path parameters are supported:
- * 1. /user/:id -> @PathParam("id")
- * 2. Regex path: \/js\/(?<file>.+) -> @PathParam("file")
- * 3. Wildcard path: /static/* -> @PathParam("*")
+ * 1. /user/:id -&gt; @PathParam("id")
+ * 2. Regex path: \/js\/(?&lt;file&gt;.+) -&gt; @PathParam("file")
+ * 3. Wildcard path: /static/* -&gt; @PathParam("*")
  */
 @Singleton
 public class PathParamResolver implements RoutingParameterResolver<Object> {

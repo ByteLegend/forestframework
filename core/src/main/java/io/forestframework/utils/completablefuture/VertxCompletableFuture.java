@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  * <p>
  * * {@link VertxCompletableFuture} are attached to a Vert.x {@link Context}
  * * All operator methods returns {@link VertxCompletableFuture}
- * * <em*async</em> method not passing an {@link Executor} are executed on the attached {@link Context}
+ * * <em>async</em> method not passing an {@link Executor} are executed on the attached {@link Context}
  * * All non async method are executed on the current Thread (so not necessary on the attached {@link Context}
  * <p>
  * The class also offer bridges methods with Vert.x {@link Future}, and regular {@link CompletableFuture}.
@@ -583,7 +583,6 @@ public class VertxCompletableFuture<T> extends CompletableFuture<T> implements C
      * CompletableFutures are not reflected in the returned CompletableFuture, but may be obtained by inspecting them
      * individually. If no CompletableFutures are provided, returns a CompletableFuture completed with the value
      * {@code null}.
-     * <p>
      * <p>Among the applications of this method is to await completion
      * of a set of independent CompletableFutures before continuing a
      * program, as in: {@code CompletableFuture.allOf(c1, c2, c3).join();}.
@@ -608,7 +607,6 @@ public class VertxCompletableFuture<T> extends CompletableFuture<T> implements C
      * CompletableFutures are not reflected in the returned CompletableFuture, but may be obtained by inspecting them
      * individually. If no CompletableFutures are provided, returns a CompletableFuture completed with the value
      * {@code null}.
-     * <p>
      * <p>Among the applications of this method is to await completion
      * of a set of independent CompletableFutures before continuing a
      * program, as in: {@code CompletableFuture.allOf(c1, c2, c3).join();}.

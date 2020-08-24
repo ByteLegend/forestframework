@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * 2. Inject the configuration instance via Guice DI, e.g.
  * <pre>
  * public class MyService {
- *     @literal @Inject
+ *     {@literal @}Inject
  *     public MyService(@literal @Config("forest.http.port") int port) {
  *         ...
  *     }
@@ -101,18 +101,14 @@ public class ConfigProvider {
      * Load all configuration from current environment for further query. It searches the environment in the following orders:
      * <ul>
      *   <li>Config file (the latter one supersedes the former one):</li>
-     *   <ul>
      *     <li>The file specified by system property "-Dforest.config.file={filePath}".</li>
      *     <li>The first resource file named "/forest.json" in classpath.</li>
      *     <li>The first resource file named "/forest.yml" in classpath.</li>
-     *   </ul>
      *   <li>System properties (this overwrites the corresponding value in config file):</li>
-     *   <ul>
      *       <li>All system properties starting with "forest.", if the value isn't JSON string (starting with '{' or '['),
      *       store the value as it is.</li>
      *       <li>All system properties starting with "forest.", if the value is JSON string (starting with '{' or '['),
      *       let JSON parser parse the value then store the deserialized result.</li>
-     *   </ul>
      * </ul>
      *
      * See {@link ConfigProvider#ENVIRONMENT_CONFIG_PATTERN}

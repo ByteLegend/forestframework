@@ -22,12 +22,12 @@ public @interface Router {
      * The prefix of all route paths. For example,
      *
      * <pre>
-     * @literal @Router("/users")
+     * {@literal @}Router("/users")
      * class {
-     *     @literal @Get("/:id")
+     *     {@literal @}Get("/:id")
      *     public User getUserById(){}
      *
-     *     @literal @Get("")
+     *     {@literal @}Get("")
      *     public User getAllUsers(){}
      * }
      * </pre>
