@@ -55,23 +55,24 @@ public class HttpClientTest {
     HttpClient client2 = vertx.createHttpClient(options);
 
     VertxCompletableFuture<Integer> requestA = new VertxCompletableFuture<>(vertx);
-    client1.get("/A").onSuccess(resp -> {
-      resp.pause();
-      resp.exceptionHandler(requestA::completeExceptionally)
-          .bodyHandler(buffer -> {
-            requestA.complete(Integer.parseInt(buffer.toString()));
-          });
-      resp.resume();
-    }).onFailure(requestA::completeExceptionally);
+    client1.get("/A", asyncResult -> {
+        if (asyncResult.succeeded()) {
+            asyncResult.result().bodyHandler(buffer -> requestA.complete(Integer.parseInt(buffer.toString())))
+                    .exceptionHandler(requestA::completeExceptionally);
+        } else {
+            requestA.completeExceptionally(asyncResult.cause());
+        }
+    });
 
     VertxCompletableFuture<Integer> requestB = new VertxCompletableFuture<>(vertx);
-    client2.get("/B").onSuccess(resp -> {
-      resp.exceptionHandler(requestB::completeExceptionally)
-          .bodyHandler(buffer -> {
-            requestB.complete(Integer.parseInt(buffer.toString()));
-          });
-    }).onFailure(requestB::completeExceptionally);
-
+    client2.get("/B", asyncResult -> {
+        if (asyncResult.succeeded()) {
+            asyncResult.result().bodyHandler(buffer -> requestB.complete(Integer.parseInt(buffer.toString())))
+                    .exceptionHandler(requestB::completeExceptionally);
+        } else {
+            requestB.completeExceptionally(asyncResult.cause());
+        }
+    });
 
     VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> requestA.join() + requestB.join())
         .thenAccept(i -> {
