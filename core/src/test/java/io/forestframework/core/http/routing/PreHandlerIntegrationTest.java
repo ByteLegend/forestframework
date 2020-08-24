@@ -68,40 +68,37 @@ public class PreHandlerIntegrationTest {
     }
 
     @ParameterizedTest(name = "should handle \"{0}\" method")
-    @CsvSource({
-            "GET, /prehandler/get, /prehandler/get is handled",
-            "POST, /prehandler/post, /prehandler/post is handled",
-            "PATCH, /prehandler/patch, /prehandler/patch is handled",
-            "DELETE, /prehandler/delete, /prehandler/delete is handled"
-    })
-    void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler(String method, String path, String expected) throws IOException {
-        Assertions.assertEquals(expected, sendRequestandGetResult(method, path));
+    @CsvSource({"GET", "POST", "PATCH", "DELETE"})
+    void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler(String method) throws IOException {
+        String path = "/prehandler/" + method.toLowerCase();
+        String expected = "/prehandler/" + method.toLowerCase() + " is handled";
+
+        CloseableHttpResponse response = sendRequestGetResponse(method, path);
+        int statusCode = response.getStatusLine().getStatusCode();
+        String result = EntityUtils.toString(response.getEntity());
+
+        Assertions.assertEquals(200, statusCode);
+        Assertions.assertEquals(expected, result);
     }
 
     @ParameterizedTest(name = "should handle \"{0}\" and return")
-    @CsvSource({
-            "GET, /prehandler/error/get, Service Unavailable for /prehandler/error/get",
-            "POST, /prehandler/error/post, Service Unavailable for /prehandler/error/post",
-            "PATCH, /prehandler/error/patch, Service Unavailable for /prehandler/error/patch",
-            "DELETE, /prehandler/error/delete, Service Unavailable for /prehandler/error/delete"
-    })
-    void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler_and_return_when_error_occurs(String method, String path, String expected) throws IOException {
+    @CsvSource({"GET", "POST", "PATCH", "DELETE"})
+    void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler_and_return_when_error_occurs(String method) throws IOException {
+        String path = "/prehandler/error/" + method.toLowerCase();
+        String expected = "Service Unavailable for /prehandler/error/" + method.toLowerCase();
+
         CloseableHttpResponse response = sendRequestGetResponse(method, path);
         int statusCode = response.getStatusLine().getStatusCode();
+        String result = EntityUtils.toString(response.getEntity());
 
         Assertions.assertEquals(503, statusCode);
-        Assertions.assertEquals(expected, sendRequestandGetResult(method, path));
-        Assertions.assertFalse(sendRequestandGetResult(method, path).contains("should not be here"));
+        Assertions.assertEquals(expected, result);
+        Assertions.assertFalse(result.contains("should not be here"));
     }
 
     private CloseableHttpResponse sendRequestGetResponse(String method, String path) throws IOException {
         String uri = "http://localhost:" + port + path;
         HttpUriRequest request = RequestBuilder.create(method).setUri(uri).build();
         return client.execute(request);
-    }
-
-    private String sendRequestandGetResult(String method, String path) throws IOException {
-        CloseableHttpResponse response = sendRequestGetResponse(method, path);
-        return EntityUtils.toString(response.getEntity());
     }
 }
