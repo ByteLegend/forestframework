@@ -2,6 +2,7 @@ package io.forestframework.core.http.routing;
 
 import io.forestframework.core.ForestApplication;
 import io.forestframework.core.config.Config;
+import io.forestframework.testfixtures.DisableAutoScan;
 import io.forestframework.testsupport.ForestExtension;
 import io.forestframework.testsupport.ForestTest;
 import io.vertx.core.http.HttpServerRequest;
@@ -52,6 +53,7 @@ class PreHandlerTestApp {
 @DisplayName("When pre-handler methods default")
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = PreHandlerTestApp.class)
+@DisableAutoScan
 public class PreHandlerIntegrationTest {
 
     @Inject
@@ -73,7 +75,7 @@ public class PreHandlerIntegrationTest {
             "DELETE, /prehandler/delete, /prehandler/delete is handled"
     })
     void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler(String method, String path, String expected) throws IOException {
-        Assertions.assertEquals(expected, sendHttpRequest(method, path));
+        Assertions.assertEquals(expected, sendRequestandGetResult(method, path));
     }
 
     @ParameterizedTest(name = "should handle \"{0}\" and return")
@@ -84,16 +86,22 @@ public class PreHandlerIntegrationTest {
             "DELETE, /prehandler/error/delete, Service Unavailable for /prehandler/error/delete"
     })
     void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler_and_return_when_error_occurs(String method, String path, String expected) throws IOException {
-        Assertions.assertEquals(expected, sendHttpRequest(method, path));
+        CloseableHttpResponse response = sendRequestGetResponse(method, path);
+        int statusCode = response.getStatusLine().getStatusCode();
+
+        Assertions.assertEquals(503, statusCode);
+        Assertions.assertEquals(expected, sendRequestandGetResult(method, path));
+        Assertions.assertFalse(sendRequestandGetResult(method, path).contains("should not be here"));
     }
 
-    private String sendHttpRequest(String method, String path) throws IOException {
+    private CloseableHttpResponse sendRequestGetResponse(String method, String path) throws IOException {
         String uri = "http://localhost:" + port + path;
-
         HttpUriRequest request = RequestBuilder.create(method).setUri(uri).build();
-        CloseableHttpResponse response = client.execute(request);
+        return client.execute(request);
+    }
 
-        HttpEntity entity = response.getEntity();
-        return EntityUtils.toString(entity);
+    private String sendRequestandGetResult(String method, String path) throws IOException {
+        CloseableHttpResponse response = sendRequestGetResponse(method, path);
+        return EntityUtils.toString(response.getEntity());
     }
 }
