@@ -138,8 +138,10 @@ public class AutoRoutingScanExtension implements Extension {
         }
         if (StringUtils.isNotBlank(route.value()) && StringUtils.isNotBlank(route.regex())) {
             throw new IllegalArgumentException("Path and regexPath are both non-empty: " + target);
-        } else if (StringUtils.isBlank(route.value())) {
+        } else if (StringUtils.isBlank(route.value()) && StringUtils.isBlank(route.path())) {
             return route.regex();
+        } else if (StringUtils.isBlank(route.value())){
+            return verify(route.path());
         } else {
             return verify(route.value());
         }
