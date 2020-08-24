@@ -55,8 +55,7 @@ public class AutoRoutingScanExtension implements Extension {
         RoutingManager routings = injector.getInstance(RoutingManager.class);
 
         // @formatter:off
-        List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() {
-        }, ComponentClasses.class));
+        List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() { }, ComponentClasses.class));
         // @formatter:on
 
         componentClasses.stream()
@@ -156,4 +155,3 @@ public class AutoRoutingScanExtension implements Extension {
         return path;
     }
 }
-

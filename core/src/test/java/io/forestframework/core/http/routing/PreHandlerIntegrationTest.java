@@ -7,7 +7,6 @@ import io.forestframework.testsupport.ForestExtension;
 import io.forestframework.testsupport.ForestTest;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -69,7 +68,7 @@ public class PreHandlerIntegrationTest {
 
     @ParameterizedTest(name = "should handle \"{0}\" method")
     @CsvSource({"GET", "POST", "PATCH", "DELETE"})
-    void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler(String method) throws IOException {
+    void shouldHandleAllHttpMethodsWhenMethodsAttributeIsDefaultInPreHandler(String method) throws IOException {
         String path = "/prehandler/" + method.toLowerCase();
         String expected = "/prehandler/" + method.toLowerCase() + " is handled";
 
@@ -83,7 +82,7 @@ public class PreHandlerIntegrationTest {
 
     @ParameterizedTest(name = "should handle \"{0}\" and return")
     @CsvSource({"GET", "POST", "PATCH", "DELETE"})
-    void should_handle_all_methods_when_methods_attribute_is_default_value_in_preHandler_and_return_when_error_occurs(String method) throws IOException {
+    void shouldHandleAllHttpMethodsWhenMethodsAttributeIsDefaultInPreHandlerAndReturnWhenErrorOccurs(String method) throws IOException {
         String path = "/prehandler/error/" + method.toLowerCase();
         String expected = "Service Unavailable for /prehandler/error/" + method.toLowerCase();
 
