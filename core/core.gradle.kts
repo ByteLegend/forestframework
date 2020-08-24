@@ -1,6 +1,7 @@
 val libs: (String) -> String by rootProject.ext
 
 dependencies {
+    testImplementation(libs("httpclient"))
     api(libs("vertx-core"))
     implementation(libs("vertx-web"))
     api(libs("javax.inject"))

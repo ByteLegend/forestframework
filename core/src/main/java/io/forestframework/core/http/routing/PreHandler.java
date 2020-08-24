@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 @Extends(Route.class)
 @Route(type = RoutingType.PRE_HANDLER)
 public @interface PreHandler {
-    HttpMethod[] methods() default {HttpMethod.GET};
+    HttpMethod[] methods() default {HttpMethod.ALL};
 
     String value() default "";
 
