@@ -17,12 +17,9 @@ include(":examples:petclinic")
 include(":examples:benchmark-kotlin")
 include(":examples:initializr")
 
-rootProject.children.forEach {
-    it.buildFileName = "${it.name}.gradle.kts"
-}
+rootProject.children.forEach { it.configureBuildScriptName() }
 
-listOf(":extensions", ":examples").forEach { p ->
-    project(p).children.forEach {
-        it.buildFileName = "${it.name}.gradle.kts"
-    }
+fun ProjectDescriptor.configureBuildScriptName() {
+    buildFileName = "${name}.gradle.kts"
+    children.forEach { it.configureBuildScriptName() }
 }

@@ -8,3 +8,6 @@ dependencies {
     implementation(libs("junit-jupiter-engine"))
     implementation(libs("commons-lang3"))
 }
+
+val configurePublication: Project.() -> Unit by rootProject.ext
+configurePublication()

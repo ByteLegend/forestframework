@@ -1,4 +1,6 @@
 val libs: (String) -> String by rootProject.ext
+val configurePublication: Project.() -> Unit by rootProject.ext
+configurePublication()
 
 dependencies {
     api(libs("kotlinx-coroutines-jdk8"))

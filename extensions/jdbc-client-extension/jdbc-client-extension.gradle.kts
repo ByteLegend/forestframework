@@ -4,3 +4,6 @@ dependencies {
     api(libs("vertx-jdbc-client"))
     implementation(project(":core"))
 }
+
+val configurePublication: Project.() -> Unit by rootProject.ext
+configurePublication()
