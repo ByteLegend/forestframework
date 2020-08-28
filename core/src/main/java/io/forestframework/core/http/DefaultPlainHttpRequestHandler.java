@@ -13,11 +13,14 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.forestframework.core.http.routing.PlainHttpRoutingMatchResult.MainHandlerMatchResult;
@@ -135,20 +138,24 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
     // End the response.
     private Object invokeFinalizingHandler(PlainHttpContext context, Throwable... throwables) {
         try {
-            Stream.of(throwables).forEach(this::logError);
-            if (throwables.length > 0) {
-                HttpStatusCode statusCode = IntStream.range(0, throwables.length)
-                        .mapToObj(i -> throwables[throwables.length - i - 1])
+            List<Throwable> realThrowables = Stream.of(throwables)
+                    .filter(Objects::nonNull)
+                    .peek(this::logError)
+                    .collect(Collectors.toList());
+
+            if (realThrowables.isEmpty()) {
+                if (!context.response().ended()) {
+                    ((EndForbiddenHttpServerResponseWrapper) context.response()).realEnd();
+                }
+            } else {
+                HttpStatusCode statusCode = realThrowables
+                        .stream()
                         .filter(t -> t instanceof HttpException)
                         .map(t -> ((HttpException) t).getCode())
                         .findFirst()
                         .orElse(HttpStatusCode.INTERNAL_SERVER_ERROR);
                 if (!context.response().ended()) {
                     context.response().setStatusCode(statusCode.getCode()).write(statusCode.name());
-                    ((EndForbiddenHttpServerResponseWrapper) context.response()).realEnd();
-                }
-            } else {
-                if (!context.response().ended()) {
                     ((EndForbiddenHttpServerResponseWrapper) context.response()).realEnd();
                 }
             }
