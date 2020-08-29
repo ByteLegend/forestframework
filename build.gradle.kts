@@ -27,7 +27,6 @@ allprojects {
     configureJava()
     tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().all {
         isEnabled = name.endsWith("spotbugsMain") && !project.file("src/main/kotlin").isDirectory
-        println("${path}: ${isEnabled}")
         reports.maybeCreate("xml").isEnabled = false
         reports.maybeCreate("html").isEnabled = true
     }
