@@ -24,7 +24,7 @@ class GetStaticResourceIntegrationTestApp {
     @GetStaticResource("/viaPathRelativeToCwd")
     fun viaPathRelativeToCwd(): String {
         val target = File(javaClass.classLoader.getResource("GetStaticResourceIntegrationTestData/test.txt").toURI()).absoluteFile.toPath()
-        val cwd = Paths.get(".").toAbsolutePath()
+        val cwd = Paths.get(".").toAbsolutePath().normalize()
         return cwd.relativize(target).toString()
     }
 
