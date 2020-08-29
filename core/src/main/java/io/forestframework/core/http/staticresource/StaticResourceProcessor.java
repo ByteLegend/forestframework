@@ -33,8 +33,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Convert the resource name returned by handler method to a file, then send it via {@link io.vertx.core.http.HttpServerResponse}.
- * The returned resource name MUST be a relative path, which will be interpreted as path relative to classpath entry.
+ * Resolve the resource name returned by a handler method, then send the resolved file via {@link io.vertx.core.http.HttpServerResponse}.
+ *
+ * If the returned resource name is absolute, it will be send directly; otherwise, a relative path will be interpreted as path relative to cwd or classpath entry.
  *
  * Given a resource name "relative/path/to/resource.txt", for directory classpath entry "file:///home/my/resources",
  * the resource file "file:///home/my/resources/relative/path/to/resource.txt" will be located and sent; for jar classpath entry
@@ -53,14 +54,21 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
 
     @Override
     public Object processResponse(WebContext context, Routing routing, Object returnValue) {
-        String path = (String) returnValue;
-        if (path.startsWith("/")) {
-            path = path.substring(1);
+        String path = returnValue.toString();
+
+        if (path.isEmpty()) {
+            send404(((PlainHttpContext) context).response());
+            return returnValue;
         }
 
         EndAwareRoutingContextDecorator endAwareRoutingContext = new EndAwareRoutingContextDecorator(vertx, (PlainHttpContext) context);
         staticHandler.sendStatic(endAwareRoutingContext, path);
         return endAwareRoutingContext.getFuture();
+    }
+
+    private static void send404(HttpServerResponse response) {
+        response.setStatusCode(HttpStatusCode.NOT_FOUND.getCode());
+        response.write(HttpStatusCode.NOT_FOUND.name());
     }
 
     public static class EndAwareRoutingContextDecorator implements RoutingContext {
@@ -110,8 +118,7 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
         @Override
         public void next() {
             // Resource not found
-            response().setStatusCode(HttpStatusCode.NOT_FOUND.getCode());
-            response().write(HttpStatusCode.NOT_FOUND.name());
+            send404(response());
             promise.complete();
         }
 
