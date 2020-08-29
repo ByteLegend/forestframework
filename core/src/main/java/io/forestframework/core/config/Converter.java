@@ -13,11 +13,13 @@ import java.util.Objects;
 public interface Converter<IN, OUT> {
     OUT convert(IN in, Class<? extends IN> inType, Class<? extends OUT> outType);
 
+    @SuppressWarnings("rawtypes")
     static Converter getDefaultConverter() {
         return DefaultConverter.INSTANCE;
     }
 }
 
+@SuppressWarnings("rawtypes")
 enum DefaultConverter implements Converter<Object, Object> {
     INSTANCE;
 

@@ -23,7 +23,7 @@ public @interface ForestTest {
      * The target Forest application class to test. Usually the test application is
      * started and some HTTP requests are made against it to test its functionalities.
      *
-     * @see {@link io.forestframework.core.ForestApplication}
+     * See {@link io.forestframework.core.ForestApplication}
      * @return the target application class for test
      */
     Class<?> appClass();
