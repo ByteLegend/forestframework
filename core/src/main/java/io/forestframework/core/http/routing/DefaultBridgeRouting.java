@@ -1,11 +1,12 @@
 package io.forestframework.core.http.routing;
 
-import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.bridge.BridgeEventType;
 import org.apiguardian.api.API;
 
 import java.lang.reflect.Method;
 import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 /**
  * For internal use only.
@@ -14,8 +15,8 @@ import java.util.List;
 public class DefaultBridgeRouting extends DefaultRouting implements BridgeRouting {
     private final List<BridgeEventType> eventTypes;
 
-    public DefaultBridgeRouting(boolean blocking, RoutingType type, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod, List<BridgeEventType> eventTypes) {
-        super(blocking, type, path, regexPath, methods, handlerMethod);
+    public DefaultBridgeRouting(boolean blocking, RoutingType type, String path, String regexPath, Method handlerMethod, List<BridgeEventType> eventTypes) {
+        super(blocking, type, path, regexPath, emptyList(), handlerMethod, -1, emptyList(), emptyList());
         this.eventTypes = eventTypes;
     }
 

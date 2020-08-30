@@ -1,11 +1,11 @@
 package io.forestframework.ext.core;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
+import com.google.common.net.MediaType;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import io.forestframework.core.ComponentClasses;
-import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpRequestHandler;
 import io.forestframework.core.http.Router;
 import io.forestframework.core.http.bridge.Bridge;
@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static io.forestframework.utils.StartupUtils.isBlockingMethod;
+import static java.util.Collections.singletonList;
 
 /**
  * Manage routing-related work at startup.
@@ -93,9 +94,9 @@ public class AutoRoutingScanExtension implements Extension {
         String methodPath = getPath(routeOnMethod, method);
         String path = (routeOnClass == null ? "" : routeOnClass.value()) + methodPath;
         if (StringUtils.isNotBlank(routeOnMethod.regex())) {
-            return createRouting(routeOnMethod, "", path, Arrays.asList(routeOnMethod.methods()), method);
+            return createRouting(routeOnMethod, "", path, method);
         } else {
-            return createRouting(routeOnMethod, path, "", Arrays.asList(routeOnMethod.methods()), method);
+            return createRouting(routeOnMethod, path, "", method);
         }
     }
 
@@ -110,8 +111,8 @@ public class AutoRoutingScanExtension implements Extension {
         }
     }
 
-    @SuppressWarnings("checkstyle:parameterassignment")
-    private Routing createRouting(Route route, String path, String regexPath, List<HttpMethod> methods, Method handlerMethod) {
+    @SuppressWarnings({"checkstyle:parameterassignment", "UnstableApiUsage"})
+    private Routing createRouting(Route route, String path, String regexPath, Method handlerMethod) {
         if (AnnotationMagic.instanceOf(route, Bridge.class)) {
             List<BridgeEventType> eventTypes = Arrays.asList(AnnotationMagic.cast(route, Bridge.class).eventTypes());
             if (!regexPath.isEmpty()) {
@@ -122,13 +123,34 @@ public class AutoRoutingScanExtension implements Extension {
                 if (path.endsWith("/")) {
                     path = path.substring(0, path.length() - 1);
                 }
-                return new DefaultBridgeRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod, eventTypes);
+                return new DefaultBridgeRouting(
+                        isBlockingMethod(handlerMethod),
+                        route.type(),
+                        path,
+                        regexPath,
+                        handlerMethod,
+                        eventTypes);
             }
         } else if (AnnotationMagic.instanceOf(route, WebSocket.class)) {
             List<WebSocketEventType> eventTypes = Arrays.asList(AnnotationMagic.cast(route, WebSocket.class).eventTypes());
-            return new DefaultWebSocketRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod, eventTypes);
+            return new DefaultWebSocketRouting(
+                    isBlockingMethod(handlerMethod),
+                    route.type(),
+                    path,
+                    regexPath,
+                    handlerMethod,
+                    eventTypes);
         } else {
-            return new DefaultRouting(isBlockingMethod(handlerMethod), route.type(), path, regexPath, methods, handlerMethod);
+            return new DefaultRouting(
+                    isBlockingMethod(handlerMethod),
+                    route.type(),
+                    path,
+                    regexPath,
+                    Arrays.asList(route.methods()),
+                    handlerMethod,
+                    route.order(),
+                    singletonList(MediaType.ANY_TYPE.toString()), // TODO: produces/consumes
+                    singletonList(MediaType.ANY_TYPE.toString()));
         }
     }
 

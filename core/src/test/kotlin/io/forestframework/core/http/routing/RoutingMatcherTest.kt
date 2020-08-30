@@ -16,8 +16,8 @@ import io.forestframework.core.http.routing.RoutingType.PRE_HANDLER
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.vertx.core.http.HttpServerRequest
+import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -27,6 +27,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
+
+val realMethods = StringUtils::class.java.methods
+var counter = 0
 
 @ExtendWith(MockKExtension::class)
 class RoutingMatcherTest {
@@ -47,6 +50,8 @@ class RoutingMatcherTest {
         every { request.getHeader(any<CharSequence>()) } returns "*/*"
     }
 
+    // https://github.com/mockk/mockk/issues/457
+    // We can't mock Method, so workaround by getting a "real" Method instance from a large enough class StringUtils
     private fun mockRouting(
         path: String,
         order: Int = 0,
@@ -56,15 +61,7 @@ class RoutingMatcherTest {
         consumes: String = "*/*",
         produces: String = "*/*"
     ): Routing {
-        val ret = mockk<Routing>()
-        every { ret.path } returns path
-        every { ret.regexPath } returns ""
-        every { ret.methods } returns (methods ?: listOf(method))
-        every { ret.order } returns order
-        every { ret.type } returns type
-        every { ret.consumes } returns listOf(consumes)
-        every { ret.produces } returns listOf(produces)
-        return ret
+        return DefaultRouting(false, type, path, "", methods ?: listOf(method), realMethods[counter++], order, listOf(produces), listOf(consumes))
     }
 
     private fun RoutingMatcher.matchPlain(request: HttpServerRequest) = match(request) as PlainHttpRoutingMatchResult

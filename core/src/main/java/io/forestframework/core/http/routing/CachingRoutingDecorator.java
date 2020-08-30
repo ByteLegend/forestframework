@@ -159,4 +159,19 @@ public class CachingRoutingDecorator implements BridgeRouting, WebSocketRouting,
             throw new UnsupportedOperationException("Can't get event type from " + delegate.getClass());
         }
     }
+
+    @Override
+    public int getOrder() {
+        return delegate.getOrder();
+    }
+
+    @Override
+    public List<String> getConsumes() {
+        return delegate.getConsumes();
+    }
+
+    @Override
+    public List<String> getProduces() {
+        return delegate.getProduces();
+    }
 }

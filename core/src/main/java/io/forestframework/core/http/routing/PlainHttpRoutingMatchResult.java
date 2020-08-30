@@ -137,12 +137,7 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
         private static final List<MediaType> ANY = Collections.singletonList(MediaType.ANY_TYPE);
         private static final Comparator<Routing> ROUTING_COMPARATOR =
                 Comparator.comparing(Routing::getOrder)
-                        .thenComparing(Routing::getType)
-                        .thenComparing(Routing::getPath)
-                        .thenComparing(Routing::getRegexPath)
-                        .thenComparing(routing -> routing.getMethods().toString())
-                        .thenComparing(routing -> routing.getConsumes().toString())
-                        .thenComparing(routing -> routing.getProduces().toString());
+                        .thenComparing(routing -> routing.getHandlerMethod().toString());
 
         // 200, 405, 406, 415
         private final HttpStatusCode code;
