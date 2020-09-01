@@ -1,20 +1,13 @@
 package io.forestframework.core.http.routing;
 
 import io.forestframework.core.ForestApplication;
-import io.forestframework.core.config.Config;
+import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.testfixtures.DisableAutoScan;
 import io.forestframework.testsupport.ForestExtension;
 import io.forestframework.testsupport.ForestTest;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,30 +15,40 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
 
 @ForestApplication
-class PreHandlerTestApp {
+class PreHandlerTestApp extends AbstractTraceableRouter {
 
     @PreHandler(value = "/prehandler/*")
     public void preHandle(HttpServerRequest request, HttpServerResponse response) {
-        response.write(request.path(), "UTF-8");
+        response.write(request.path());
+        addToTrace(request.path());
     }
 
     @PreHandler("/prehandler/error/*")
     public boolean preHandleException(HttpServerRequest request, HttpServerResponse response) {
         response.setStatusCode(503).write("Service Unavailable for " + request.path());
+        addToTrace(request.path());
         return false;
     }
 
     @Route(path = "/prehandler/*", type = RoutingType.HANDLER)
     public void handle(HttpServerResponse response) {
         response.write(" is handled", "UTF-8");
+        addToTrace(Message.HANDLER.name());
     }
 
     @Route(path = "/prehandler/error/*", type = RoutingType.HANDLER)
     public void handleException(HttpServerResponse response) {
         response.write(" should not be here", "UTF-8");
+        addToTrace(Message.HANDLER.name());
     }
 }
 
@@ -53,51 +56,37 @@ class PreHandlerTestApp {
 @ExtendWith(ForestExtension.class)
 @ForestTest(appClass = PreHandlerTestApp.class)
 @DisableAutoScan
-public class PreHandlerIntegrationTest {
+@IncludeComponents(classes = {PreHandlerTestApp.class})
+public class PreHandlerIntegrationTest extends AbstractHandlerIntegrationTest {
 
     @Inject
-    @Config("forest.http.port")
-    Integer port;
-
-    CloseableHttpClient client;
-
-    @BeforeEach
-    void setUp() {
-        client = HttpClients.createDefault();
+    void setRouter(PreHandlerTestApp router) {
+        this.router = router;
     }
 
-    @ParameterizedTest(name = "should handle \"{0}\" method")
+    @ParameterizedTest(name = "should handle \"{0}\" method and continue")
     @CsvSource({"GET", "POST", "PATCH", "DELETE"})
-    void shouldHandleAllHttpMethodsWhenMethodsAttributeIsDefaultInPreHandler(String method) throws IOException {
+    void shouldHandleAllHttpMethodsWhenMethodsAttributeIsDefaultWhenPreHandlerReturnsVoid(String method) throws IOException {
         String path = "/prehandler/" + method.toLowerCase();
         String expected = "/prehandler/" + method.toLowerCase() + " is handled";
 
-        CloseableHttpResponse response = sendRequestGetResponse(method, path);
-        int statusCode = response.getStatusLine().getStatusCode();
-        String result = EntityUtils.toString(response.getEntity());
+        String result = sendHttpRequest(method, path).assert200().getBody();
 
-        Assertions.assertEquals(200, statusCode);
         Assertions.assertEquals(expected, result);
+        Assertions.assertEquals(Collections.synchronizedList(Arrays.asList(path, Message.HANDLER.name())), router.traces);
     }
 
     @ParameterizedTest(name = "should handle \"{0}\" and return")
     @CsvSource({"GET", "POST", "PATCH", "DELETE"})
-    void shouldHandleAllHttpMethodsWhenMethodsAttributeIsDefaultInPreHandlerAndReturnWhenErrorOccurs(String method) throws IOException {
+    void shouldHandleAllHttpMethodsWhenMethodsAttributeIsDefaultWhenPreHandlerReturnsFalse(String method) throws IOException {
         String path = "/prehandler/error/" + method.toLowerCase();
         String expected = "Service Unavailable for /prehandler/error/" + method.toLowerCase();
 
-        CloseableHttpResponse response = sendRequestGetResponse(method, path);
-        int statusCode = response.getStatusLine().getStatusCode();
-        String result = EntityUtils.toString(response.getEntity());
+        String result = sendHttpRequest(method, path).assert503().getBody();
 
-        Assertions.assertEquals(503, statusCode);
         Assertions.assertEquals(expected, result);
-        Assertions.assertFalse(result.contains("should not be here"));
-    }
-
-    private CloseableHttpResponse sendRequestGetResponse(String method, String path) throws IOException {
-        String uri = "http://localhost:" + port + path;
-        HttpUriRequest request = RequestBuilder.create(method).setUri(uri).build();
-        return client.execute(request);
+        assertThat(result, not(containsString("should not be here")));
+        Assertions.assertEquals(Collections.singletonList(path), router.traces);
+        assertThat(router.traces, not(hasItem(Message.HANDLER.name())));
     }
 }
