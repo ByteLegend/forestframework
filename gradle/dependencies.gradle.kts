@@ -22,6 +22,7 @@ val seleniumVersion = "3.141.59"
 val groovyVersion = "2.5.12"
 val findBugsAnnotationVersion = "3.0.1"
 val httpclient = "4.5.12"
+val mockitoVersion = "3.5.10"
 
 val libs = listOf(
     "io.vertx:vertx-core:$vertxVersion",
@@ -78,7 +79,9 @@ val libs = listOf(
     "org.codehaus.groovy:groovy-all:$groovyVersion",
     "com.google.code.findbugs:annotations:$findBugsAnnotationVersion",
 
-    "org.apache.httpcomponents:httpclient:$httpclient"
+    "org.apache.httpcomponents:httpclient:$httpclient",
+    "org.mockito:mockito-core:$mockitoVersion",
+    "org.mockito:mockito-junit-jupiter:$mockitoVersion"
 ).map { it.split(":")[1] to it }.toMap()
 
 rootProject.extensions.configure<org.gradle.api.plugins.ExtraPropertiesExtension>("ext") {
