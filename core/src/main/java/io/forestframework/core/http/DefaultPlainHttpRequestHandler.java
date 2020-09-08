@@ -53,7 +53,7 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
             } else {
                 MainHandlerMatchResult mainHandlerMatchResult = routingMatchResult.getMainHandlerMatchResult();
                 if (mainHandlerMatchResult.getStatusCode() != HttpStatusCode.OK) {
-                    return invokeMatchedErrorHandler(context, routingMatchResult, new HttpException(mainHandlerMatchResult.getStatusCode(), "Resource not found: " + request.path()))
+                    return invokeMatchedErrorHandler(context, routingMatchResult, new HttpException(mainHandlerMatchResult.getStatusCode(), mainHandlerMatchResult.getStatusCode().name() + ", request path: " + request.path()))
                             .whenComplete((__, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInErrorHandler))
                             .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
                 } else {
