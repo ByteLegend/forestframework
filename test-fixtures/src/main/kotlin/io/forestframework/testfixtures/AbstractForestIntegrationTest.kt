@@ -3,13 +3,13 @@ package io.forestframework.testfixtures
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.forestframework.core.config.Config
-import io.forestframework.core.http.HttpMethod
 import io.forestframework.core.http.HttpStatusCode
 import io.forestframework.core.http.OptimizedHeaders
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpClient
 import io.vertx.core.http.HttpClientResponse
+import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.WebSocket
 import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.ext.web.client.HttpRequest
@@ -19,17 +19,17 @@ import io.vertx.kotlin.core.http.closeAwait
 import io.vertx.kotlin.core.http.webSocketAwait
 import io.vertx.kotlin.core.http.writeTextMessageAwait
 import io.vertx.kotlin.coroutines.awaitResult
+import java.util.Collections
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Timeout
-import java.util.Collections
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 class HttpClientResponseWrapper(private val delegate: HttpClientResponse) : HttpClientResponse by delegate {
     lateinit var body: Buffer
@@ -91,7 +91,7 @@ suspend fun HttpClient.get(port: Int, uri: String, headers: Map<String, String> 
 suspend fun HttpClient.send(httpMethod: HttpMethod, port: Int, uri: String, headers: Map<String, String> = emptyMap()) = awaitResult<HttpClientResponse> { handler ->
     val requestHeaders = HeadersMultiMap().apply { headers.forEach { (k, v) -> add(k, v) } }
 
-    send(httpMethod.toVertxHttpMethod(), port, "localhost", uri, requestHeaders) { responseAsyncResult ->
+    send(httpMethod, port, "localhost", uri, requestHeaders) { responseAsyncResult ->
         val wrapper = HttpClientResponseWrapper(responseAsyncResult.result())
         responseAsyncResult.result().bodyHandler {
             wrapper.body = it
