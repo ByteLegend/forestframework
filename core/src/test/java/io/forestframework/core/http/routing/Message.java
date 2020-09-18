@@ -1,7 +1,6 @@
 package io.forestframework.core.http.routing;
 
 public enum Message {
-    PREHANDLER,
     PREHANDLER1,
     PREHANDLER2,
 
@@ -15,7 +14,6 @@ public enum Message {
     CUSTOM_500_ERROR_HANDLER,
 
     ERROR_IN_PREHANDLER,
-    ERROR_IN_HANDLER,
     ERROR_IN_POSTHANDLER,
     ERROR_IN_CUSTOM_ERROR_HANDLER
 }

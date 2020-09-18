@@ -31,4 +31,8 @@ public @interface Route {
     String path() default "";
 
     String regex() default "";
+
+    String[] produces() default {"*/*"};
+
+    String[] consumes() default {"*/*"};
 }

@@ -1,9 +1,11 @@
 package io.forestframework.core.http.routing;
 
 import io.forestframework.core.config.Config;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Assertions;
@@ -21,7 +23,12 @@ public class AbstractHttpIntegrationTest {
 
     public HttpResponse sendHttpRequest(String method, String path) throws IOException {
         String uri = "http://localhost:" + port + path;
-        HttpUriRequest request = RequestBuilder.create(method).setUri(uri).build();
+        HttpUriRequest request = RequestBuilder
+                .create(method)
+                .setUri(uri)
+                .setHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON))
+                .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .build();
         CloseableHttpResponse response = client.execute(request);
         return new HttpResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity()));
     }
@@ -41,6 +48,14 @@ public class AbstractHttpIntegrationTest {
 
         HttpResponse assert404() {
             return assertStatusCode(404);
+        }
+
+        HttpResponse assert405() {
+            return assertStatusCode(405);
+        }
+
+        HttpResponse assert406() {
+            return assertStatusCode(406);
         }
 
         HttpResponse assert500() {

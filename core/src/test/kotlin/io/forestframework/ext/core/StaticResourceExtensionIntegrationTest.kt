@@ -4,6 +4,7 @@ import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
+import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import org.hamcrest.MatcherAssert.assertThat

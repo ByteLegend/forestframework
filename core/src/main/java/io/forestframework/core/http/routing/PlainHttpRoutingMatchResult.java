@@ -42,8 +42,8 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
 
     public void addResult(HttpServerRequest request, List<Routing> routings, Map<String, String> pathVariables) {
         routings.stream()
-                .collect(Collectors.groupingBy(Routing::getType))
-                .forEach((key, value) -> putIntoResult(request, key, value, pathVariables));
+            .collect(Collectors.groupingBy(Routing::getType))
+            .forEach((key, value) -> putIntoResult(request, key, value, pathVariables));
     }
 
     private void putIntoResult(HttpServerRequest request, RoutingType routingType, List<Routing> routings, Map<String, String> pathVariables) {
@@ -62,10 +62,10 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
 
     public List<Routing> getMatchingHandlersByType(RoutingType routingType) {
         return getMatchResultsByType(routingType)
-                .stream()
-                .filter(PlainHttpHandlerMatchResult::matches)
-                .map(PlainHttpHandlerMatchResult::getRouting)
-                .collect(Collectors.toList());
+            .stream()
+            .filter(PlainHttpHandlerMatchResult::matches)
+            .map(PlainHttpHandlerMatchResult::getRouting)
+            .collect(Collectors.toList());
     }
 
     public PlainHttpHandlerMatchResult getMatchResultByRouting(Routing routing) {
@@ -74,13 +74,13 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
 
     /**
      * 200 If everything fine
-     *
+     * <p>
      * 404 If no route matches the path
-     *
+     * <p>
      * 405 If a route matches the path but don’t match the HTTP Method
-     *
+     * <p>
      * 406 If a route matches the path and the method but It can’t provide a response with a content type matching Accept header
-     *
+     * <p>
      * 415 If a route matches the path and the method but It can’t accept the Content-type
      */
     public MainHandlerMatchResult getMainHandlerMatchResult() {
@@ -89,11 +89,11 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
 
     public Routing getMatchingErrorHandler(HttpStatusCode statusCode) {
         return getMatchResultsByType(RoutingType.ERROR_HANDLER)
-                .stream()
-                .map(PlainHttpHandlerMatchResult::getRouting)
-                .filter(routing -> canHandle(routing, statusCode))
-                .findFirst()
-                .orElse(null);
+            .stream()
+            .map(PlainHttpHandlerMatchResult::getRouting)
+            .filter(routing -> canHandle(routing, statusCode))
+            .findFirst()
+            .orElse(null);
     }
 
     private boolean canHandle(Routing routing, HttpStatusCode statusCode) {
@@ -136,8 +136,8 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
     public static class PlainHttpHandlerMatchResult implements Comparable<PlainHttpHandlerMatchResult> {
         private static final List<MediaType> ANY = Collections.singletonList(MediaType.ANY_TYPE);
         private static final Comparator<Routing> ROUTING_COMPARATOR =
-                Comparator.comparing(Routing::getOrder)
-                        .thenComparing(routing -> routing.getHandlerMethod().toString());
+            Comparator.comparing(Routing::getOrder)
+                .thenComparing(routing -> routing.getHandlerMethod().toString());
 
         // 200, 405, 406, 415
         private final HttpStatusCode code;
@@ -169,25 +169,59 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
         private HttpStatusCode mediaTypeMatch(HttpServerRequest request, Routing routing) {
             if (httpMethodNotAllowed(routing, request.method())) {
                 return HttpStatusCode.METHOD_NOT_ALLOWED;
-            } else if (!mediaTypeMatch(request, HEADER_ACCEPT, routing.getProduces())) {
+            } else if (!producesMatch(request, HEADER_ACCEPT, routing.getProduces())) {
                 return HttpStatusCode.NOT_ACCEPTABLE;
-            } else if (!mediaTypeMatch(request, HEADER_CONTENT_TYPE, routing.getConsumes())) {
+            } else if (!consumesMatch(request, HEADER_CONTENT_TYPE, routing.getConsumes())) {
                 return HttpStatusCode.UNSUPPORTED_MEDIA_TYPE;
             } else {
                 return HttpStatusCode.OK;
             }
         }
 
-        private boolean mediaTypeMatch(HttpServerRequest request, CharSequence headerName, List<String> producesOrConsumes) {
+        private boolean producesMatch(HttpServerRequest request, CharSequence headerName, List<String> produces) {
+            return mediaTypeMatch(getMediaTypes(request, headerName), getServerMediaTypes(produces));
+        }
+
+        private boolean consumesMatch(HttpServerRequest request, CharSequence headerName, List<String> consumes) {
+            return mediaTypeMatch(getServerMediaTypes(consumes), getMediaTypes(request, headerName));
+        }
+
+        private boolean mediaTypeMatch(List<MediaType> accepts, List<MediaType> comparedMediaTypes) {
+            return comparedMediaTypes.stream().anyMatch(
+                comparedMediaType -> accepts.stream().anyMatch(accept -> compare(comparedMediaType, accept))
+            );
+        }
+
+        private boolean compare(MediaType compared, MediaType accept) {
+            return (compared.withoutParameters().is(accept.withoutParameters())
+                || accept.withoutParameters().is(compared.withoutParameters()))
+                && matchParameters(accept, compared);
+        }
+
+        private List<MediaType> getMediaTypes(HttpServerRequest request, CharSequence headerName) {
             String header = request.getHeader(headerName);
 
-            List<MediaType> headers = header == null ? ANY :
-                    Stream.of(StringUtils.split(header, ',')).map(String::trim).map(MediaType::parse).collect(Collectors.toList());
-            List<MediaType> serverMediaTypes = producesOrConsumes.stream().map(MediaType::parse).collect(Collectors.toList());
+            return header == null
+                ? ANY
+                : Stream.of(StringUtils.split(header, ','))
+                        .map(String::trim)
+                        .map(MediaType::parse)
+                        .collect(Collectors.toList());
+        }
 
-            return headers.stream().anyMatch(headerMediaType ->
-                    serverMediaTypes.stream().anyMatch(headerMediaType::is)
-            );
+        private static List<MediaType> getServerMediaTypes(List<String> producesOrConsumes) {
+            return producesOrConsumes.stream().map(MediaType::parse).collect(Collectors.toList());
+        }
+
+        private boolean matchParameters(MediaType accept, MediaType compared) {
+            if (!accept.parameters().isEmpty() && !compared.parameters().isEmpty()) {
+                for (String name : compared.parameters().keySet()) {
+                    if (accept.parameters().containsKey(name)) {
+                        return compared.parameters().get(name).containsAll(accept.parameters().get(name));
+                    }
+                }
+            }
+            return true;
         }
 
         private boolean httpMethodNotAllowed(Routing routing, io.vertx.core.http.HttpMethod method) {
@@ -227,5 +261,3 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
         }
     }
 }
-
-

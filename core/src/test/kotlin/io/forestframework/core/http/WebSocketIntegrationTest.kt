@@ -11,6 +11,7 @@ import io.forestframework.core.http.websocket.WebSocketEventType
 import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
+import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
