@@ -3,8 +3,8 @@ val vertxVersion = "4.0.0.Beta1"
 val guiceVersion = "4.2.3-SNAPSHOT"
 val guavaVersion = "28.2-jre"
 val jacksonVersion = "2.10.3"
-val kotlinVersion = "1.3.72"
-val kotlinxVersion = "1.3.8"
+val kotlinVersion = "1.4.10"
+val kotlinxVersion = "1.3.9"
 val junitVersion = "5.6.2"
 val junit4Version = "4.13"
 val mockKVersion = "1.9.3"
@@ -39,6 +39,7 @@ val libs = listOf(
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion",
     "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion",
+    "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion",
 
     "javax.inject:javax.inject:1",
     "io.forestframework:guice:$guiceVersion",

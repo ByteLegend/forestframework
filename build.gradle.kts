@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.72" apply false
+    kotlin("jvm") version "1.4.10" apply false
     id("com.github.spotbugs") version ("4.5.0") apply false
 }
 

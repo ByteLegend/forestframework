@@ -32,6 +32,8 @@ dependencies {
 
     testImplementation(project(":test-fixtures"))
 
+    testImplementation(libs("kotlin-reflect"))
+
     testImplementation(libs("vertx-lang-kotlin-coroutines"))
     testImplementation(libs("vertx-unit"))
     testImplementation(libs("vertx-codegen"))  // Keep this or https://github.com/mockito/mockito/issues/366
