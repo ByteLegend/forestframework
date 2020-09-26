@@ -37,7 +37,9 @@ public class JsonResultProcessor implements RoutingResultProcessor {
         JsonResponseBody anno = AnnotationMagic.getOneAnnotationOnMethodOrNull(routing.getHandlerMethod(), JsonResponseBody.class);
         HttpServerResponse response = context.response();
         response.putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON);
-        if (returnValue instanceof Buffer) {
+        if (returnValue instanceof String) {
+            return response.write((String) returnValue);
+        } else if (returnValue instanceof Buffer) {
             return response.write((Buffer) returnValue);
         } else if (returnValue == null && anno.respond404IfNull()) {
             return response.setStatusCode(HttpStatusCode.NOT_FOUND.getCode()).write(NOT_FOUND_JSON);
