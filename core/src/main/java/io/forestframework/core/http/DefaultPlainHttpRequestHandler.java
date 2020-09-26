@@ -31,7 +31,6 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
     private static final CompletableFuture<Boolean> TRUE_FUTURE = CompletableFuture.completedFuture(Boolean.TRUE);
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPlainHttpRequestHandler.class);
 
-
     @Inject
     public DefaultPlainHttpRequestHandler(Vertx vertx, Injector injector) {
         super(vertx, injector);
@@ -54,25 +53,25 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                 MainHandlerMatchResult mainHandlerMatchResult = routingMatchResult.getMainHandlerMatchResult();
                 if (mainHandlerMatchResult.getStatusCode() != HttpStatusCode.OK) {
                     return invokeMatchedErrorHandler(context, routingMatchResult, new HttpException(mainHandlerMatchResult.getStatusCode(), mainHandlerMatchResult.getStatusCode().name() + ", request path: " + request.path()))
-                            .whenComplete((__, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInErrorHandler))
-                            .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
+                        .whenComplete((__, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInErrorHandler))
+                        .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
                 } else {
                     return invokeHandlers(context, routingMatchResult)
-                            .whenComplete((__, throwableInHandler) -> {
-                                        if (throwableInHandler == null) {
-                                            invokePostHandlers(context, routingMatchResult);
-                                        } else {
-                                            invokeMatchedErrorHandler(context, routingMatchResult, throwableInHandler)
-                                                    .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInHandler, throwableInErrorHandler));
-                                        }
-                                    }
-                            )
-                            .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
+                        .whenComplete((__, throwableInHandler) -> {
+                                          if (throwableInHandler == null) {
+                                              invokePostHandlers(context, routingMatchResult);
+                                          } else {
+                                              invokeMatchedErrorHandler(context, routingMatchResult, throwableInHandler)
+                                                  .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInHandler, throwableInErrorHandler));
+                                          }
+                                      }
+                        )
+                        .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
                 }
             }
         }).exceptionally(throwableInPreHandlers ->
-                invokeMatchedErrorHandler(context, routingMatchResult, throwableInPreHandlers)
-                        .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInPreHandlers, throwableInErrorHandler))
+                             invokeMatchedErrorHandler(context, routingMatchResult, throwableInPreHandlers)
+                                 .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInPreHandlers, throwableInErrorHandler))
         );
     }
 
@@ -128,8 +127,13 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
         }
     }
 
-    private void logError(Throwable t) {
-        LOGGER.error("", t);
+    private void logError(PlainHttpContext context, Throwable t) {
+        if ("/favicon.ico".equals(context.request().path()) && t instanceof HttpException && ((HttpException) t).getCode() == HttpStatusCode.NOT_FOUND) {
+            // TODO test this special case
+            LOGGER.debug("", t);
+        } else {
+            LOGGER.error("", t);
+        }
     }
 
     // A finalizer which does the cleanup work:
@@ -138,9 +142,9 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
     private Object invokeFinalizingHandler(PlainHttpContext context, Throwable... throwables) {
         try {
             List<Throwable> realThrowables = Stream.of(throwables)
-                    .filter(Objects::nonNull)
-                    .peek(this::logError)
-                    .collect(Collectors.toList());
+                                                   .filter(Objects::nonNull)
+                                                   .peek(e -> logError(context, e))
+                                                   .collect(Collectors.toList());
 
             if (realThrowables.isEmpty()) {
                 if (!context.response().ended()) {
@@ -148,11 +152,11 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                 }
             } else {
                 HttpStatusCode statusCode = realThrowables
-                        .stream()
-                        .filter(t -> t instanceof HttpException)
-                        .map(t -> ((HttpException) t).getCode())
-                        .findFirst()
-                        .orElse(HttpStatusCode.INTERNAL_SERVER_ERROR);
+                    .stream()
+                    .filter(t -> t instanceof HttpException)
+                    .map(t -> ((HttpException) t).getCode())
+                    .findFirst()
+                    .orElse(HttpStatusCode.INTERNAL_SERVER_ERROR);
                 if (!context.response().ended()) {
                     context.response().setStatusCode(statusCode.getCode()).write(statusCode.name());
                     ((EndForbiddenHttpServerResponseWrapper) context.response()).realEnd();
@@ -177,12 +181,12 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
         }
 
         return current
-                .thenApply(__ -> invokeFinalizingHandler(context, throwableThrownInPreviousHandlers))
-                .exceptionally(throwableInPostHandlers -> {
-                    Throwable[] copy = Arrays.copyOf(throwableThrownInPreviousHandlers, throwableThrownInPreviousHandlers.length + 1);
-                    copy[copy.length - 1] = throwableInPostHandlers;
-                    return invokeFinalizingHandler(context, copy);
-                });
+            .thenApply(__ -> invokeFinalizingHandler(context, throwableThrownInPreviousHandlers))
+            .exceptionally(throwableInPostHandlers -> {
+                Throwable[] copy = Arrays.copyOf(throwableThrownInPreviousHandlers, throwableThrownInPreviousHandlers.length + 1);
+                copy[copy.length - 1] = throwableInPostHandlers;
+                return invokeFinalizingHandler(context, copy);
+            });
     }
 
     // TODO remove it before publishing
