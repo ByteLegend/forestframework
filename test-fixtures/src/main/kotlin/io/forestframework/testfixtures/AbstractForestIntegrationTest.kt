@@ -157,6 +157,10 @@ abstract class AbstractForestIntegrationTest {
 
     fun HttpClientResponse.assert200() = assertStatusCode(HttpStatusCode.OK)
 
+    suspend fun HttpClientResponse.assertBody(expected: String) = bodyAsString().apply {
+        Assertions.assertEquals(expected, this)
+    }
+
     fun HttpClientResponse.assert404() = assertStatusCode(HttpStatusCode.NOT_FOUND)
 
     suspend fun HttpClientResponse.bodyAsString(): String =
