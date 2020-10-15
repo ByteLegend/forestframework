@@ -53,7 +53,6 @@ public final class FreePortFinder {
             try {
                 ss = new ServerSocket(port);
             } catch (Exception e) {
-                ss = null;
                 port += 200;
             }
         }

@@ -10,14 +10,14 @@ import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
 import io.vertx.ext.web.handler.sockjs.SockJSSocket
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Inject
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledOnJre
 import org.junit.jupiter.api.condition.JRE.JAVA_11
 import org.junit.jupiter.api.extension.ExtendWith
+import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
 
 @ForestApplication
 class WebSocketTestApp {

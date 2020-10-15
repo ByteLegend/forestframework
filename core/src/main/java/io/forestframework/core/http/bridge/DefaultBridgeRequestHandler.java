@@ -86,10 +86,10 @@ public class DefaultBridgeRequestHandler extends AbstractWebRequestHandler imple
 
     private void invokeHandler(BridgeRouting routing, BridgeContext context, BridgeEvent event) {
         context.getArgumentInjector()
-                .withParameter(BridgeEvent.class, event)
-                .withParameter(BridgeEventType.class, event.type());
+               .withParameter(BridgeEvent.class, event)
+               .withParameter(BridgeEventType.class, event.type());
 
-        invokeRouting(routing, context).whenComplete((result, throwable) -> {
+        invokeRoutingWithoutProcessingResult(routing, context).whenComplete((result, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("", throwable);
             } else if (Boolean.FALSE.equals(result)) {
@@ -106,9 +106,9 @@ public class DefaultBridgeRequestHandler extends AbstractWebRequestHandler imple
             return;
         }
         context.getArgumentInjector()
-                .with(e)
-                .withParameter(BridgeEventType.class, BridgeEventType.SOCKET_ERROR);
-        invokeRouting(onErrorHandler, context).whenComplete((__, throwable) -> {
+               .with(e)
+               .withParameter(BridgeEventType.class, BridgeEventType.SOCKET_ERROR);
+        invokeRoutingWithoutProcessingResult(onErrorHandler, context).whenComplete((__, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("", e);
             }
@@ -119,7 +119,7 @@ public class DefaultBridgeRequestHandler extends AbstractWebRequestHandler imple
         Router router = Router.router(vertx);
 
         ((DefaultRoutingManager) routingManager).getBridgeRoutings()
-                .forEach((key, value) -> configure(router, key, value));
+                                                .forEach((key, value) -> configure(router, key, value));
         return router;
     }
 }

@@ -1,6 +1,8 @@
 package io.forestframework.core.http.param;
 
-public interface ContentTypeAwareRoutingParameterResolver<T> extends RoutingParameterResolver<T> {
+import io.forestframework.core.http.HttpContext;
+
+public interface ContentTypeAwareRoutingParameterResolver extends RoutingParameterResolver<HttpContext> {
     /**
      * The content-type this {@link RoutingParameterResolver} can handle.
      *

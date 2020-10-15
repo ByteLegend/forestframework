@@ -8,16 +8,14 @@ import io.forestframework.core.http.OptimizedHeaders
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpClient
+import io.vertx.core.http.HttpClientRequest
 import io.vertx.core.http.HttpClientResponse
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.WebSocket
 import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.ext.web.client.HttpRequest
 import io.vertx.ext.web.client.HttpResponse
-import io.vertx.kotlin.core.http.bodyAwait
-import io.vertx.kotlin.core.http.closeAwait
-import io.vertx.kotlin.core.http.webSocketAwait
-import io.vertx.kotlin.core.http.writeTextMessageAwait
+import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.awaitResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -47,7 +45,7 @@ class WebSocketClient(val socket: WebSocket, val url: String) {
     }
 
     suspend fun sendMessage(message: String): WebSocketClient {
-        socket.writeTextMessageAwait(message)
+        socket.writeTextMessage(message).await()
         return this
     }
 
@@ -71,7 +69,7 @@ class WebSocketClient(val socket: WebSocket, val url: String) {
         throw IllegalStateException("Wait for '$message' timeout after $timeoutMillis ms, received messages: $receivedMessages")
     }
 
-    suspend fun close() = socket.closeAwait()
+    suspend fun close() = socket.close().await()
 }
 
 // Set body handler before reading the whole response, otherwise
@@ -83,8 +81,10 @@ suspend fun HttpClient.delete(port: Int, uri: String, headers: Map<String, Strin
 suspend fun HttpClient.send(httpMethod: HttpMethod, port: Int, uri: String, headers: Map<String, String> = emptyMap()) = awaitResult<HttpClientResponse> { handler ->
     val requestHeaders = HeadersMultiMap().apply { headers.forEach { (k, v) -> add(k, v) } }
 
-    send(httpMethod, port, "localhost", uri, requestHeaders) { responseAsyncResult ->
-
+    request(httpMethod, port, "localhost", uri).map {
+        it.headers().addAll(requestHeaders)
+        it
+    }.compose(HttpClientRequest::send).onComplete { responseAsyncResult ->
         val wrapper = HttpClientResponseWrapper(responseAsyncResult.result())
         responseAsyncResult.result().bodyHandler {
             wrapper.body = it
@@ -132,7 +132,7 @@ abstract class AbstractForestIntegrationTest {
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun <T> HttpClientResponseWrapper.toObject(klass: TypeReference<T>) = objectMapper.readValue(bodyAsString(), klass)
 
-    suspend fun openWebsocket(uri: String) = WebSocketClient(client.webSocketAwait(port.toInt(), "localhost", uri), uri)
+    suspend fun openWebsocket(uri: String) = WebSocketClient(client.webSocket(port.toInt(), "localhost", uri).await(), uri)
 
     fun HttpClientResponse.assertContentType(type: String): HttpClientResponse {
         Assertions.assertEquals(type, getHeader(OptimizedHeaders.HEADER_CONTENT_TYPE.toString()).toString())
@@ -157,6 +157,8 @@ abstract class AbstractForestIntegrationTest {
 
     fun HttpClientResponse.assert200() = assertStatusCode(HttpStatusCode.OK)
 
+    fun HttpClientResponse.assert500() = assertStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR)
+
     suspend fun HttpClientResponse.assertBody(expected: String) = bodyAsString().apply {
         Assertions.assertEquals(expected, this)
     }
@@ -167,13 +169,13 @@ abstract class AbstractForestIntegrationTest {
         if (this is HttpClientResponseWrapper) {
             body.toString()
         } else {
-            bodyAwait().toString()
+            body().await().toString()
         }
 
     suspend fun HttpClientResponse.bodyAsBinary(): Buffer =
         if (this is HttpClientResponseWrapper) {
             body
         } else {
-            bodyAwait()
+            body().await()
         }
 }

@@ -1,7 +1,7 @@
 package io.forestframework.core.http.routing;
 
 import io.forestframework.core.http.DefaultPlainHttpRequestHandler;
-import io.forestframework.core.http.HttpServerRequestWrapper;
+import io.forestframework.core.http.DefaultHttpRequest;
 import io.forestframework.core.http.bridge.BridgeEventType;
 import io.forestframework.core.http.bridge.DefaultBridgeRequestHandler;
 import io.forestframework.core.http.websocket.DefaultWebSocketRequestHandler;
@@ -30,7 +30,7 @@ public interface RoutingMatchResult {
                            DefaultBridgeRequestHandler bridgeRequestHandler,
                            DefaultWebSocketRequestHandler webSocketRequestHandler,
                            DefaultPlainHttpRequestHandler plainHttpRequestHandler) {
-            bridgeRequestHandler.handle(new HttpServerRequestWrapper(request, this));
+            bridgeRequestHandler.handle(new DefaultHttpRequest(request, this));
         }
 
         public Map<BridgeEventType, BridgeRouting> getRoutings() {
@@ -53,7 +53,7 @@ public interface RoutingMatchResult {
                            DefaultBridgeRequestHandler bridgeRequestHandler,
                            DefaultWebSocketRequestHandler webSocketRequestHandler,
                            DefaultPlainHttpRequestHandler plainHttpRequestHandler) {
-            webSocketRequestHandler.handle(new HttpServerRequestWrapper(request, this));
+            webSocketRequestHandler.handle(new DefaultHttpRequest(request, this));
         }
 
         public Map<String, String> getPathParams() {

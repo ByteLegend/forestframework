@@ -3,14 +3,12 @@ package io.forestframework.core.http;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
-public interface PlainHttpContext extends WebContext {
-    HttpServerRequest request();
+public interface HttpContext extends WebContext {
+    HttpRequest request();
 
-    HttpServerResponse response();
+    HttpResponse response();
 
     /**
      * Borrowed from {@link io.vertx.ext.web.RoutingContext}

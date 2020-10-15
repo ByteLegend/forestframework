@@ -17,16 +17,8 @@ import io.forestframework.testsupport.ForestTest
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.ServerWebSocket
-import io.vertx.kotlin.core.http.writePingAwait
-import io.vertx.kotlin.core.http.writeTextMessageAwait
-import io.vertx.kotlin.coroutines.dispatcher
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Inject
-import kotlinx.coroutines.GlobalScope
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.apache.commons.lang3.exception.ExceptionUtils
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.StringContains
 import org.junit.jupiter.api.Assertions
@@ -36,6 +28,9 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.condition.EnabledOnJre
 import org.junit.jupiter.api.condition.JRE.JAVA_11
 import org.junit.jupiter.api.extension.ExtendWith
+import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
 
 @ForestApplication
 class WebSocketTestApp {
@@ -54,29 +49,13 @@ class WebSocketTestApp {
         }
         messages.add(messageText)
         if (eventType != WebSocketEventType.CLOSE) {
-            socket.writeTextMessageAwait(messageText)
+            socket.writeTextMessage(messageText).await()
         }
     }
 }
 
 @Router("/chat/:username")
 class WebSocketChatRoomRouter @Inject constructor(vertx: Vertx) {
-    init {
-        vertx.setPeriodic(100) {
-            sessions.values.forEach {
-                GlobalScope.launch(vertx.dispatcher()) {
-                    try {
-                        it.writePingAwait(Buffer.buffer("ping"))
-                    } catch (t: Throwable) {
-                        if (!ExceptionUtils.getStackTrace(t)!!.contains("WebSocket is closed")) {
-                            throw t
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     val sessions = ConcurrentHashMap<String, ServerWebSocket>()
     val errors = ArrayList<Throwable>()
 
@@ -96,10 +75,15 @@ class WebSocketChatRoomRouter @Inject constructor(vertx: Vertx) {
 
     @OnWSError
     suspend fun onError(socket: ServerWebSocket, @PathParam("username") username: String, throwable: Throwable) {
-        Assertions.assertNotNull(socket)
-        sessions.remove(username)
-        broadcast("User $username left on error")
-        errors.add(throwable)
+        try {
+            Assertions.assertNotNull(socket)
+            sessions.remove(username)
+            broadcast("User $username left on error")
+            errors.add(throwable)
+            throwable.printStackTrace()
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 
     @OnWSMessage
@@ -110,9 +94,9 @@ class WebSocketChatRoomRouter @Inject constructor(vertx: Vertx) {
     private suspend fun broadcast(message: String) {
         // Delay so the client can set up message handler
         delay(1000)
-        sessions.values.forEach {
+        sessions.entries.forEach {
             try {
-                it.writeTextMessageAwait(message)
+                it.value.writeTextMessage(message).await()
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
@@ -193,11 +177,12 @@ class WebSocketIntegrationTest : AbstractForestIntegrationTest() {
             .command(System.getProperty("java.home") + "/bin/java", "-Dserver.port=$port", "-Duser.name=Bob", wsClientJavaFile.absolutePath)
             .start()
 
+        delay(2000)
         alice.waitFor("User Bob joined", ">> Bob: Hello from Bob", timeoutMillis = 10000)
 
         process.destroy()
 
-        delay(1000)
+        delay(2000)
 
         alice.waitFor("User Bob left on error")
 

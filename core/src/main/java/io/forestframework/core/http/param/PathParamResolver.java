@@ -14,7 +14,7 @@ import javax.inject.Singleton;
  * 3. Wildcard path: /static/* -&gt; @PathParam("*")
  */
 @Singleton
-public class PathParamResolver implements RoutingParameterResolver<Object> {
+public class PathParamResolver implements RoutingParameterResolver<WebContext> {
     @SuppressWarnings("unchecked")
     @Override
     public Object resolveParameter(WebContext context, Routing routing, int paramIndex) {

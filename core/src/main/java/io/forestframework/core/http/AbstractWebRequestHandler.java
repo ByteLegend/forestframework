@@ -33,12 +33,18 @@ public abstract class AbstractWebRequestHandler {
     protected <T> CompletableFuture<T> invokeRouting(Routing routing, AbstractWebContext context) {
         context.setRouting(routing);
         return resolveParameters(routing, context)
-                .thenCompose(arguments -> invokeMethod(routing, arguments))
-                .thenCompose(returnValue -> processResult(routing, context, returnValue));
+            .thenCompose(arguments -> invokeMethod(routing, arguments))
+            .thenCompose(returnValue -> processResult(routing, (HttpContext) context, returnValue));
+    }
+
+    protected <T> CompletableFuture<T> invokeRoutingWithoutProcessingResult(Routing routing, AbstractWebContext context) {
+        context.setRouting(routing);
+        return resolveParameters(routing, context)
+            .thenCompose(arguments -> invokeMethod(routing, arguments));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private <T> CompletableFuture<T> processResult(Routing routing, WebContext context, Object returnValue) {
+    private <T> CompletableFuture<T> processResult(Routing routing, HttpContext context, Object returnValue) {
         List<RoutingResultProcessor> resultProcessors = routing.getResultProcessors(injector, returnValue);
         CompletableFuture<Object> current = CompletableFuture.completedFuture(returnValue);
         for (RoutingResultProcessor processor : resultProcessors) {
@@ -48,7 +54,7 @@ public abstract class AbstractWebRequestHandler {
         return (CompletableFuture) current;
     }
 
-    private CompletableFuture<Object> invokeMethod(Routing routing, Object[] arguments) {
+    private <T> CompletableFuture<T> invokeMethod(Routing routing, Object[] arguments) {
         if (isKotlinSuspendFunction(routing)) {
             return invokeViaKotlinBridge(routing, arguments);
         } else if (routing.isBlocking()) {
@@ -95,7 +101,7 @@ public abstract class AbstractWebRequestHandler {
             for (int i = 0; i < parameterTypes.length; ++i) {
                 int iCopy = i;
                 futures[i] = adapt(resolveParameter(routing, i, parameterTypes[i], context))
-                        .thenAccept(result -> arguments[iCopy] = result);
+                    .thenAccept(result -> arguments[iCopy] = result);
             }
             return CompletableFuture.allOf(futures).thenApply(v -> arguments);
         } catch (Throwable t) {
@@ -134,10 +140,10 @@ public abstract class AbstractWebRequestHandler {
 
     private <T> CompletableFuture<T> invokeViaKotlinBridge(Routing routing, Object[] arguments) {
         return KotlinSuspendFunctionBridge.Companion.invoke(
-                vertx,
-                routing.getHandlerMethod(),
-                routing.getHandlerInstance(injector),
-                arguments
+            vertx,
+            routing.getHandlerMethod(),
+            routing.getHandlerInstance(injector),
+            arguments
         );
     }
 

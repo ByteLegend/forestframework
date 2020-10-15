@@ -4,17 +4,16 @@ import io.forestframework.benchmark.model.Fortune
 import io.forestframework.benchmark.model.Message
 import io.forestframework.benchmark.model.World
 import io.forestframework.core.Forest
-import io.forestframework.core.http.PlainHttpContext
+import io.forestframework.core.http.HttpContext
 import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.core.http.result.JsonResponseBody
 import io.forestframework.core.http.routing.Get
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.buffer.impl.BufferImpl
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServerResponse
+import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.sqlclient.executeAwait
-import io.vertx.kotlin.sqlclient.executeBatchAwait
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.Row
 import io.vertx.sqlclient.RowSet
@@ -42,7 +41,9 @@ val HELLO_WORLD = "Hello, world!"
 
 val HELLO_WORLD_LENGTH = HttpHeaders.createOptimized("" + HELLO_WORLD.length)
 val SERVER = HttpHeaders.createOptimized("forest")
-val HELLO_WORLD_BUFFER: Buffer = BufferImpl.directBuffer(HELLO_WORLD, "UTF-8")
+// val HELLO_WORLD_BUFFER: Buffer = BufferImpl.directBuffer(HELLO_WORLD, "UTF-8")
+// TODO use new direct buffer. Old method was removed in 4.0.0
+val HELLO_WORLD_BUFFER: Buffer = Buffer.buffer(HELLO_WORLD, "UTF-8")
 
 // @ForestApplication(extensions = [PgClientExtension::class])
 @Singleton
@@ -84,7 +85,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
     @Get("/db")
     @JsonResponseBody
     suspend fun singleDatabaseQuery(response: HttpServerResponse): World {
-        val rows: RowSet<Row> = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(randomWorld()))
+        val rows: RowSet<Row> = client.preparedQuery(SELECT_WORLD).execute(Tuple.of(randomWorld())).await()
         val iterator = rows.iterator()
         if (!iterator.hasNext()) {
             response.setStatusCode(404).end()
@@ -96,7 +97,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
 
     @Get("/queries")
     @JsonResponseBody
-    suspend fun multipleDatabaseQuery(context: PlainHttpContext): List<World> {
+    suspend fun multipleDatabaseQuery(context: HttpContext): List<World> {
         val queries = parseParam(context)
         context.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         return (1..queries).map {
@@ -106,7 +107,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
         }
     }
 
-    private fun parseParam(context: PlainHttpContext): Int {
+    private fun parseParam(context: HttpContext): Int {
         return try {
             min(500, max(1, context.request().getParam("queries").toInt()))
         } catch (e: Exception) {
@@ -116,24 +117,24 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
 
     @Get("/updates")
     @JsonResponseBody
-    suspend fun updateDatabase(context: PlainHttpContext): List<World> {
+    suspend fun updateDatabase(context: HttpContext): List<World> {
         val queries = parseParam(context)
         context.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         val worlds = (1..queries).map {
             val id = randomWorld()
-            val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(id))
+            val result = client.preparedQuery(SELECT_WORLD).execute(Tuple.of(id)).await()
             World(result.iterator().next().getInteger(0), randomWorld())
         }.sorted()
 
         val worldsToUpdate = worlds.map { Tuple.of(it.randomNumber, it.id) }
-        client.preparedQuery(UPDATE_WORLD).executeBatchAwait(worldsToUpdate)
+        client.preparedQuery(UPDATE_WORLD).executeBatch(worldsToUpdate).await()
         return worlds
     }
 
     @Get("/fortunes")
     @RockerTemplateRendering
     suspend fun getFortunes(response: HttpServerResponse): List<Fortune> {
-        val rows = client.preparedQuery(SELECT_FORTUNE).executeAwait().iterator()
+        val rows = client.preparedQuery(SELECT_FORTUNE).execute().await().iterator()
         response.headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         if (!rows.hasNext()) {
             response.setStatusCode(404).end("No results")

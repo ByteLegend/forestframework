@@ -5,6 +5,8 @@ import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -55,7 +57,7 @@ public class HttpClientTest {
     HttpClient client2 = vertx.createHttpClient(options);
 
     VertxCompletableFuture<Integer> requestA = new VertxCompletableFuture<>(vertx);
-    client1.get("/A", asyncResult -> {
+    client1.request(HttpMethod.GET, "/A").compose(HttpClientRequest::send).onComplete(asyncResult -> {
         if (asyncResult.succeeded()) {
             asyncResult.result().bodyHandler(buffer -> requestA.complete(Integer.parseInt(buffer.toString())))
                     .exceptionHandler(requestA::completeExceptionally);
@@ -65,7 +67,7 @@ public class HttpClientTest {
     });
 
     VertxCompletableFuture<Integer> requestB = new VertxCompletableFuture<>(vertx);
-    client2.get("/B", asyncResult -> {
+    client2.request(HttpMethod.GET, "/B").compose(HttpClientRequest::send).onComplete(asyncResult -> {
         if (asyncResult.succeeded()) {
             asyncResult.result().bodyHandler(buffer -> requestB.complete(Integer.parseInt(buffer.toString())))
                     .exceptionHandler(requestB::completeExceptionally);

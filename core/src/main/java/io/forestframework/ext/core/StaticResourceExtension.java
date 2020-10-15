@@ -2,6 +2,7 @@ package io.forestframework.ext.core;
 
 import com.google.inject.Injector;
 import io.forestframework.core.config.ConfigProvider;
+import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.param.PathParam;
 import io.forestframework.core.http.param.RoutingParameterResolver;
 import io.forestframework.core.http.routing.Routing;
@@ -186,7 +187,7 @@ public class StaticResourceExtension implements Extension {
         public RoutingParameterResolver<?> getParameterResolver(Injector injector, int index) {
             if (index == 0) {
                 // param 0 of getResourceInDir and getResourceFile
-                return (RoutingParameterResolver<Object>) (routing, routingContext, paramIndex) -> mappedResourcePath;
+                return (RoutingParameterResolver<WebContext>) (routing, routingContext, paramIndex) -> mappedResourcePath;
             } else {
                 return Routing.super.getParameterResolver(injector, index);
             }

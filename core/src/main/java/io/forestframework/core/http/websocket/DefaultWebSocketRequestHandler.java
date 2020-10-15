@@ -3,8 +3,8 @@ package io.forestframework.core.http.websocket;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import io.forestframework.core.http.AbstractWebRequestHandler;
+import io.forestframework.core.http.DefaultHttpRequest;
 import io.forestframework.core.http.HttpRequestHandler;
-import io.forestframework.core.http.HttpServerRequestWrapper;
 import io.forestframework.core.http.routing.RoutingMatchResult;
 import io.forestframework.core.http.routing.WebSocketRouting;
 import io.vertx.core.Vertx;
@@ -36,11 +36,14 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
 
     @Override
     public void handle(HttpServerRequest request) {
-        RoutingMatchResult.WebSocketRoutingMatchResult routingMatchResult = ((HttpServerRequestWrapper) request).getRoutingMatchResult();
+        RoutingMatchResult.WebSocketRoutingMatchResult routingMatchResult = ((DefaultHttpRequest) request).getRoutingMatchResult();
+        request.toWebSocket()
+               .onSuccess(ws -> handleWebSocket(ws, routingMatchResult))
+               .onFailure(e -> LOGGER.error("", e));
+    }
+
+    private void handleWebSocket(ServerWebSocket webSocket, RoutingMatchResult.WebSocketRoutingMatchResult routingMatchResult) {
         Map<WebSocketEventType, WebSocketRouting> typeToHandlers = routingMatchResult.getRoutings();
-
-        ServerWebSocket webSocket = request.upgrade();
-
         DefaultWebSocketContext context = new DefaultWebSocketContext(injector, webSocket, routingMatchResult);
 
         // OnWSOpen
@@ -62,17 +65,17 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
         WebSocketRouting routing = routings.get(eventType);
         if (routing != null) {
             context.getArgumentInjector()
-                    .withParameter(WebSocketEventType.class, eventType)
-                    .withParameter(Buffer.class, buffer)
-                    .withParameterSupplier(String.class, buffer == null ? null : buffer::toString)
-                    .with(throwable);
+                   .withParameter(WebSocketEventType.class, eventType)
+                   .withParameter(Buffer.class, buffer)
+                   .withParameterSupplier(String.class, buffer == null ? null : buffer::toString)
+                   .with(throwable);
 
-            invokeRouting(routing, context)
-                    .whenComplete((returnValue, failure) -> {
-                        if (failure != null) {
-                            LOGGER.error("", failure);
-                        }
-                    });
+            invokeRoutingWithoutProcessingResult(routing, context)
+                .whenComplete((returnValue, failure) -> {
+                    if (failure != null) {
+                        LOGGER.error("", failure);
+                    }
+                });
         }
     }
 }

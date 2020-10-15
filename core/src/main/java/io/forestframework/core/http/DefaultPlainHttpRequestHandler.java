@@ -38,9 +38,9 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
 
     @Override
     public void handle(HttpServerRequest request) {
-        PlainHttpRoutingMatchResult routingMatchResult = ((HttpServerRequestWrapper) request).getRoutingMatchResult();
+        PlainHttpRoutingMatchResult routingMatchResult = ((DefaultHttpRequest) request).getRoutingMatchResult();
 
-        DefaultPlainHttpContext context = new DefaultPlainHttpContext(injector, request, routingMatchResult);
+        DefaultHttpContext context = new DefaultHttpContext(injector, (DefaultHttpRequest) request, routingMatchResult);
 
         CompletableFuture<Boolean> preHandlerFuture = invokePreHandlers(context, routingMatchResult);
 
@@ -51,31 +51,42 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                 return invokePostHandlers(context, routingMatchResult);
             } else {
                 MainHandlerMatchResult mainHandlerMatchResult = routingMatchResult.getMainHandlerMatchResult();
+                HttpStatusCode statusCode = mainHandlerMatchResult.getStatusCode();
                 if (mainHandlerMatchResult.getStatusCode() != HttpStatusCode.OK) {
-                    return invokeMatchedErrorHandler(context, routingMatchResult, new HttpException(mainHandlerMatchResult.getStatusCode(), mainHandlerMatchResult.getStatusCode().name() + ", request path: " + request.path()))
-                        .whenComplete((__, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInErrorHandler))
-                        .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
+                    return handleError(context,
+                                       routingMatchResult,
+                                       statusCode,
+                                       new HttpException(mainHandlerMatchResult.getStatusCode(), mainHandlerMatchResult.getStatusCode().name() + ", request path: " + request.path()));
                 } else {
-                    return invokeHandlers(context, routingMatchResult)
-                        .whenComplete((__, throwableInHandler) -> {
-                                          if (throwableInHandler == null) {
-                                              invokePostHandlers(context, routingMatchResult);
-                                          } else {
-                                              invokeMatchedErrorHandler(context, routingMatchResult, throwableInHandler)
-                                                  .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInHandler, throwableInErrorHandler));
-                                          }
-                                      }
-                        )
+                    return invokeMainHandler(context, routingMatchResult)
+                        .whenComplete((__, throwableInHandler) -> handleError(context, routingMatchResult, getStatusCode(throwableInHandler), throwableInHandler))
                         .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
                 }
             }
-        }).exceptionally(throwableInPreHandlers ->
-                             invokeMatchedErrorHandler(context, routingMatchResult, throwableInPreHandlers)
-                                 .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInPreHandlers, throwableInErrorHandler))
-        );
+        }).exceptionally(throwableInPreHandlers -> handleError(context, routingMatchResult, getStatusCode(throwableInPreHandlers), throwableInPreHandlers));
     }
 
-    private CompletableFuture<Boolean> invokePreHandlers(DefaultPlainHttpContext context, PlainHttpRoutingMatchResult routingMatchResult) {
+//    private CompletableFuture<Object> handleError() {
+//
+//    }
+//
+//    private CompletableFuture<Object> handleError(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, HttpStatusCode statusCode) {
+//        Throwable t = new HttpException(statusCode, statusCode.name() + ", request path: " + context.request().path());
+//        handleError(context, routingMatchResult, t, statusCode);
+//    }
+
+    private CompletableFuture<Object> handleError(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, HttpStatusCode statusCode, Throwable throwable) {
+        Routing matchedErrorHandler = routingMatchResult.getMatchingErrorHandler(statusCode);
+        if (matchedErrorHandler == null) {
+            // No matched error handler, invoke post handler directly
+            return invokePostHandlers(context, routingMatchResult, throwable);
+        } else {
+            return invokeMatchedErrorHandler(context, matchedErrorHandler, statusCode, throwable)
+                .whenComplete((___, throwableInErrorHandler) -> invokePostHandlers(context, routingMatchResult, throwableInErrorHandler));
+        }
+    }
+
+    private CompletableFuture<Boolean> invokePreHandlers(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult) {
         CompletableFuture<Boolean> preHandlerFuture = TRUE_FUTURE;
         for (Routing preHandler : routingMatchResult.getMatchingHandlersByType(RoutingType.PRE_HANDLER)) {
             preHandlerFuture = composeSafely(preHandlerFuture, (Boolean shouldContinue) -> {
@@ -101,22 +112,36 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
         });
     }
 
+    private HttpStatusCode getStatusCode(Throwable t) {
+        Throwable throwable = unwrap(t);
+
+        return (throwable instanceof HttpException) ? ((HttpException) throwable).getCode() : HttpStatusCode.INTERNAL_SERVER_ERROR;
+    }
+
     // If matched error handler found, invoke it:
     //   If the error handler exit normally, returns a CompletableFuture which completes normally
     //   If the error handler exit abnormally, returns CompletableFuture with that failure
     // If matched error handler not found, returns a CompletableFuture with the original failure
-    private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultPlainHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, Throwable t) {
-        Throwable throwable = unwrap(t);
-
-        HttpStatusCode statusCode = (throwable instanceof HttpException) ? ((HttpException) throwable).getCode() : HttpStatusCode.INTERNAL_SERVER_ERROR;
-        context.getArgumentInjector().with(throwable).withParameter(HttpStatusCode.class, statusCode);
-
-        Routing matchedErrorHandler = routingMatchResult.getMatchingErrorHandler(statusCode);
-        if (matchedErrorHandler == null) {
-            return failedFuture(throwable);
-        } else {
-            return invokeRouting(matchedErrorHandler, context);
-        }
+//    private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, Throwable t) {
+//        Throwable throwable = unwrap(t);
+//
+//        HttpStatusCode statusCode = (throwable instanceof HttpException) ? ((HttpException) throwable).getCode() : HttpStatusCode.INTERNAL_SERVER_ERROR;
+//        if (context.response().headWritten() && context.response().getStatusCode() != statusCode.getCode()) {
+//            LOGGER.warn("Trying to set status code " + statusCode.getCode() + " but header is written.");
+//        }
+//        context.getArgumentInjector().with(throwable).withParameter(HttpStatusCode.class, statusCode);
+//
+//        Routing matchedErrorHandler = routingMatchResult.getMatchingErrorHandler(statusCode);
+//        if (matchedErrorHandler == null) {
+//            return failedFuture(throwable);
+//        } else {
+//            return invokeRouting(matchedErrorHandler, context);
+//        }
+//    }
+    private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultHttpContext context, Routing matchedErrorHandler, HttpStatusCode statusCode, Throwable t) {
+        safeSetStatusCode(context.response(), statusCode);
+        context.getArgumentInjector().with(t).withParameter(HttpStatusCode.class, statusCode);
+        return invokeRouting(matchedErrorHandler, context);
     }
 
     private Throwable unwrap(Throwable t) {
@@ -127,7 +152,7 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
         }
     }
 
-    private void logError(PlainHttpContext context, Throwable t) {
+    private void logError(HttpContext context, Throwable t) {
         if ("/favicon.ico".equals(context.request().path()) && t instanceof HttpException && ((HttpException) t).getCode() == HttpStatusCode.NOT_FOUND) {
             // TODO test this special case
             LOGGER.debug("", t);
@@ -139,16 +164,16 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
     // A finalizer which does the cleanup work:
     // If there're throwables, log them and return corresponding error code
     // End the response.
-    private Object invokeFinalizingHandler(PlainHttpContext context, Throwable... throwables) {
+    private Object invokeFinalizingHandler(HttpContext context, Throwable... uncaughtThrowables) {
         try {
-            List<Throwable> realThrowables = Stream.of(throwables)
+            List<Throwable> realThrowables = Stream.of(uncaughtThrowables)
                                                    .filter(Objects::nonNull)
                                                    .peek(e -> logError(context, e))
                                                    .collect(Collectors.toList());
 
             if (realThrowables.isEmpty()) {
                 if (!context.response().ended()) {
-                    ((EndForbiddenHttpServerResponseWrapper) context.response()).realEnd();
+                    context.response().end();
                 }
             } else {
                 HttpStatusCode statusCode = realThrowables
@@ -157,9 +182,10 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                     .map(t -> ((HttpException) t).getCode())
                     .findFirst()
                     .orElse(HttpStatusCode.INTERNAL_SERVER_ERROR);
-                if (!context.response().ended()) {
-                    context.response().setStatusCode(statusCode.getCode()).write(statusCode.name());
-                    ((EndForbiddenHttpServerResponseWrapper) context.response()).realEnd();
+                HttpResponse response = context.response();
+                if (!response.ended()) {
+                    safeSetStatusCode(response, statusCode);
+                    response.end(statusCode.name());
                 }
             }
             return COMPLETABLE_FUTURE_NIL;
@@ -169,11 +195,19 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
         }
     }
 
+    private void safeSetStatusCode(HttpResponse response, HttpStatusCode statusCode) {
+        if (response.headWritten() && response.getStatusCode() != statusCode.getCode()) {
+            LOGGER.warn("Trying to set status code " + statusCode.getCode() + " but header is writen.");
+        } else {
+            response.setStatusCode(statusCode.getCode());
+        }
+    }
+
     /**
-     * Invoke the post handlers with the potential throwables thrown from previous handlers.
+     * Invoke the post handlers with the potential throwables thrown from previous handlers but uncaught.
      * It's guaranteed to return a CompletableFuture which exit normally.
      */
-    private CompletableFuture<Object> invokePostHandlers(DefaultPlainHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, Throwable... throwableThrownInPreviousHandlers) {
+    private CompletableFuture<Object> invokePostHandlers(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, Throwable... uncaughtThrowables) {
         CompletableFuture<Object> current = NIL_FUTURE;
 
         for (Routing postHandler : routingMatchResult.getMatchingHandlersByType(RoutingType.POST_HANDLER)) {
@@ -181,9 +215,9 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
         }
 
         return current
-            .thenApply(__ -> invokeFinalizingHandler(context, throwableThrownInPreviousHandlers))
+            .thenApply(__ -> invokeFinalizingHandler(context, uncaughtThrowables))
             .exceptionally(throwableInPostHandlers -> {
-                Throwable[] copy = Arrays.copyOf(throwableThrownInPreviousHandlers, throwableThrownInPreviousHandlers.length + 1);
+                Throwable[] copy = Arrays.copyOf(uncaughtThrowables, uncaughtThrowables.length + 1);
                 copy[copy.length - 1] = throwableInPostHandlers;
                 return invokeFinalizingHandler(context, copy);
             });
@@ -197,13 +231,12 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
     /**
      * Invoke the real handlers. If no matching handlers found (404/405/406/415), invoke the corresponding error handler.
      */
-    private CompletableFuture<Object> invokeHandlers(DefaultPlainHttpContext context, PlainHttpRoutingMatchResult routingMatchResult) {
-        CompletableFuture<Object> current = NIL_FUTURE;
-
-        for (Routing handler : routingMatchResult.getMatchingHandlersByType(RoutingType.HANDLER)) {
-            current = current.thenCompose(__ -> invokeRouting(handler, context));
+    private CompletableFuture<Object> invokeMainHandler(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult) {
+        List<Routing> mainHandlers = routingMatchResult.getMatchingHandlersByType(RoutingType.HANDLER);
+        if (mainHandlers.size() > 1) {
+            LOGGER.warn("Found more than 1 main handlers when handling " + context.request().path() + ", only the first one will be invoked.");
         }
 
-        return current;
+        return invokeRouting(mainHandlers.get(0), context);
     }
 }

@@ -27,7 +27,7 @@ dependencies {
     implementation("redis.clients:jedis:$jedisVersion")
     implementation("com.h2database:h2:$h2Version")
     testImplementation(project(":junit5-extension"))
-    testImplementation("io.vertx:vertx-web-client:4.0.0.Beta1")
+    testImplementation("io.vertx:vertx-web-client:4.0.0.Beta3")
     testImplementation("org.codehaus.groovy:groovy-all:$groovyVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 

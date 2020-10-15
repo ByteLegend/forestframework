@@ -2,9 +2,8 @@ package io.forestframework.core.http.param;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.MediaType;
+import io.forestframework.core.http.HttpContext;
 import io.forestframework.core.http.OptimizedHeaders;
-import io.forestframework.core.http.PlainHttpContext;
-import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.routing.Routing;
 import io.netty.buffer.ByteBufInputStream;
 import io.vertx.core.buffer.Buffer;
@@ -15,7 +14,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 @Singleton
-public class JsonRequestBodyParser implements ContentTypeAwareRoutingParameterResolver<Object> {
+public class JsonRequestBodyParser implements ContentTypeAwareRoutingParameterResolver {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -25,9 +24,7 @@ public class JsonRequestBodyParser implements ContentTypeAwareRoutingParameterRe
 
     @Override
     @SuppressWarnings("ALL")
-    public Object resolveParameter(WebContext webContext, Routing routing, int paramIndex) {
-        PlainHttpContext context = (PlainHttpContext) webContext;
-
+    public Object resolveParameter(HttpContext context, Routing routing, int paramIndex) {
         String contentType = context.request().getHeader(OptimizedHeaders.HEADER_CONTENT_TYPE);
         if (contentType != null) {
             MediaType mediaType = MediaType.parse(contentType);

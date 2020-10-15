@@ -1,12 +1,12 @@
 package io.forestframework.core.http.routing;
 
 import io.forestframework.core.ForestApplication;
+import io.forestframework.core.http.HttpRequest;
+import io.forestframework.core.http.HttpResponse;
 import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.testfixtures.DisableAutoScan;
 import io.forestframework.testsupport.ForestExtension;
 import io.forestframework.testsupport.ForestTest;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,27 +27,27 @@ import static org.hamcrest.core.StringContains.containsString;
 class PreHandlerTestApp extends AbstractTraceableRouter {
 
     @PreHandler(value = "/prehandler/*")
-    public void preHandle(HttpServerRequest request, HttpServerResponse response) {
-        response.write(request.path());
+    public void preHandle(HttpRequest request, HttpResponse response) {
+        response.writeLater(request.path());
         addToTrace(request.path());
     }
 
     @PreHandler("/prehandler/error/*")
-    public boolean preHandleException(HttpServerRequest request, HttpServerResponse response) {
-        response.setStatusCode(503).write("Service Unavailable for " + request.path());
+    public boolean preHandleException(HttpRequest request, HttpResponse response) {
+        response.setStatusCode(503).writeLater("Service Unavailable for " + request.path());
         addToTrace(request.path());
         return false;
     }
 
     @Route(path = "/prehandler/*", type = RoutingType.HANDLER)
-    public void handle(HttpServerResponse response) {
-        response.write(" is handled", "UTF-8");
+    public void handle(HttpResponse response) {
+        response.writeLater(" is handled");
         addToTrace(Message.HANDLER.name());
     }
 
     @Route(path = "/prehandler/error/*", type = RoutingType.HANDLER)
-    public void handleException(HttpServerResponse response) {
-        response.write(" should not be here", "UTF-8");
+    public void handleException(HttpResponse response) {
+        response.writeLater(" should not be here");
         addToTrace(Message.HANDLER.name());
     }
 }

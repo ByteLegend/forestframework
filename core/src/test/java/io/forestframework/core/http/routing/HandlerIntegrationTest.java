@@ -3,6 +3,7 @@ package io.forestframework.core.http.routing;
 
 import io.forestframework.core.ForestApplication;
 import io.forestframework.core.http.HttpException;
+import io.forestframework.core.http.HttpResponse;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.Router;
 import io.forestframework.ext.core.IncludeComponents;
@@ -10,7 +11,6 @@ import io.forestframework.testfixtures.DisableAutoScan;
 import io.forestframework.testsupport.ForestExtension;
 import io.forestframework.testsupport.ForestTest;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,21 +35,21 @@ class MyCustomErrorHandlerApp {
 class MyCustom500Handler extends AbstractTraceableRouter {
 
     @PreHandler(value = "/errorInPreHandler")
-    public void preHandleError(HttpServerRequest request, HttpServerResponse response) {
+    public void preHandleError(HttpServerRequest request, HttpResponse response) {
         addToTrace("errorInPreHandler");
         throw new RuntimeException("errorInPreHandler");
     }
 
     @Route(path = "/errorInHandler", type = RoutingType.HANDLER)
-    public void handleException(HttpServerRequest request, HttpServerResponse response) {
+    public void handleException(HttpServerRequest request, HttpResponse response) {
         addToTrace("errorInHandler");
         throw new RuntimeException("errorInHandler");
     }
 
     @OnError(value = "/**")
-    public void on500(HttpServerResponse response, Throwable e) {
-        response.write(Message.CUSTOM_500_ERROR_HANDLER.name());
-        response.write("  e.getMessage():  " + e.getMessage());
+    public void on500(HttpResponse response, Throwable e) {
+        response.writeLater(Message.CUSTOM_500_ERROR_HANDLER.name());
+        response.writeLater("  e.getMessage():  " + e.getMessage());
         addToTrace(Message.CUSTOM_500_ERROR_HANDLER.name());
     }
 }
@@ -58,48 +58,48 @@ class MyCustom500Handler extends AbstractTraceableRouter {
 class Custom4XXErrorHandler extends AbstractTraceableRouter {
 
     @Route(path = "/METHOD_NOT_ALLOWED", type = RoutingType.HANDLER)
-    public void handler405(HttpServerResponse response) {
+    public void handler405(HttpResponse response) {
         addToTrace("METHOD_NOT_ALLOWED");
         throw new HttpException(HttpStatusCode.METHOD_NOT_ALLOWED);
     }
 
     @Route(path = "/NOT_ACCEPTABLE", type = RoutingType.HANDLER)
-    public void handler406(HttpServerResponse response) {
+    public void handler406(HttpResponse response) {
         addToTrace("NOT_ACCEPTABLE");
         throw new HttpException(HttpStatusCode.NOT_ACCEPTABLE);
     }
 
     @Route(path = "/UNSUPPORTED_MEDIA_TYPE", type = RoutingType.HANDLER)
-    public void handler415(HttpServerResponse response) {
+    public void handler415(HttpResponse response) {
         addToTrace("UNSUPPORTED_MEDIA_TYPE");
         throw new HttpException(HttpStatusCode.UNSUPPORTED_MEDIA_TYPE);
     }
 
     @OnError(value = "/**", statusCode = HttpStatusCode.NOT_FOUND)
-    public void on404(HttpServerResponse response, Throwable e) {
-        response.write(Message.CUSTOM_404_ERROR_HANDLER.name());
-        response.write("  e.getMessage():  " + e.getMessage());
+    public void on404(HttpResponse response, Throwable e) {
+        response.writeLater(Message.CUSTOM_404_ERROR_HANDLER.name());
+        response.writeLater("  e.getMessage():  " + e.getMessage());
         addToTrace(Message.CUSTOM_404_ERROR_HANDLER.name());
     }
 
     @OnError(value = "/**", statusCode = HttpStatusCode.METHOD_NOT_ALLOWED)
-    public void on405(HttpServerResponse response, Throwable e) {
-        response.write(Message.CUSTOM_4XX_ERROR_HANDLER.name());
-        response.write("  e.getMessage():  " + e.getMessage());
+    public void on405(HttpResponse response, Throwable e) {
+        response.writeLater(Message.CUSTOM_4XX_ERROR_HANDLER.name());
+        response.writeLater("  e.getMessage():  " + e.getMessage());
         addToTrace(Message.CUSTOM_4XX_ERROR_HANDLER.name());
     }
 
     @OnError(value = "/**", statusCode = HttpStatusCode.NOT_ACCEPTABLE)
-    public void on406(HttpServerResponse response, Throwable e) {
-        response.write(Message.CUSTOM_4XX_ERROR_HANDLER.name());
-        response.write("  e.getMessage():  " + e.getMessage());
+    public void on406(HttpResponse response, Throwable e) {
+        response.writeLater(Message.CUSTOM_4XX_ERROR_HANDLER.name());
+        response.writeLater("  e.getMessage():  " + e.getMessage());
         addToTrace(Message.CUSTOM_4XX_ERROR_HANDLER.name());
     }
 
     @OnError(value = "/**", statusCode = HttpStatusCode.UNSUPPORTED_MEDIA_TYPE)
-    public void on415(HttpServerResponse response, Throwable e) {
-        response.write(Message.CUSTOM_4XX_ERROR_HANDLER.name());
-        response.write("  e.getMessage():  " + e.getMessage());
+    public void on415(HttpResponse response, Throwable e) {
+        response.writeLater(Message.CUSTOM_4XX_ERROR_HANDLER.name());
+        response.writeLater("  e.getMessage():  " + e.getMessage());
         addToTrace(Message.CUSTOM_4XX_ERROR_HANDLER.name());
     }
 }
@@ -108,16 +108,16 @@ class Custom4XXErrorHandler extends AbstractTraceableRouter {
 class ErrorInCustomErrorHandler extends AbstractTraceableRouter {
 
     @Route(value = "/post", type = RoutingType.HANDLER)
-    public void handler(HttpServerResponse response) {
+    public void handler(HttpResponse response) {
         addToTrace(Message.HANDLER.name());
         throw new RuntimeException(Message.ERROR_IN_CUSTOM_ERROR_HANDLER.name());
     }
 
     @OnError(value = "/**")
-    public void errorHandler(HttpServerResponse response, Throwable e) {
+    public void errorHandler(HttpResponse response, Throwable e) {
         addToTrace(Message.CUSTOM_ERROR_HANDLER.name());
-        response.write(Message.CUSTOM_ERROR_HANDLER.name());
-        response.write("  e.getMessage():  " + e.getMessage());
+        response.writeLater(Message.CUSTOM_ERROR_HANDLER.name());
+        response.writeLater("  e.getMessage():  " + e.getMessage());
         throw new RuntimeException(Message.CUSTOM_ERROR_HANDLER.name());
     }
 }
@@ -126,19 +126,19 @@ class ErrorInCustomErrorHandler extends AbstractTraceableRouter {
 class ErrorInPostHandler extends AbstractTraceableRouter {
 
     @Get("/**")
-    public void handler(HttpServerResponse response) {
+    public void handler(HttpResponse response) {
         addToTrace(Message.HANDLER.name());
     }
 
     @OnError(value = "/**")
-    public void customErrorHandler(HttpServerResponse response, Throwable e) {
-        response.write(" should not be handled by custom error handler. ");
-        response.write(" e.getMessage(): " + e.getMessage());
+    public void customErrorHandler(HttpResponse response, Throwable e) {
+        response.writeLater(" should not be handled by custom error handler. ");
+        response.writeLater(" e.getMessage(): " + e.getMessage());
         addToTrace(Message.CUSTOM_ERROR_HANDLER.name());
     }
 
     @PostHandler("/**")
-    public void postHandler(HttpServerResponse response) {
+    public void postHandler(HttpResponse response) {
         addToTrace(Message.ERROR_IN_POSTHANDLER.name());
         throw new RuntimeException(Message.ERROR_IN_POSTHANDLER.name());
     }
@@ -158,14 +158,14 @@ class PrehandlerErrorPreventPropagation extends AbstractTraceableRouter {
     }
 
     @Route(value = "/**", type = RoutingType.HANDLER)
-    public void handler(HttpServerResponse response) {
+    public void handler(HttpResponse response) {
         addToTrace("shouldNotContinueInHandler");
     }
 
     @OnError(value = "/**")
-    public void customErrorHandler(HttpServerResponse response, Throwable e) {
-        response.write(" should be handled by custom error handler. ");
-        response.write(" e.getMessage(): " + e.getMessage());
+    public void customErrorHandler(HttpResponse response, Throwable e) {
+        response.writeLater(" should be handled by custom error handler. ");
+        response.writeLater(" e.getMessage(): " + e.getMessage());
         addToTrace("shouldBeHandledByCustomErrorHandler");
     }
 
@@ -211,7 +211,7 @@ public class HandlerIntegrationTest extends AbstractMultipleRoutersIntegrationTe
     })
     void exceptionsInPrehandlerAndHandlerAreCapturedByCustom500Handler(String handler) throws IOException {
         String path = "/custom500/" + handler;
-        String result = sendHttpRequest("GET", path).assert200().getBody();
+        String result = sendHttpRequest("GET", path).assert500().getBody();
 
         Assertions.assertEquals(Arrays.asList(handler, Message.CUSTOM_500_ERROR_HANDLER.name()), this.getTraces());
         assertThat(result, containsString(handler));
@@ -223,7 +223,7 @@ public class HandlerIntegrationTest extends AbstractMultipleRoutersIntegrationTe
     @Test
     void error404IsHandledByCustom404ErrorHandler() throws IOException {
         String path = "/custom4XXerror/inexistence";
-        String result = sendHttpRequest("GET", path).assert200().getBody();
+        String result = sendHttpRequest("GET", path).assert404().getBody();
 
         Assertions.assertEquals(Collections.singletonList(Message.CUSTOM_404_ERROR_HANDLER.name()), getTraces());
         assertThat(result, containsString(path));

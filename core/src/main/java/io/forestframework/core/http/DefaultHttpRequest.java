@@ -11,8 +11,6 @@ import io.vertx.core.http.HttpConnection;
 import io.vertx.core.http.HttpFrame;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerFileUpload;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.HttpVersion;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.StreamPriority;
@@ -26,19 +24,15 @@ import javax.net.ssl.SSLSession;
 import javax.security.cert.X509Certificate;
 import java.util.Map;
 
-public class HttpServerRequestWrapper implements HttpServerRequest {
-    private final HttpServerRequest delegate;
-    private final HttpServerResponse response;
+public class DefaultHttpRequest implements HttpRequest {
+    private final io.vertx.core.http.HttpServerRequest delegate;
+    private final HttpResponse response;
     private final RoutingMatchResult routingMatchResult;
 
-    public HttpServerRequestWrapper(HttpServerRequest delegate, RoutingMatchResult routingMatchResult) {
-        this(delegate, routingMatchResult, false);
-    }
-
-    public HttpServerRequestWrapper(HttpServerRequest delegate, RoutingMatchResult routingMatchResult, boolean forbidEnd) {
+    public DefaultHttpRequest(io.vertx.core.http.HttpServerRequest delegate, RoutingMatchResult routingMatchResult) {
         this.delegate = delegate;
-        this.response = forbidEnd ? new EndForbiddenHttpServerResponseWrapper(delegate.response()) : delegate.response();
         this.routingMatchResult = routingMatchResult;
+        this.response = new DefaultHttpResponse(delegate.response());
     }
 
     @SuppressWarnings("unchecked")
@@ -47,33 +41,39 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public HttpServerRequest exceptionHandler(Handler<Throwable> handler) {
-        return delegate.exceptionHandler(handler);
+    public HttpRequest exceptionHandler(Handler<Throwable> handler) {
+        delegate.exceptionHandler(handler);
+        return this;
     }
 
     @Override
-    public HttpServerRequest handler(Handler<Buffer> handler) {
-        return delegate.handler(handler);
+    public HttpRequest handler(Handler<Buffer> handler) {
+        delegate.handler(handler);
+        return this;
     }
 
     @Override
-    public HttpServerRequest pause() {
-        return delegate.pause();
+    public HttpRequest pause() {
+        delegate.pause();
+        return this;
     }
 
     @Override
-    public HttpServerRequest resume() {
-        return delegate.resume();
+    public HttpRequest resume() {
+        delegate.resume();
+        return this;
     }
 
     @Override
-    public HttpServerRequest fetch(long amount) {
-        return delegate.fetch(amount);
+    public HttpRequest fetch(long amount) {
+        delegate.fetch(amount);
+        return this;
     }
 
     @Override
-    public HttpServerRequest endHandler(Handler<Void> endHandler) {
-        return delegate.endHandler(endHandler);
+    public HttpRequest endHandler(Handler<Void> endHandler) {
+        delegate.endHandler(endHandler);
+        return this;
     }
 
     @Override
@@ -126,7 +126,7 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public HttpServerResponse response() {
+    public HttpResponse response() {
         return response;
     }
 
@@ -183,13 +183,15 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public HttpServerRequest bodyHandler(Handler<Buffer> bodyHandler) {
-        return delegate.bodyHandler(bodyHandler);
+    public HttpRequest bodyHandler(Handler<Buffer> bodyHandler) {
+        delegate.bodyHandler(bodyHandler);
+        return this;
     }
 
     @Override
-    public HttpServerRequest body(Handler<AsyncResult<Buffer>> handler) {
-        return delegate.body(handler);
+    public HttpRequest body(Handler<AsyncResult<Buffer>> handler) {
+        delegate.body(handler);
+        return this;
     }
 
     @Override
@@ -198,13 +200,19 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public NetSocket netSocket() {
-        return delegate.netSocket();
+    public Future<Void> end() {
+        return null;
     }
 
     @Override
-    public HttpServerRequest setExpectMultipart(boolean expect) {
-        return delegate.setExpectMultipart(expect);
+    public Future<NetSocket> toNetSocket() {
+        return null;
+    }
+
+    @Override
+    public HttpRequest setExpectMultipart(boolean expect) {
+        delegate.setExpectMultipart(expect);
+        return this;
     }
 
     @Override
@@ -213,8 +221,9 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public HttpServerRequest uploadHandler(Handler<HttpServerFileUpload> uploadHandler) {
-        return delegate.uploadHandler(uploadHandler);
+    public HttpRequest uploadHandler(Handler<HttpServerFileUpload> uploadHandler) {
+        delegate.uploadHandler(uploadHandler);
+        return this;
     }
 
     @Override
@@ -229,8 +238,8 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public ServerWebSocket upgrade() {
-        return delegate.upgrade();
+    public Future<ServerWebSocket> toWebSocket() {
+        return delegate.toWebSocket();
     }
 
     @Override
@@ -239,8 +248,9 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public HttpServerRequest customFrameHandler(Handler<HttpFrame> handler) {
-        return delegate.customFrameHandler(handler);
+    public HttpRequest customFrameHandler(Handler<HttpFrame> handler) {
+        delegate.customFrameHandler(handler);
+        return this;
     }
 
     @Override
@@ -254,8 +264,9 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
     }
 
     @Override
-    public HttpServerRequest streamPriorityHandler(Handler<StreamPriority> handler) {
-        return delegate.streamPriorityHandler(handler);
+    public HttpRequest streamPriorityHandler(Handler<StreamPriority> handler) {
+        delegate.streamPriorityHandler(handler);
+        return this;
     }
 
     @Override

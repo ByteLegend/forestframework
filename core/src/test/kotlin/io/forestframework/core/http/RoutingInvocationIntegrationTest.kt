@@ -78,8 +78,8 @@ annotation class OneAndHalfSecondResultProcessorAnno
 @ParameterResolver(resolver = OneSecondParamResolver::class)
 annotation class OneSecondParamResolverAnno
 
-abstract class AbstractDelayedParamResolver constructor(val millis: Long, val vertx: Vertx, val orderTestRouter: OrderTestRouter) : RoutingParameterResolver<Any> {
-    override fun resolveParameter(context: WebContext?, routing: Routing?, paramIndex: Int): Any {
+abstract class AbstractDelayedParamResolver constructor(val millis: Long, val vertx: Vertx, val orderTestRouter: OrderTestRouter) : RoutingParameterResolver<WebContext> {
+    override fun resolveParameter(context: WebContext, routing: Routing, paramIndex: Int): Any {
         return delayFuture(vertx, millis) {
             orderTestRouter.list.add(javaClass.simpleName)
         }
@@ -97,7 +97,7 @@ class FourSecondParamResolver @Inject constructor(vertx: Vertx, orderTestRouter:
 
 @Singleton
 class HalfSecondResultProcessor @Inject constructor(val vertx: Vertx, val orderTestRouter: OrderTestRouter) : RoutingResultProcessor {
-    override fun processResponse(context: WebContext?, routing: Routing?, returnValue: Any?): Any {
+    override fun processResponse(context: HttpContext, routing: Routing, returnValue: Any): Any {
         return delayFuture(vertx, 500) {
             orderTestRouter.list.add(HalfSecondResultProcessor::class.java.simpleName)
         }
@@ -106,9 +106,8 @@ class HalfSecondResultProcessor @Inject constructor(val vertx: Vertx, val orderT
 
 @Singleton
 class OneAndHalfSecondResultProcessor @Inject constructor(val vertx: Vertx, val orderTestRouter: OrderTestRouter) : RoutingResultProcessor {
-    override fun processResponse(context: WebContext?, routing: Routing?, returnValue: Any?): Any {
+    override fun processResponse(context: HttpContext, routing: Routing, returnValue: Any): Any {
         return delayFuture(vertx, 1500) {
-            context as PlainHttpContext
             orderTestRouter.list.add(OneAndHalfSecondResultProcessor::class.java.simpleName)
         }
     }
@@ -142,8 +141,8 @@ class ErrorInParamResolverRouter {
 @ParameterResolver(resolver = ErrorInParamResolver::class)
 annotation class ErrorInParamResolverAnno
 
-class ErrorInParamResolver : RoutingParameterResolver<Any> {
-    override fun resolveParameter(context: WebContext?, routing: Routing?, paramIndex: Int): Any {
+class ErrorInParamResolver : RoutingParameterResolver<WebContext> {
+    override fun resolveParameter(context: WebContext, routing: Routing, paramIndex: Int): Any {
         throw RuntimeException("unlucky!")
     }
 }

@@ -11,10 +11,6 @@ import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
-import io.vertx.core.http.HttpServerResponse
-import io.vertx.kotlin.core.http.writeAwait
-import java.util.Collections
-import javax.inject.Inject
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions
@@ -23,6 +19,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.util.Collections
+import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 @ForestApplication
 class CustomErrorHandlerApp {
@@ -77,9 +76,9 @@ class Custom500HandlerRouter : AbstractTracingRouter() {
     }
 
     @OnError("/**")
-    suspend fun on500(response: HttpServerResponse, e: Throwable) = runUnderTraceSuspend("custom500Handler") {
-        response.writeAwait(custom500HandlerMessage)
-        response.writeAwait(e.message!!)
+    suspend fun on500(response: HttpResponse, e: Throwable) = runUnderTraceSuspend("custom500Handler") {
+        response.writeLater(custom500HandlerMessage)
+        response.writeLater(e.message!!)
     }
 }
 

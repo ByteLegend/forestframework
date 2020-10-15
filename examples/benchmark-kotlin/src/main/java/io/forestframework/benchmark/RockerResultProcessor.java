@@ -4,7 +4,7 @@ import com.fizzed.rocker.ContentType;
 import com.fizzed.rocker.RockerOutputFactory;
 import generated.FortunesTemplate;
 import io.forestframework.benchmark.model.Fortune;
-import io.forestframework.core.http.PlainHttpContext;
+import io.forestframework.core.http.HttpContext;
 import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.result.RoutingResultProcessor;
 import io.forestframework.core.http.routing.Routing;
@@ -21,10 +21,10 @@ public class RockerResultProcessor implements RoutingResultProcessor {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object processResponse(WebContext context, Routing routing, Object returnValue) {
+    public Object processResponse(HttpContext context, Routing routing, Object returnValue) {
         List<Fortune> fortunes = (List<Fortune>) returnValue;
-        ((PlainHttpContext) context).response().putHeader(HEADER_CONTENT_TYPE, RESPONSE_TYPE_HTML)
-                .end(FortunesTemplate.template(fortunes).render(factory).buffer());
+        context.response().putHeader(HEADER_CONTENT_TYPE, RESPONSE_TYPE_HTML)
+               .end(FortunesTemplate.template(fortunes).render(factory).buffer());
         return returnValue;
     }
 }

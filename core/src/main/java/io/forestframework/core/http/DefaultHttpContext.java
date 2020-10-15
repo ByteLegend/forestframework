@@ -3,8 +3,6 @@ package io.forestframework.core.http;
 import com.google.inject.Injector;
 import io.forestframework.core.http.routing.PlainHttpRoutingMatchResult;
 import io.forestframework.core.http.websocket.AbstractWebContext;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import org.apiguardian.api.API;
 
 import java.util.Map;
@@ -13,11 +11,11 @@ import java.util.Map;
  * For internal use only.
  */
 @API(status = API.Status.INTERNAL, since = "0.1")
-public class DefaultPlainHttpContext extends AbstractWebContext implements PlainHttpContext {
-    private final HttpServerRequest request;
+public class DefaultHttpContext extends AbstractWebContext implements HttpContext {
+    private final HttpRequest request;
     private final PlainHttpRoutingMatchResult matchResult;
 
-    public DefaultPlainHttpContext(Injector injector, HttpServerRequest request, PlainHttpRoutingMatchResult matchResult) {
+    public DefaultHttpContext(Injector injector, HttpRequest request, PlainHttpRoutingMatchResult matchResult) {
         super(injector);
         this.request = request;
         this.matchResult = matchResult;
@@ -25,13 +23,13 @@ public class DefaultPlainHttpContext extends AbstractWebContext implements Plain
     }
 
     @Override
-    public HttpServerRequest request() {
+    public HttpRequest request() {
         return request;
     }
 
     @Override
-    public HttpServerResponse response() {
-        return request.response();
+    public HttpResponse response() {
+        return (HttpResponse) request.response();
     }
 
     @Override

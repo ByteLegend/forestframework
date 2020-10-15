@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * For internal use only.
  */
-@API(status = API.Status.EXPERIMENTAL, since = "0.1")
+@API(status = API.Status.INTERNAL, since = "0.1")
 public abstract class AbstractWebContext implements WebContext {
     private final ArgumentInjector argumentInjector;
     private final ConcurrentHashMap<String, Object> data = new ConcurrentHashMap<>();

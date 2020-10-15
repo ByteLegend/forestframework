@@ -41,9 +41,9 @@ public class ArgumentInjector {
         this.injector = injector;
     }
 
-    public ArgumentInjector with(PlainHttpContext context) {
+    public ArgumentInjector with(HttpContext context) {
         return withParameter(WebContext.class, context)
-                .withParameter(PlainHttpContext.class, context)
+                .withParameter(HttpContext.class, context)
                 .withParameter(HttpServerRequest.class, context.request())
                 .withParameter(HttpServerResponse.class, context.response());
     }

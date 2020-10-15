@@ -1,7 +1,6 @@
 package io.forestframework.core.http.staticresource;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.forestframework.core.http.EndForbiddenHttpServerResponseWrapper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -164,9 +163,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                 final long lastModified = Utils.secondsFactor(entry.props.lastModifiedTime());
 
                 if (Utils.fresh(context, lastModified)) {
-                    ((EndForbiddenHttpServerResponseWrapper) context.response()
-                            .setStatusCode(NOT_MODIFIED.code()))
-                            .realEnd();
+                    context.response().setStatusCode(NOT_MODIFIED.code()).end();
                     return;
                 }
             }

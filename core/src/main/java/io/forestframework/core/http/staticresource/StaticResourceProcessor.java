@@ -1,9 +1,9 @@
 package io.forestframework.core.http.staticresource;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.forestframework.core.http.HttpContext;
+import io.forestframework.core.http.HttpResponse;
 import io.forestframework.core.http.HttpStatusCode;
-import io.forestframework.core.http.PlainHttpContext;
-import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.result.RoutingResultProcessor;
 import io.forestframework.core.http.routing.Routing;
 import io.vertx.core.AsyncResult;
@@ -34,9 +34,9 @@ import java.util.Set;
 
 /**
  * Resolve the resource name returned by a handler method, then send the resolved file via {@link io.vertx.core.http.HttpServerResponse}.
- *
+ * <p>
  * If the returned resource name is absolute, it will be send directly; otherwise, a relative path will be interpreted as path relative to cwd or classpath entry.
- *
+ * <p>
  * Given a resource name "relative/path/to/resource.txt", for directory classpath entry "file:///home/my/resources",
  * the resource file "file:///home/my/resources/relative/path/to/resource.txt" will be located and sent; for jar classpath entry
  * "file:///home/lib/my.jar", the "relative/path/to/resource.txt" inside that jar will be located and sent.
@@ -53,22 +53,22 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
     }
 
     @Override
-    public Object processResponse(WebContext context, Routing routing, Object returnValue) {
+    public Object processResponse(HttpContext context, Routing routing, Object returnValue) {
         String path = returnValue.toString();
 
         if (path.isEmpty()) {
-            send404(((PlainHttpContext) context).response());
+            send404(context.response());
             return returnValue;
         }
 
-        EndAwareRoutingContextDecorator endAwareRoutingContext = new EndAwareRoutingContextDecorator(vertx, (PlainHttpContext) context);
+        EndAwareRoutingContextDecorator endAwareRoutingContext = new EndAwareRoutingContextDecorator(vertx, context);
         staticHandler.sendStatic(endAwareRoutingContext, path);
         return endAwareRoutingContext.getFuture();
     }
 
-    private static void send404(HttpServerResponse response) {
+    private static void send404(HttpResponse response) {
         response.setStatusCode(HttpStatusCode.NOT_FOUND.getCode());
-        response.write(HttpStatusCode.NOT_FOUND.name());
+        response.writeLater(HttpStatusCode.NOT_FOUND.name());
     }
 
     public static class EndAwareRoutingContextDecorator implements RoutingContext {
@@ -77,7 +77,7 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
         private final HttpServerResponse response;
         private final Promise<Void> promise = Promise.promise();
 
-        public EndAwareRoutingContextDecorator(Vertx vertx, PlainHttpContext context) {
+        public EndAwareRoutingContextDecorator(Vertx vertx, HttpContext context) {
             this.vertx = vertx;
             this.request = context.request();
             this.response = context.response();
@@ -118,7 +118,7 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
         @Override
         public void next() {
             // Resource not found
-            send404(response());
+            send404((HttpResponse) response());
             promise.complete();
         }
 
@@ -210,6 +210,16 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
 
         @Override
         public String getBodyAsString(String encoding) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public JsonObject getBodyAsJson(int maxAllowedLength) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public JsonArray getBodyAsJsonArray(int maxAllowedLength) {
             throw new UnsupportedOperationException();
         }
 

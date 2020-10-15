@@ -5,7 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.MediaType;
 import io.forestframework.core.http.DefaultPlainHttpRequestHandler;
 import io.forestframework.core.http.HttpMethod;
-import io.forestframework.core.http.HttpServerRequestWrapper;
+import io.forestframework.core.http.DefaultHttpRequest;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.bridge.DefaultBridgeRequestHandler;
 import io.forestframework.core.http.websocket.DefaultWebSocketRequestHandler;
@@ -37,7 +37,7 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
                        DefaultBridgeRequestHandler bridgeRequestHandler,
                        DefaultWebSocketRequestHandler webSocketRequestHandler,
                        DefaultPlainHttpRequestHandler plainHttpRequestHandler) {
-        plainHttpRequestHandler.handle(new HttpServerRequestWrapper(request, this, true));
+        plainHttpRequestHandler.handle(new DefaultHttpRequest(request, this));
     }
 
     public void addResult(HttpServerRequest request, List<Routing> routings, Map<String, String> pathVariables) {

@@ -23,7 +23,6 @@ class MultipleHandlersApp {
 
 @Router("/preHandler")
 class PreHandlerReturnsVoidTrueOrFalse extends AbstractTraceableRouter {
-
     @PreHandler("/returns/*")
     public boolean preHandleReturnsTrueOrFalse(HttpServerRequest request) {
         addToTrace(request.path());
@@ -101,8 +100,7 @@ public class MultipleHandlersIntegrationTest extends AbstractHandlerIntegrationT
                         path,
                         Message.PREHANDLER1.name(),
                         Message.PREHANDLER2.name(),
-                        Message.HANDLER1.name(),
-                        Message.HANDLER2.name()
+                        Message.HANDLER1.name()
                 ), router.traces);
     }
 
