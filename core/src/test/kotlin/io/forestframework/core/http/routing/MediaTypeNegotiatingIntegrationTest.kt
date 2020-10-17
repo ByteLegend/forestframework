@@ -10,9 +10,7 @@ import io.forestframework.ext.api.DefaultStartupContext
 import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.StartupContext
 import io.forestframework.ext.core.HttpServerExtension
-import io.forestframework.testfixtures.assertStatusCode
-import io.forestframework.testfixtures.delete
-import io.forestframework.testfixtures.get
+import io.forestframework.testfixtures.HttpClient
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.BindFreePortExtension
 import io.vertx.core.Vertx
@@ -106,8 +104,8 @@ class MediaTypeNegotiatingIntegrationTest {
             val vertx = Vertx.vertx()
             val port = startTestApplication(vertx, case.httpMethod, produces = case.produces)
 
-            val httpClient = vertx.createHttpClient()
-            httpClient.get(port, "/test", mapOf("Accept" to case.accept)).assertStatusCode(case.expectedStatusCode)
+            HttpClient.create()
+                .get(port, "/test", mapOf("Accept" to case.accept)).assertStatusCode(case.expectedStatusCode)
         }
     }
 
@@ -158,8 +156,9 @@ class MediaTypeNegotiatingIntegrationTest {
             val vertx = Vertx.vertx()
             val port = startTestApplication(vertx, case.httpMethod, consumes = case.consumes)
 
-            val httpClient = vertx.createHttpClient()
-            httpClient.get(port, "/test", mapOf("Content-Type" to case.contentType)).assertStatusCode(case.expectedStatusCode)
+            HttpClient.create()
+                .get(port, "/test", mapOf("Content-Type" to case.contentType))
+                .assertStatusCode(case.expectedStatusCode)
         }
     }
 
@@ -171,8 +170,9 @@ class MediaTypeNegotiatingIntegrationTest {
             val vertx = Vertx.vertx()
             val port = startTestApplication(vertx, httpMethod = case.httpMethod)
 
-            val httpClient = vertx.createHttpClient()
-            httpClient.get(port, "/test").assertStatusCode(case.expectedStatusCode)
+            HttpClient.create()
+                .get(port, "/test")
+                .assertStatusCode(case.expectedStatusCode)
         }
     }
 
@@ -184,8 +184,9 @@ class MediaTypeNegotiatingIntegrationTest {
             val vertx = Vertx.vertx()
             val port = startTestApplication(vertx, httpMethod = case.httpMethod)
 
-            val httpClient = vertx.createHttpClient()
-            httpClient.delete(port, "/test").assertStatusCode(case.expectedStatusCode)
+            HttpClient.create()
+                .delete(port, "/test")
+                .assertStatusCode(case.expectedStatusCode)
         }
     }
 

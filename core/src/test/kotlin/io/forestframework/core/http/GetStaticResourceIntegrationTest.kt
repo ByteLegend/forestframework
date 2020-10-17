@@ -43,7 +43,7 @@ class GetStaticResourceIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get static resource via {0}")
     @ValueSource(strings = ["viaAbsolutePath", "viaPathRelativeToCwd", "viaPathRelativeToClasspathEntry"])
     fun `get static resource`(url: String) = runBlockingUnit {
-        get(url)
+        get("/$url")
             .assert200()
             .assertContentType("text/plain;charset=UTF-8")
             .apply {

@@ -77,11 +77,11 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
      * <p>
      * 404 If no route matches the path
      * <p>
-     * 405 If a route matches the path but don’t match the HTTP Method
+     * 405 If a route matches the path but don't match the HTTP Method
      * <p>
-     * 406 If a route matches the path and the method but It can’t provide a response with a content type matching Accept header
+     * 406 If a route matches the path and the method but It can't provide a response with a content type matching Accept header
      * <p>
-     * 415 If a route matches the path and the method but It can’t accept the Content-type
+     * 415 If a route matches the path and the method but It can't accept the Content-type
      */
     public MainHandlerMatchResult getMainHandlerMatchResult() {
         return new MainHandlerMatchResult(getMatchResultsByType(RoutingType.HANDLER));

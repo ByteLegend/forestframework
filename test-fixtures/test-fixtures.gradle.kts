@@ -14,5 +14,6 @@ dependencies {
     implementation(libs("selenium-firefox-driver"))
     implementation(libs("selenium-chrome-driver"))
     implementation(libs("selenium-support"))
+    implementation(libs("httpclient"))
     runtimeOnly(libs("junit-jupiter-engine"))
 }

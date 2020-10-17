@@ -59,21 +59,18 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                                        new HttpException(mainHandlerMatchResult.getStatusCode(), mainHandlerMatchResult.getStatusCode().name() + ", request path: " + request.path()));
                 } else {
                     return invokeMainHandler(context, routingMatchResult)
-                        .whenComplete((__, throwableInHandler) -> handleError(context, routingMatchResult, getStatusCode(throwableInHandler), throwableInHandler))
+                        .whenComplete((__, throwableInHandler) -> {
+                            if (throwableInHandler == null) {
+                                invokePostHandlers(context, routingMatchResult);
+                            } else {
+                                handleError(context, routingMatchResult, getStatusCode(throwableInHandler), throwableInHandler);
+                            }
+                        })
                         .exceptionally(__ -> COMPLETABLE_FUTURE_NIL);
                 }
             }
         }).exceptionally(throwableInPreHandlers -> handleError(context, routingMatchResult, getStatusCode(throwableInPreHandlers), throwableInPreHandlers));
     }
-
-//    private CompletableFuture<Object> handleError() {
-//
-//    }
-//
-//    private CompletableFuture<Object> handleError(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, HttpStatusCode statusCode) {
-//        Throwable t = new HttpException(statusCode, statusCode.name() + ", request path: " + context.request().path());
-//        handleError(context, routingMatchResult, t, statusCode);
-//    }
 
     private CompletableFuture<Object> handleError(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, HttpStatusCode statusCode, Throwable throwable) {
         Routing matchedErrorHandler = routingMatchResult.getMatchingErrorHandler(statusCode);
@@ -170,7 +167,6 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                                                    .filter(Objects::nonNull)
                                                    .peek(e -> logError(context, e))
                                                    .collect(Collectors.toList());
-
             if (realThrowables.isEmpty()) {
                 if (!context.response().ended()) {
                     context.response().end();

@@ -3,35 +3,28 @@ package io.forestframework.testfixtures
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.forestframework.core.config.Config
+import io.forestframework.core.http.HttpMethod
 import io.forestframework.core.http.HttpStatusCode
 import io.forestframework.core.http.OptimizedHeaders
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.HttpClient
-import io.vertx.core.http.HttpClientRequest
-import io.vertx.core.http.HttpClientResponse
-import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.WebSocket
-import io.vertx.core.http.impl.headers.HeadersMultiMap
-import io.vertx.ext.web.client.HttpRequest
-import io.vertx.ext.web.client.HttpResponse
 import io.vertx.kotlin.coroutines.await
-import io.vertx.kotlin.coroutines.awaitResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.apache.http.HttpResponse
+import org.apache.http.client.methods.RequestBuilder
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Timeout
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-
-class HttpClientResponseWrapper(private val delegate: HttpClientResponse) : HttpClientResponse by delegate {
-    lateinit var body: Buffer
-}
 
 class WebSocketClient(val socket: WebSocket, val url: String) {
     var cursorIndex: Int = 0
@@ -72,35 +65,71 @@ class WebSocketClient(val socket: WebSocket, val url: String) {
     suspend fun close() = socket.close().await()
 }
 
-// Set body handler before reading the whole response, otherwise
-// https://stackoverflow.com/questions/57957767/illegalstateexception-thrown-when-reading-the-vert-x-http-client-response-body
-suspend fun HttpClient.get(port: Int, uri: String, headers: Map<String, String> = emptyMap()) = send(HttpMethod.GET, port, uri, headers)
+class HttpClient(private val delegate: CloseableHttpClient) {
+    companion object {
+        fun create(): HttpClient = HttpClient(HttpClients.createDefault())
+    }
 
-suspend fun HttpClient.delete(port: Int, uri: String, headers: Map<String, String> = emptyMap()) = send(HttpMethod.DELETE, port, uri, headers)
+    fun get(port: Int, path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse = send(HttpMethod.GET, port, path, headers)
 
-suspend fun HttpClient.send(httpMethod: HttpMethod, port: Int, uri: String, headers: Map<String, String> = emptyMap()) = awaitResult<HttpClientResponse> { handler ->
-    val requestHeaders = HeadersMultiMap().apply { headers.forEach { (k, v) -> add(k, v) } }
+    fun delete(port: Int, path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse = send(HttpMethod.DELETE, port, path, headers)
 
-    request(httpMethod, port, "localhost", uri).map {
-        it.headers().addAll(requestHeaders)
-        it
-    }.compose(HttpClientRequest::send).onComplete { responseAsyncResult ->
-        val wrapper = HttpClientResponseWrapper(responseAsyncResult.result())
-        responseAsyncResult.result().bodyHandler {
-            wrapper.body = it
-            handler.handle(responseAsyncResult.map { wrapper })
-        }
+    fun send(httpMethod: HttpMethod, port: Int, path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse {
+        val request = RequestBuilder.create(httpMethod.name)
+            .setUri("http://localhost:$port$path")
+            .apply {
+                headers.forEach(this::setHeader)
+            }
+            .build()
+        return HttpClientResponse(delegate.execute(request))
     }
 }
 
-fun HttpClientResponse.assertStatusCode(statusCode: HttpStatusCode): HttpClientResponse {
-    Assertions.assertEquals(statusCode.code, statusCode())
-    return this
-}
+// Hide HttpClient implementations
+class HttpClientResponse(private val delegate: HttpResponse) {
+    val objectMapper = ObjectMapper()
 
-fun HttpClientResponse.assertStatusCode(statusCode: Int): HttpClientResponse {
-    Assertions.assertEquals(statusCode, statusCode())
-    return this
+    fun bodyAsString() = EntityUtils.toString(delegate.entity)
+
+    fun <T> toObject(klass: Class<T>) = objectMapper.readValue(bodyAsString(), klass)
+
+    fun <T> toObject(klass: TypeReference<T>) = objectMapper.readValue(bodyAsString(), klass)
+
+    fun assertContentType(type: String): HttpClientResponse {
+        Assertions.assertEquals(type, delegate.getFirstHeader(OptimizedHeaders.HEADER_CONTENT_TYPE.toString()).value)
+        return this
+    }
+
+    fun assertStatusCode(statusCode: HttpStatusCode): HttpClientResponse {
+        Assertions.assertEquals(statusCode.code, getStatusCode())
+        return this
+    }
+
+    fun assertStatusCode(statusCode: Int): HttpClientResponse {
+        Assertions.assertEquals(statusCode, getStatusCode())
+        return this
+    }
+
+    fun bodyAsBinary(): Buffer {
+        return Buffer.buffer(EntityUtils.toByteArray(delegate.entity))
+    }
+
+    fun getStatusCode(): Int = delegate.statusLine.statusCode
+
+    fun assert2XXStatus(): HttpClientResponse {
+        Assertions.assertTrue(getStatusCode() in 200..299)
+        return this
+    }
+
+    fun assert200() = assertStatusCode(HttpStatusCode.OK)
+
+    fun assert500() = assertStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR)
+
+    fun assertBody(expected: String) = bodyAsString().apply {
+        Assertions.assertEquals(expected, this)
+    }
+
+    fun assert404() = assertStatusCode(HttpStatusCode.NOT_FOUND)
 }
 
 fun runBlockingUnit(context: CoroutineContext = EmptyCoroutineContext, block: suspend CoroutineScope.() -> Unit) = runBlocking(context, block)
@@ -115,67 +144,20 @@ abstract class AbstractForestIntegrationTest {
     @Inject
     lateinit var vertx: Vertx
 
-    lateinit var client: HttpClient
-
-    val objectMapper = ObjectMapper()
-
-    @BeforeEach
-    fun setUp() {
-        client = vertx.createHttpClient()
+    val client: HttpClient by lazy {
+        HttpClient.create()
     }
 
-    suspend fun get(uri: String) = client.get(port.toInt(), uri)
-
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun <T> HttpClientResponseWrapper.toObject(klass: Class<T>) = objectMapper.readValue(bodyAsString(), klass)
-
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun <T> HttpClientResponseWrapper.toObject(klass: TypeReference<T>) = objectMapper.readValue(bodyAsString(), klass)
-
-    suspend fun openWebsocket(uri: String) = WebSocketClient(client.webSocket(port.toInt(), "localhost", uri).await(), uri)
-
-    fun HttpClientResponse.assertContentType(type: String): HttpClientResponse {
-        Assertions.assertEquals(type, getHeader(OptimizedHeaders.HEADER_CONTENT_TYPE.toString()).toString())
-        return this
+    // Known issues, not recommended, for example this one (but not only this one)
+    // https://stackoverflow.com/questions/57957767/illegalstateexception-thrown-when-reading-the-vert-x-http-client-response-body
+    private val vertxClient: io.vertx.core.http.HttpClient by lazy {
+        vertx.createHttpClient()
     }
 
-    fun HttpClientResponse.assertContentType(type: CharSequence): HttpClientResponse {
-        assertContentType(type.toString())
-        return this
-    }
+    fun send(httpMethod: HttpMethod, path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse =
+        client.send(httpMethod, port.toInt(), path, headers)
 
-    fun HttpRequest<Buffer>.contentTypeJson() = HeadersMultiMap().apply {
-        add(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON)
-    }.apply {
-        this@contentTypeJson.putHeaders(this)
-    }
+    fun get(path: String): HttpClientResponse = send(HttpMethod.GET, path)
 
-    fun HttpResponse<Buffer>.assert2XXStatus(): HttpResponse<Buffer> {
-        Assertions.assertTrue(statusCode() in 200..299)
-        return this
-    }
-
-    fun HttpClientResponse.assert200() = assertStatusCode(HttpStatusCode.OK)
-
-    fun HttpClientResponse.assert500() = assertStatusCode(HttpStatusCode.INTERNAL_SERVER_ERROR)
-
-    suspend fun HttpClientResponse.assertBody(expected: String) = bodyAsString().apply {
-        Assertions.assertEquals(expected, this)
-    }
-
-    fun HttpClientResponse.assert404() = assertStatusCode(HttpStatusCode.NOT_FOUND)
-
-    suspend fun HttpClientResponse.bodyAsString(): String =
-        if (this is HttpClientResponseWrapper) {
-            body.toString()
-        } else {
-            body().await().toString()
-        }
-
-    suspend fun HttpClientResponse.bodyAsBinary(): Buffer =
-        if (this is HttpClientResponseWrapper) {
-            body
-        } else {
-            body().await()
-        }
+    suspend fun openWebsocket(uri: String) = WebSocketClient(vertxClient.webSocket(port.toInt(), "localhost", uri).await(), uri)
 }

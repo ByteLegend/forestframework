@@ -1,36 +1,17 @@
 package io.forestframework.core.http.routing;
 
-import io.forestframework.core.config.Config;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import com.google.common.collect.ImmutableMap;
+import io.forestframework.core.http.HttpMethod;
+import io.forestframework.testfixtures.AbstractForestIntegrationTest;
+import io.forestframework.testfixtures.HttpClientResponse;
 import org.junit.jupiter.api.Assertions;
 
-import javax.inject.Inject;
-import java.io.IOException;
-
-public class AbstractHttpIntegrationTest {
-
-    protected CloseableHttpClient client;
-
-    @Inject
-    @Config("forest.http.port")
-    protected Integer port;
-
-    public HttpResponse sendHttpRequest(String method, String path) throws IOException {
-        String uri = "http://localhost:" + port + path;
-        HttpUriRequest request = RequestBuilder
-                .create(method)
-                .setUri(uri)
-                .setHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON))
-                .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                .build();
-        CloseableHttpResponse response = client.execute(request);
-        return new HttpResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity()));
+public class AbstractHttpIntegrationTest extends AbstractForestIntegrationTest {
+    public HttpResponse sendHttpRequest(String method, String path) {
+        HttpClientResponse response = send(HttpMethod.valueOf(method), path,
+                                           ImmutableMap.of("Accept", "application/json",
+                                                           "Content-Type", "application/json"));
+        return new HttpResponse(response.getStatusCode(), response.bodyAsString());
     }
 
     static class HttpResponse {

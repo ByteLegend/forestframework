@@ -44,7 +44,6 @@ dependencies {
 
     testImplementation(libs("mockito-core"))
     testImplementation(libs("mockito-junit-jupiter"))
-    testImplementation(libs("httpclient"))
 
     testImplementation(libs("mockk"))
 

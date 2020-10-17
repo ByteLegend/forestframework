@@ -14,7 +14,6 @@ import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestTest
-import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.kotlin.coroutines.await
@@ -55,7 +54,7 @@ class WebSocketTestApp {
 }
 
 @Router("/chat/:username")
-class WebSocketChatRoomRouter @Inject constructor(vertx: Vertx) {
+class WebSocketChatRoomRouter {
     val sessions = ConcurrentHashMap<String, ServerWebSocket>()
     val errors = ArrayList<Throwable>()
 

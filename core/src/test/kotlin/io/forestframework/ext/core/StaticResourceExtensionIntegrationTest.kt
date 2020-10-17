@@ -62,7 +62,7 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
 
 @ExtendWith(ForestExtension::class)
 @ExtraConfig(value = ["""forest.static.webroots=[
-                "StaticResourceTestData/img", 
+                "StaticResourceTestData/img",
                 "StaticResourceTestData/js",
                 "StaticResourceTestData/css"
             ]
