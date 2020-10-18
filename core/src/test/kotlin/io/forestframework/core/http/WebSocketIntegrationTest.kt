@@ -76,10 +76,13 @@ class WebSocketChatRoomRouter {
     suspend fun onError(socket: ServerWebSocket, @PathParam("username") username: String, throwable: Throwable) {
         try {
             Assertions.assertNotNull(socket)
-            sessions.remove(username)
-            broadcast("User $username left on error")
-            errors.add(throwable)
-            throwable.printStackTrace()
+            if (sessions.remove(username) != null) {
+                // Sometimes (e.g. on Windows), when client disconnects, two exceptions are triggered:
+                // 1. io.vertx.core.VertxException: Connection was closed
+                // 2. java.io.IOException: An existing connection was forcibly closed by the remote host
+                broadcast("User $username left on error")
+                errors.add(throwable)
+            }
         } catch (e: Throwable) {
             e.printStackTrace()
         }
