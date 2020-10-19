@@ -6,11 +6,14 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest;
 import io.forestframework.testfixtures.HttpClientResponse;
 import org.junit.jupiter.api.Assertions;
 
+import static java.util.Collections.emptyMap;
+
 public class AbstractHttpIntegrationTest extends AbstractForestIntegrationTest {
     public HttpResponse sendHttpRequest(String method, String path) {
         HttpClientResponse response = send(HttpMethod.valueOf(method), path,
                                            ImmutableMap.of("Accept", "application/json",
-                                                           "Content-Type", "application/json"));
+                                                           "Content-Type", "application/json"),
+                                           emptyMap());
         return new HttpResponse(response.getStatusCode(), response.bodyAsString());
     }
 

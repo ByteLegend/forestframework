@@ -74,11 +74,18 @@ class HttpClient(private val delegate: CloseableHttpClient) {
 
     fun delete(port: Int, path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse = send(HttpMethod.DELETE, port, path, headers)
 
-    fun send(httpMethod: HttpMethod, port: Int, path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse {
+    fun send(
+        httpMethod: HttpMethod,
+        port: Int,
+        path: String,
+        headers: Map<String, String> = emptyMap(),
+        multiHeaders: Map<String, List<String>> = emptyMap()
+    ): HttpClientResponse {
         val request = RequestBuilder.create(httpMethod.name)
             .setUri("http://localhost:$port$path")
             .apply {
                 headers.forEach(this::setHeader)
+                multiHeaders.forEach { (name, values) -> values.forEach { this.addHeader(name, it) } }
             }
             .build()
         return HttpClientResponse(delegate.execute(request))
@@ -154,10 +161,15 @@ abstract class AbstractForestIntegrationTest {
         vertx.createHttpClient()
     }
 
-    fun send(httpMethod: HttpMethod, path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse =
-        client.send(httpMethod, port.toInt(), path, headers)
+    fun send(
+        httpMethod: HttpMethod,
+        path: String,
+        headers: Map<String, String> = emptyMap(),
+        multiHeaders: Map<String, List<String>> = emptyMap()
+    ): HttpClientResponse =
+        client.send(httpMethod, port.toInt(), path, headers, multiHeaders)
 
-    fun get(path: String): HttpClientResponse = send(HttpMethod.GET, path)
+    fun get(path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse = send(HttpMethod.GET, path, headers)
 
     suspend fun openWebsocket(uri: String) = WebSocketClient(vertxClient.webSocket(port.toInt(), "localhost", uri).await(), uri)
 }
