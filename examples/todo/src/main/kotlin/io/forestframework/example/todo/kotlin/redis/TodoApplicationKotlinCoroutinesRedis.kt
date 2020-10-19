@@ -12,11 +12,6 @@ import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.extensions.redis.EnableRedisClient
 import io.vertx.core.json.Json
 import io.vertx.kotlin.coroutines.await
-import io.vertx.kotlin.redis.client.delAwait
-import io.vertx.kotlin.redis.client.hdelAwait
-import io.vertx.kotlin.redis.client.hgetAwait
-import io.vertx.kotlin.redis.client.hsetAwait
-import io.vertx.kotlin.redis.client.hvalsAwait
 import io.vertx.redis.client.RedisAPI
 import java.util.Optional
 import javax.inject.Inject
@@ -47,10 +42,10 @@ class RedisTodoService @Inject constructor(private val client: RedisAPI) : TodoS
         return todo
     }
 
-    override suspend fun all(): List<Todo> = client.hvalsAwait(redisToDoKey)?.map { Todo(it.toString()) } ?: emptyList()
+    override suspend fun all(): List<Todo> = client.hvals(redisToDoKey).await()?.map { Todo(it.toString()) } ?: emptyList()
 
     override suspend fun getCertain(todoID: String): Optional<Todo> {
-        val jsonStr = client.hgetAwait(redisToDoKey, todoID)?.toString()
+        val jsonStr = client.hget(redisToDoKey, todoID).await()?.toString()
         val todo = if (jsonStr == null) null else Todo(jsonStr)
         return Optional.ofNullable(todo)
     }
@@ -67,10 +62,10 @@ class RedisTodoService @Inject constructor(private val client: RedisAPI) : TodoS
     }
 
     override suspend fun delete(todoId: String) {
-        client.hdelAwait(listOf(redisToDoKey, todoId))
+        client.hdel(listOf(redisToDoKey, todoId)).await()
     }
 
     override suspend fun deleteAll() {
-        client.delAwait(listOf(redisToDoKey))
+        client.del(listOf(redisToDoKey)).await()
     }
 }

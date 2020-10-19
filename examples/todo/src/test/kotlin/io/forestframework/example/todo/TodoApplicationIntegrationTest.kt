@@ -22,8 +22,7 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
-import io.vertx.kotlin.ext.web.client.sendAwait
-import io.vertx.kotlin.ext.web.client.sendBufferAwait
+import io.vertx.kotlin.coroutines.await
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.random.Random
@@ -118,7 +117,7 @@ abstract class TodoApplicationIntegrationTest {
         val todo = Todo(0, title, false, order, null)
         return client.post(port.toInt(), "localhost", todoUri())
             .putHeaders(headers)
-            .sendBufferAwait(Buffer.buffer(objectMapper.writeValueAsString(todo)))
+            .sendBuffer(Buffer.buffer(objectMapper.writeValueAsString(todo))).await()
             .assert2XXStatus()
             .bodyAsString()
             .toObject(Todo::class.java)
@@ -131,7 +130,8 @@ abstract class TodoApplicationIntegrationTest {
         val todo = createTodo()
         val getTodo = client.get(port.toInt(), "localhost", todoUri(todo.id))
             .putHeaders(headers)
-            .sendAwait()
+            .send()
+            .await()
             .assert2XXStatus()
             .bodyAsString()
             .toObject(Todo::class.java)
@@ -144,7 +144,8 @@ abstract class TodoApplicationIntegrationTest {
         val todo2 = createTodo()
         val allTodos = client.get(port.toInt(), "localhost", todoUri())
             .putHeaders(headers)
-            .sendAwait()
+            .send()
+            .await()
             .assert2XXStatus()
             .bodyAsString()
             .toObject(object : TypeReference<List<Todo>>() {})
@@ -157,14 +158,15 @@ abstract class TodoApplicationIntegrationTest {
         val copy = Todo(todo.id, UUID.randomUUID().toString(), true, todo.order, todo.url)
         val updated = client.patch(port.toInt(), "localhost", todoUri(copy.id))
             .putHeaders(headers)
-            .sendBufferAwait(Buffer.buffer(objectMapper.writeValueAsString(copy)))
+            .sendBuffer(Buffer.buffer(objectMapper.writeValueAsString(copy))).await()
             .assert2XXStatus()
             .bodyAsString()
             .toObject(Todo::class.java)
 
         val todoAgain = client.get(port.toInt(), "localhost", todoUri(todo.id))
             .putHeaders(headers)
-            .sendAwait()
+            .send()
+            .await()
             .assert2XXStatus()
             .bodyAsString()
             .toObject(Todo::class.java)
@@ -177,11 +179,13 @@ abstract class TodoApplicationIntegrationTest {
         val todo = createTodo()
         client.delete(port.toInt(), "localhost", todoUri(todo.id))
             .putHeaders(headers)
-            .sendAwait()
+            .send()
+            .await()
             .assert2XXStatus()
         client.get(port.toInt(), "localhost", todoUri(todo.id))
             .putHeaders(headers)
-            .sendAwait()
+            .send()
+            .await()
             .assert404()
     }
 
@@ -191,11 +195,13 @@ abstract class TodoApplicationIntegrationTest {
         createTodo()
         client.delete(port.toInt(), "localhost", todoUri())
             .putHeaders(headers)
-            .sendAwait()
+            .send()
+            .await()
             .assert2XXStatus()
         val allTodos = client.get(port.toInt(), "localhost", todoUri())
             .putHeaders(headers)
-            .sendAwait()
+            .send()
+            .await()
             .assert2XXStatus()
             .bodyAsString()
             .toObject(object : TypeReference<List<Todo>>() {})
