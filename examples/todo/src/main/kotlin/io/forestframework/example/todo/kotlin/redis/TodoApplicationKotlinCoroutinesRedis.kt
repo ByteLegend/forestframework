@@ -11,6 +11,7 @@ import io.forestframework.example.todo.kotlin.TodoService
 import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.extensions.redis.EnableRedisClient
 import io.vertx.core.json.Json
+import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.redis.client.delAwait
 import io.vertx.kotlin.redis.client.hdelAwait
 import io.vertx.kotlin.redis.client.hgetAwait
@@ -42,7 +43,7 @@ class RedisTodoService @Inject constructor(private val client: RedisAPI) : TodoS
 
     override suspend fun insert(todo: Todo): Todo {
         val encoded = Json.encodePrettily(todo)
-        client.hsetAwait(listOf(redisToDoKey, todo.id.toString(), encoded))
+        client.hset(listOf(redisToDoKey, todo.id.toString(), encoded)).await()
         return todo
     }
 

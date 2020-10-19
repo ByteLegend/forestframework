@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * For internal use only.
  */
-@API(status = API.Status.EXPERIMENTAL, since = "0.1")
+@API(status = API.Status.INTERNAL, since = "0.1")
 @Singleton
 public class DefaultBridgeRequestHandler extends AbstractWebRequestHandler implements HttpRequestHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBridgeRequestHandler.class);

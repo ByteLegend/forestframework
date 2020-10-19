@@ -38,7 +38,7 @@ class HeaderParameterResolverIntegrationTest : AbstractForestIntegrationTest() {
         "only one match, OnlyOneMatchCaseInsensitive, OnlyOneMatch",
         "multiple matches, MultipleMatches, first"
     ])
-    fun `can resolve header`(scenario: String, path: String, headerName: String, expectedResult: String) {
+    fun `can resolve header`(scenario: String, path: String, expectedResult: String) {
         send(HttpMethod.GET,
             "/$path",
             headers = mapOf("OnlyOneMatch" to "OnlyOneMatch"),

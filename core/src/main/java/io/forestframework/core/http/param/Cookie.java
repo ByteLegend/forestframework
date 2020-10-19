@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 @Retention(RetentionPolicy.RUNTIME)
 @Extends(ParameterResolver.class)
-@ParameterResolver(resolver = HeaderParameterResolver.class)
-public @interface Header {
+@ParameterResolver(resolver = CookieParameterResolver.class)
+public @interface Cookie {
     String value();
 }
