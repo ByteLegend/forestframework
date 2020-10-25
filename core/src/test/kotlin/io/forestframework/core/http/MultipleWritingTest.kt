@@ -24,7 +24,7 @@ annotation class ReturnProcessorAnno1
 
 class ReturnProcessor1 : RoutingResultProcessor {
     override fun processResponse(context: HttpContext, routing: Routing, returnValue: Any?): Any? {
-        context.response().setStatusCode(404).writeLater("BBB")
+        (context.response().setStatusCode(404) as HttpResponse).writeLater("BBB")
         return returnValue
     }
 }
@@ -36,7 +36,7 @@ annotation class ReturnProcessorAnno2
 
 class ReturnProcessor2 : RoutingResultProcessor {
     override fun processResponse(context: HttpContext, routing: Routing, returnValue: Any?): Any? {
-        context.response().setStatusCode(500).writeLater("CCC")
+        (context.response().setStatusCode(500) as HttpResponse).writeLater("CCC")
         return returnValue
     }
 }

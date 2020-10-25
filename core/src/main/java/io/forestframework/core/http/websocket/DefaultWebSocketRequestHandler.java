@@ -38,13 +38,17 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
     public void handle(HttpServerRequest request) {
         RoutingMatchResult.WebSocketRoutingMatchResult routingMatchResult = ((DefaultHttpRequest) request).getRoutingMatchResult();
         request.toWebSocket()
-               .onSuccess(ws -> handleWebSocket(ws, routingMatchResult))
+               .onSuccess(ws -> handleWebSocket(request, ws, routingMatchResult))
                .onFailure(e -> LOGGER.error("", e));
     }
 
-    private void handleWebSocket(ServerWebSocket webSocket, RoutingMatchResult.WebSocketRoutingMatchResult routingMatchResult) {
+    private void handleWebSocket(
+        HttpServerRequest request,
+        ServerWebSocket webSocket,
+        RoutingMatchResult.WebSocketRoutingMatchResult routingMatchResult
+    ) {
         Map<WebSocketEventType, WebSocketRouting> typeToHandlers = routingMatchResult.getRoutings();
-        DefaultWebSocketContext context = new DefaultWebSocketContext(injector, webSocket, routingMatchResult);
+        DefaultWebSocketContext context = new DefaultWebSocketContext(injector, request, webSocket, routingMatchResult);
 
         // OnWSOpen
         invokeWebSocketHandler(typeToHandlers, OPEN, context, null, null);

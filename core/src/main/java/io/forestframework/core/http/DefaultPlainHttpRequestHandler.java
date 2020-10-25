@@ -178,7 +178,7 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                     .map(t -> ((HttpException) t).getCode())
                     .findFirst()
                     .orElse(HttpStatusCode.INTERNAL_SERVER_ERROR);
-                HttpResponse response = context.response();
+                HttpResponse response = (HttpResponse) context.response();
                 if (!response.ended()) {
                     safeSetStatusCode(response, statusCode);
                     response.end(statusCode.name());

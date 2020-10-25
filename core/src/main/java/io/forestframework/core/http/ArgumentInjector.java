@@ -27,10 +27,10 @@ public class ArgumentInjector {
      */
     @SuppressWarnings("JavadocReference")
     private static final Set<Class<?>> SUPPORTED_CLASSES = ImmutableSet.of(
-            Vertx.class,
-            EventBus.class,
-            SharedData.class,
-            FileSystem.class
+        Vertx.class,
+        EventBus.class,
+        SharedData.class,
+        FileSystem.class
     );
     // Must be HashMap because it allows null
     // It's thread-safe: only created and used in same thread
@@ -43,15 +43,17 @@ public class ArgumentInjector {
 
     public ArgumentInjector with(HttpContext context) {
         return withParameter(WebContext.class, context)
-                .withParameter(HttpContext.class, context)
-                .withParameter(HttpServerRequest.class, context.request())
-                .withParameter(HttpServerResponse.class, context.response());
+            .withParameter(HttpContext.class, context)
+            .withParameter(HttpServerRequest.class, context.request())
+            .withParameter(HttpServerResponse.class, context.response());
     }
 
     public ArgumentInjector with(WebSocketContext context) {
-        return withParameter(WebSocketContext.class, context)
-                .withParameter(WebContext.class, context)
-                .withParameter(ServerWebSocket.class, context.webSocket());
+        return withParameter(WebContext.class, context)
+            .withParameter(HttpServerRequest.class, context.request())
+            .withParameter(HttpServerResponse.class, context.response())
+            .withParameter(WebSocketContext.class, context)
+            .withParameter(ServerWebSocket.class, context.webSocket());
     }
 
     public ArgumentInjector with(Throwable t) {

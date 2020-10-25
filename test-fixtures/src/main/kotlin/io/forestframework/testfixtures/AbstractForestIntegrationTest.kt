@@ -9,6 +9,8 @@ import io.forestframework.core.http.OptimizedHeaders
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.WebSocket
+import io.vertx.core.http.WebsocketVersion
+import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -179,4 +181,13 @@ abstract class AbstractForestIntegrationTest {
     fun get(path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse = send(HttpMethod.GET, path, headers)
 
     suspend fun openWebsocket(uri: String) = WebSocketClient(vertxClient.webSocket(port.toInt(), "localhost", uri).await(), uri)
+
+    suspend fun openWebsocketAbs(absUrl: String, headers: Map<String, String>) =
+        WebSocketClient(
+            vertxClient.webSocketAbs(
+                absUrl,
+                HeadersMultiMap.headers().setAll(headers),
+                WebsocketVersion.V13,
+                emptyList()).await(),
+            absUrl)
 }

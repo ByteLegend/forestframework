@@ -1,11 +1,18 @@
 package io.forestframework.core.http;
 
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+
 import java.util.Map;
 
 /**
  * Represents the context for the handling of a request.
  */
 public interface WebContext {
+    HttpServerRequest request();
+
+    HttpServerResponse response();
+
     WebContext put(String key, Object obj);
 
     <T> T get(String key);

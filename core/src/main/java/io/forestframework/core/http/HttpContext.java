@@ -6,10 +6,6 @@ import io.vertx.core.http.HttpHeaders;
 
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 public interface HttpContext extends WebContext {
-    HttpRequest request();
-
-    HttpResponse response();
-
     /**
      * Borrowed from {@link io.vertx.ext.web.RoutingContext}
      *
