@@ -7,13 +7,17 @@ import org.apiguardian.api.API;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Singleton
 @API(status = API.Status.INTERNAL, since = "0.1")
@@ -37,10 +41,10 @@ public class DefaultRoutingManager implements RoutingManager {
      * Make routings unmodifiable after all extensions finish their work.
      */
     public void finalizeRoutings() {
-        allRoutings = Collections.unmodifiableMap(
+        allRoutings = unmodifiableMap(
                 Stream.of(RoutingType.values())
                         .map(routingType -> Pair.of(routingType, decorate(getRouting(routingType))))
-                        .collect(Collectors.toMap(Pair::getLeft, Pair::getRight))
+                        .collect(toMap(Pair::getLeft, Pair::getRight))
         );
         bridgeRoutings = reorganizeRoutings(getRouting(RoutingType.BRIDGE), BridgeRouting::getBridgeEventTypes);
         webSocketRoutings = reorganizeRoutings(getRouting(RoutingType.WEB_SOCKET), WebSocketRouting::getWebSocketEventTypes);
@@ -60,11 +64,11 @@ public class DefaultRoutingManager implements RoutingManager {
         Map<String, List<ROUTING>> pathToHandlers = routings
                 .stream()
                 .map(r -> (ROUTING) r)
-                .collect(Collectors.groupingBy(Routing::getPath));
+                .collect(groupingBy(Routing::getPath));
 
         Map<String, Map<TYPE, ROUTING>> ret = new HashMap<>();
         pathToHandlers.forEach((path, routingsOfSamePath) -> ret.put(path, validateAndRemapRoutings(path, routingsOfSamePath, fn)));
-        return Collections.unmodifiableMap(ret);
+        return unmodifiableMap(ret);
     }
 
 
@@ -80,11 +84,11 @@ public class DefaultRoutingManager implements RoutingManager {
                 }
             }
         }
-        return Collections.unmodifiableMap(ret);
+        return unmodifiableMap(ret);
     }
 
     private List<Routing> decorate(List<Routing> routings) {
-        return routings.stream().map(CachingRoutingDecorator::new).collect(Collectors.toList());
+        return unmodifiableList(routings.stream().map(CachingRoutingDecorator::new).collect(toList()));
     }
 }
 

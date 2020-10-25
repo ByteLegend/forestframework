@@ -27,7 +27,7 @@ import static org.hamcrest.core.StringContains.containsString;
 class PreHandlerTestApp extends AbstractTraceableRouter {
 
     @PreHandler(value = "/prehandler/*")
-    public void preHandle(HttpRequest request, HttpResponse response) {
+    public void preHandle1(HttpRequest request, HttpResponse response) {
         response.writeLater(request.path());
         addToTrace(request.path());
     }

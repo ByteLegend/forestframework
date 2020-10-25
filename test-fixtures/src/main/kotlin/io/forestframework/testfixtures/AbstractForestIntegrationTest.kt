@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.apache.http.HttpResponse
+import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.RequestBuilder
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
@@ -84,6 +85,7 @@ class HttpClient(private val delegate: CloseableHttpClient) {
         val request = RequestBuilder.create(httpMethod.name)
             .setUri("http://localhost:$port$path")
             .apply {
+                config = RequestConfig.custom().setRedirectsEnabled(false).build()
                 headers.forEach(this::setHeader)
                 multiHeaders.forEach { (name, values) -> values.forEach { this.addHeader(name, it) } }
             }
@@ -137,6 +139,11 @@ class HttpClientResponse(private val delegate: HttpResponse) {
     }
 
     fun assert404() = assertStatusCode(HttpStatusCode.NOT_FOUND)
+
+    fun assertHeader(name: String, value: String): HttpClientResponse {
+        Assertions.assertEquals(value, delegate.getFirstHeader(name).value)
+        return this
+    }
 }
 
 fun runBlockingUnit(context: CoroutineContext = EmptyCoroutineContext, block: suspend CoroutineScope.() -> Unit) = runBlocking(context, block)
