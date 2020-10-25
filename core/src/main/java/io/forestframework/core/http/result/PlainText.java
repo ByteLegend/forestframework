@@ -26,7 +26,7 @@ public @interface PlainText {
     class PlainTextResultProcessor implements RoutingResultProcessor {
         @Override
         public Object processResponse(HttpContext context, Routing routing, Object returnValue) {
-            HttpResponse response = (HttpResponse) context.response();
+            HttpResponse response = context.response();
             response.putHeader(HEADER_CONTENT_TYPE, CONTENT_TYPE_TEXT_PLAIN);
             if (returnValue instanceof Buffer) {
                 response.writeLater((Buffer) returnValue);

@@ -49,7 +49,7 @@ public @interface JsonResponseBody {
         @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
         public Object processResponse(HttpContext context, Routing routing, Object returnValue) {
             JsonResponseBody anno = AnnotationMagic.getOneAnnotationOnMethodOrNull(routing.getHandlerMethod(), JsonResponseBody.class);
-            HttpResponse response = (HttpResponse) context.response();
+            HttpResponse response = context.response();
             response.putHeader(OptimizedHeaders.HEADER_CONTENT_TYPE, OptimizedHeaders.CONTENT_TYPE_APPLICATION_JSON);
             if (returnValue instanceof String) {
                 response.writeLater((String) returnValue);

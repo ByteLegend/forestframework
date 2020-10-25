@@ -57,7 +57,7 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
         String path = returnValue.toString();
 
         if (path.isEmpty()) {
-            send404((HttpResponse) context.response());
+            send404(context.response());
             return returnValue;
         }
 

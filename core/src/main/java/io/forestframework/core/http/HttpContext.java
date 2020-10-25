@@ -6,18 +6,24 @@ import io.vertx.core.http.HttpHeaders;
 
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 public interface HttpContext extends WebContext {
+    @Override
+    HttpRequest request();
+
+    @Override
+    HttpResponse response();
+
     /**
      * Borrowed from {@link io.vertx.ext.web.RoutingContext}
-     *
+     * <p>
      * Perform a 302 redirect to {@code url}. If a custom 3xx code is already defined, then that
      * one will be preferred.
-     *
+     * <p>
      * The string "back" is special-cased
      * to provide Referrer support, when Referrer
      * is not present "/" is used.
-     *
+     * <p>
      * Examples:
-     *
+     * <p>
      * redirect('back');
      * redirect('/login');
      * redirect('http://google.com');
@@ -34,7 +40,7 @@ public interface HttpContext extends WebContext {
         }
 
         response()
-                .putHeader(HttpHeaders.LOCATION, url);
+            .putHeader(HttpHeaders.LOCATION, url);
 
         // status
         int status = response().getStatusCode();
@@ -46,7 +52,7 @@ public interface HttpContext extends WebContext {
         }
 
         return response()
-                .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain; charset=utf-8")
-                .end("Redirecting to " + url + ".");
+            .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain; charset=utf-8")
+            .end("Redirecting to " + url + ".");
     }
 }
