@@ -134,12 +134,12 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
 
         @Override
         public void fail(Throwable throwable) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(throwable);
         }
 
         @Override
         public void fail(int statusCode, Throwable throwable) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(throwable);
         }
 
         @Override
