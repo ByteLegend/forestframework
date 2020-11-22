@@ -5,7 +5,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
@@ -26,6 +25,7 @@ import io.vertx.ext.web.impl.LRUCache;
 import io.vertx.ext.web.impl.Utils;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,15 +40,22 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 import static io.netty.handler.codec.http.HttpResponseStatus.PARTIAL_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.REQUESTED_RANGE_NOT_SATISFIABLE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Static web server
+ * Parts derived from Yoke
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author <a href="http://pmlopes@gmail.com">Paulo Lopes</a>
+ */
 /**
  * A fork of default StaticHandlerImpl with tweaking.
  */
 @SuppressWarnings("all")
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 public class ForkedStaticHandlerImpl implements StaticHandler {
-    private static final Logger log = LoggerFactory.getLogger(ForkedStaticHandlerImpl.class);
+
+    private static final Logger log = LoggerFactory.getLogger(io.vertx.ext.web.handler.impl.StaticHandlerImpl.class);
 
     private String webRoot = DEFAULT_WEB_ROOT;
     private long maxAgeSeconds = DEFAULT_MAX_AGE_SECONDS; // One day
@@ -62,17 +69,20 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
     private boolean rangeSupport = DEFAULT_RANGE_SUPPORT;
     private boolean allowRootFileSystemAccess = DEFAULT_ROOT_FILESYSTEM_ACCESS;
     private boolean sendVaryHeader = DEFAULT_SEND_VARY_HEADER;
-    private String defaultContentEncoding = UTF_8.name();
+    private String defaultContentEncoding = StandardCharsets.UTF_8.name();
 
     private Set<String> compressedMediaTypes = Collections.emptySet();
     private Set<String> compressedFileSuffixes = Collections.emptySet();
 
     private final FSTune tune = new FSTune();
     private final FSPropsCache cache = new FSPropsCache();
+    private FileSystem fileSystem;
 
-    private String directoryTemplate(Vertx vertx) {
+    private String directoryTemplate(FileSystem fileSystem) {
         if (directoryTemplate == null) {
-            directoryTemplate = Utils.readFileToString(vertx, directoryTemplateResource);
+            directoryTemplate = fileSystem
+                .readFileBlocking(directoryTemplateResource)
+                .toString(StandardCharsets.UTF_8);
         }
         return directoryTemplate;
     }
@@ -81,7 +91,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
      * Create all required header so content can be cache by Caching servers or Browsers
      *
      * @param request base HttpServerRequest
-     * @param props file properties
+     * @param props   file properties
      */
     private void writeCacheHeaders(HttpServerRequest request, FileProps props) {
 
@@ -90,12 +100,12 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
         if (cache.enabled()) {
             // We use cache-control and last-modified
             // We *do not use* etags and expires (since they do the same thing - redundant)
-            Utils.addToMapIfAbsent(headers, HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAgeSeconds);
+            Utils.addToMapIfAbsent(headers, HttpHeaders.CACHE_CONTROL, "public, immutable, max-age=" + maxAgeSeconds);
             Utils.addToMapIfAbsent(headers, HttpHeaders.LAST_MODIFIED, Utils.formatRFC1123DateTime(props.lastModifiedTime()));
             // We send the vary header (for intermediate caches)
             // (assumes that most will turn on compression when using static handler)
             if (sendVaryHeader && request.headers().contains(HttpHeaders.ACCEPT_ENCODING)) {
-                Utils.addToMapIfAbsent(headers, "Vary", "accept-encoding");
+                Utils.addToMapIfAbsent(headers, HttpHeaders.VARY, "accept-encoding");
             }
         }
         // date header is mandatory
@@ -106,30 +116,34 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
     public void handle(RoutingContext context) {
         HttpServerRequest request = context.request();
         if (request.method() != HttpMethod.GET && request.method() != HttpMethod.HEAD) {
-            if (log.isTraceEnabled()) {
-                log.trace("Not GET or HEAD so ignoring request");
-            }
+            if (log.isTraceEnabled()) log.trace("Not GET or HEAD so ignoring request");
             context.next();
         } else {
-            String path = HttpUtils.removeDots(URIDecoder.decodeURIComponent(context.normalizedPath(), false));
+            // decode URL path
+            String uriDecodedPath = URIDecoder.decodeURIComponent(context.normalizedPath(), false);
             // if the normalized path is null it cannot be resolved
-            if (path == null) {
+            if (uriDecodedPath == null) {
                 log.warn("Invalid path: " + context.request().path());
                 context.next();
                 return;
             }
+            // will normalize and handle all paths as UNIX paths
+            String path = HttpUtils.removeDots(uriDecodedPath.replace('\\', '/'));
 
             // only root is known for sure to be a directory. all other directories must be identified as such.
             if (!directoryListing && "/".equals(path)) {
                 path = indexPage;
             }
 
+            // Access fileSystem once here to be safe
+            FileSystem fs = fileSystem = context.vertx().fileSystem();
+
             // can be called recursive for index pages
-            sendStatic(context, path);
+            sendStatic(context, fs, path);
         }
     }
 
-    void sendStatic(RoutingContext context, String path) {
+    void sendStatic(RoutingContext context, FileSystem fileSystem, String path) {
 
         String file = null;
 
@@ -163,7 +177,9 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                 final long lastModified = Utils.secondsFactor(entry.props.lastModifiedTime());
 
                 if (Utils.fresh(context, lastModified)) {
-                    context.response().setStatusCode(NOT_MODIFIED.code()).end();
+                    context.response()
+                           .setStatusCode(NOT_MODIFIED.code())
+                           .end();
                     return;
                 }
             }
@@ -173,69 +189,68 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
         final String sfile = file == null ? getFile(path, context) : file;
 
         // verify if the file exists
-        context.vertx()
-                .fileSystem()
-                .exists(sfile, exists -> {
-                    if (exists.failed()) {
-                        context.fail(exists.cause());
-                        return;
+        fileSystem
+            .exists(sfile, exists -> {
+                if (exists.failed()) {
+                    context.fail(exists.cause());
+                    return;
+                }
+
+                // file does not exist, continue...
+                if (!exists.result()) {
+                    if (cache.enabled()) {
+                        cache.put(path, null);
                     }
+                    context.next();
+                    return;
+                }
 
-                    // file does not exist, continue...
-                    if (!exists.result()) {
-                        if (cache.enabled()) {
-                            cache.put(path, null);
-                        }
-                        context.next();
-                        return;
-                    }
-
-                    // Need to read the props from the filesystem
-                    getFileProps(context, sfile, res -> {
-                        if (res.succeeded()) {
-                            FileProps fprops = res.result();
-                            if (fprops == null) {
-                                // File does not exist
-                                if (dirty) {
-                                    cache.remove(path);
-                                }
-                                context.next();
-                            } else if (fprops.isDirectory()) {
-                                if (dirty) {
-                                    cache.remove(path);
-                                }
-                                sendDirectory(context, path, sfile);
-                            } else {
-                                if (cache.enabled()) {
-                                    cache.put(path, fprops);
-
-                                    if (Utils.fresh(context, Utils.secondsFactor(fprops.lastModifiedTime()))) {
-                                        context.response().setStatusCode(NOT_MODIFIED.code()).end();
-                                        return;
-                                    }
-                                }
-                                sendFile(context, sfile, fprops);
+                // Need to read the props from the filesystem
+                getFileProps(fileSystem, sfile, res -> {
+                    if (res.succeeded()) {
+                        FileProps fprops = res.result();
+                        if (fprops == null) {
+                            // File does not exist
+                            if (dirty) {
+                                cache.remove(path);
                             }
+                            context.next();
+                        } else if (fprops.isDirectory()) {
+                            if (dirty) {
+                                cache.remove(path);
+                            }
+                            sendDirectory(context, fileSystem, path, sfile);
                         } else {
-                            context.fail(res.cause());
+                            if (cache.enabled()) {
+                                cache.put(path, fprops);
+
+                                if (Utils.fresh(context, Utils.secondsFactor(fprops.lastModifiedTime()))) {
+                                    context.response().setStatusCode(NOT_MODIFIED.code()).end();
+                                    return;
+                                }
+                            }
+                            sendFile(context, fileSystem, sfile, fprops);
                         }
-                    });
+                    } else {
+                        context.fail(res.cause());
+                    }
                 });
+            });
     }
 
-    private void sendDirectory(RoutingContext context, String path, String file) {
+    private void sendDirectory(RoutingContext context, FileSystem fileSystem, String path, String file) {
         // in order to keep caches in a valid state we need to assert that
         // the user is requesting a directory (ends with /)
         if (!path.endsWith("/")) {
             context.response()
-                    .putHeader(HttpHeaders.LOCATION, path + "/")
-                    .setStatusCode(301)
-                    .end();
+                   .putHeader(HttpHeaders.LOCATION, path + "/")
+                   .setStatusCode(301)
+                   .end();
             return;
         }
 
         if (directoryListing) {
-            sendDirectoryListing(file, context);
+            sendDirectoryListing(fileSystem, file, context);
         } else if (indexPage != null) {
             // send index page
             String indexPath;
@@ -245,23 +260,22 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                 indexPath = path + indexPage;
             }
             // recursive call
-            sendStatic(context, indexPath);
+            sendStatic(context, fileSystem, indexPath);
         } else {
             // Directory listing denied
             context.fail(FORBIDDEN.code());
         }
     }
 
-    private void getFileProps(RoutingContext context, String file, Handler<AsyncResult<FileProps>> resultHandler) {
-        FileSystem fs = context.vertx().fileSystem();
+    private void getFileProps(FileSystem fileSystem, String file, Handler<AsyncResult<FileProps>> resultHandler) {
         if (tune.useAsyncFS()) {
-            fs.props(file, resultHandler);
+            fileSystem.props(file, resultHandler);
         } else {
             // Use synchronous access - it might well be faster!
             try {
                 final boolean tuneEnabled = tune.enabled();
                 final long start = tuneEnabled ? System.nanoTime() : 0;
-                FileProps props = fs.propsBlocking(file);
+                FileProps props = fileSystem.propsBlocking(file);
                 if (tuneEnabled) {
                     tune.update(start, System.nanoTime());
                 }
@@ -274,7 +288,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
 
     private static final Pattern RANGE = Pattern.compile("^bytes=(\\d+)-(\\d*)$");
 
-    private void sendFile(RoutingContext context, String file, FileProps fileProps) {
+    private void sendFile(RoutingContext context, FileSystem fileSystem, String file, FileProps fileProps) {
         final HttpServerRequest request = context.request();
         final HttpServerResponse response = context.response();
 
@@ -282,9 +296,8 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
         Long end = null;
         MultiMap headers = null;
 
-        if (response.closed()) {
+        if (response.closed())
             return;
-        }
 
         if (rangeSupport) {
             // check if the client is making a range request
@@ -377,7 +390,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                         if (!dependency.isNoPush()) {
                             final String dep = webRoot + "/" + dependency.getFilePath();
                             // get the file props
-                            getFileProps(context, dep, filePropsAsyncResult -> {
+                            getFileProps(fileSystem, dep, filePropsAsyncResult -> {
                                 if (filePropsAsyncResult.succeeded()) {
                                     // push
                                     writeCacheHeaders(request, filePropsAsyncResult.result());
@@ -406,12 +419,12 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                     for (Http2PushMapping dependency : http2PushMappings) {
                         final String dep = webRoot + "/" + dependency.getFilePath();
                         // get the file props
-                        getFileProps(context, dep, filePropsAsyncResult -> {
+                        getFileProps(fileSystem, dep, filePropsAsyncResult -> {
                             if (filePropsAsyncResult.succeeded()) {
                                 // push
                                 writeCacheHeaders(request, filePropsAsyncResult.result());
                                 links.add("<" + dependency.getFilePath() + ">; rel=preload; as="
-                                        + dependency.getExtensionTarget() + (dependency.isNoPush() ? "; nopush" : ""));
+                                              + dependency.getExtensionTarget() + (dependency.isNoPush() ? "; nopush" : ""));
                             }
                         });
                     }
@@ -577,8 +590,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
         this.webRoot = webRoot;
     }
 
-    private void sendDirectoryListing(String dir, RoutingContext context) {
-        final FileSystem fileSystem = context.vertx().fileSystem();
+    private void sendDirectoryListing(FileSystem fileSystem, String dir, RoutingContext context) {
         final HttpServerRequest request = context.request();
         final HttpServerResponse response = context.response();
 
@@ -634,11 +646,11 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                     String parent = "<a href=\"" + normalizedDir.substring(0, slashPos + 1) + "\">..</a>";
 
                     response
-                            .putHeader(HttpHeaders.CONTENT_TYPE, "text/html")
-                            .end(
-                                    directoryTemplate(context.vertx()).replace("{directory}", normalizedDir)
-                                            .replace("{parent}", parent)
-                                            .replace("{files}", files.toString()));
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "text/html")
+                        .end(
+                            directoryTemplate(fileSystem).replace("{directory}", normalizedDir)
+                                                         .replace("{parent}", parent)
+                                                         .replace("{files}", files.toString()));
                 } else if (accept.contains("json")) {
                     String file;
                     JsonArray json = new JsonArray();
@@ -652,8 +664,8 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                         json.add(file);
                     }
                     response
-                            .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                            .end(json.encode());
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .end(json.encode());
                 } else {
                     String file;
                     StringBuilder buffer = new StringBuilder();
@@ -669,8 +681,8 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
                     }
 
                     response
-                            .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
-                            .end(buffer.toString());
+                        .putHeader(HttpHeaders.CONTENT_TYPE, "text/plain")
+                        .end(buffer.toString());
                 }
             }
         });
@@ -707,7 +719,7 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
 
     private static class FSTune {
         // These members are all related to auto tuning of synchronous vs asynchronous file system access
-        private static int NUM_SERVES_TUNING_FS_ACCESS = 1000;
+        private static final int NUM_SERVES_TUNING_FS_ACCESS = 1000;
 
         // these variables are read often and should always represent the
         // real value, no caching should be allowed
@@ -834,3 +846,4 @@ public class ForkedStaticHandlerImpl implements StaticHandler {
         }
     }
 }
+

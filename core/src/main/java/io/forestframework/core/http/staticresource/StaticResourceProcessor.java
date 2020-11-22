@@ -62,7 +62,7 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
         }
 
         EndAwareRoutingContextDecorator endAwareRoutingContext = new EndAwareRoutingContextDecorator(vertx, context);
-        staticHandler.sendStatic(endAwareRoutingContext, path);
+        staticHandler.sendStatic(endAwareRoutingContext, vertx.fileSystem(), path);
         return endAwareRoutingContext.getFuture();
     }
 

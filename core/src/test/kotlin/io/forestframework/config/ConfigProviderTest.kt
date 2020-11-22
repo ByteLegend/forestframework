@@ -13,7 +13,6 @@ import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions
 import io.vertx.redis.client.RedisClientType
 import io.vertx.redis.client.RedisOptions
 import io.vertx.redis.client.RedisRole
-import io.vertx.redis.client.RedisSlaves
 import java.io.File
 import java.util.Collections.emptyList
 import java.util.concurrent.TimeUnit
@@ -34,9 +33,9 @@ class ConfigProviderTest {
 aaa:
   bbb:
     ccc:
-      stringValue1: "" 
-      stringValue2: "This is a string" 
-      intValue: 42 
+      stringValue1: ""
+      stringValue2: "This is a string"
+      intValue: 42
       listValue:
         - "a"
         - 42
@@ -46,7 +45,7 @@ aaa:
 {
     "aaa": {
         "bbb": {
-        
+
             "ccc": {
                 "stringValue1": "",
                 "stringValue2": "This is a string",
@@ -93,7 +92,6 @@ forest:
         - TLSv1
       tcpQuickAck: true
     role: SENTINEL
-    useSlave: ALWAYS
     type: CLUSTER
     maxPoolSize: 10
 """
@@ -138,8 +136,6 @@ forest:
         assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis.endpoints", List::class.java))
         assertEquals(RedisRole.SENTINEL, redisOptions.role)
         assertEquals(RedisRole.SENTINEL, provider.getInstance("forest.redis.role", RedisRole::class.java))
-        assertEquals(RedisSlaves.ALWAYS, redisOptions.useSlave)
-        assertEquals(RedisSlaves.ALWAYS, provider.getInstance("forest.redis.useSlave", RedisSlaves::class.java))
         assertEquals(RedisClientType.CLUSTER, redisOptions.type)
         assertEquals(RedisClientType.CLUSTER, provider.getInstance("forest.redis.type", RedisClientType::class.java))
         assertEquals(10, redisOptions.maxPoolSize)
@@ -169,7 +165,6 @@ forest:
 
         assertEquals(listOf(RedisOptions.DEFAULT_ENDPOINT), redisOptions.endpoints)
         assertEquals(RedisRole.MASTER, redisOptions.role)
-        assertEquals(RedisSlaves.NEVER, redisOptions.useSlave)
         assertEquals(RedisClientType.STANDALONE, redisOptions.type)
         assertEquals(6, redisOptions.maxPoolSize)
     }
@@ -276,9 +271,9 @@ forest:
         {
             "outboundPermitteds": [
               {
-                 "addressRegex": "auction\\.[0-9]+" 
+                 "addressRegex": "auction\\.[0-9]+"
               }
-            ] 
+            ]
         }
         """)
     fun `can configure option list`() {

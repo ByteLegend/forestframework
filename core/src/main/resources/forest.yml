@@ -129,7 +129,6 @@ forest:
     maxNestedArrays: 32
     masterName: mymaster
     role: MASTER
-    useSlave: NEVER
     type: STANDALONE
     poolCleanerInterval: -1
     maxPoolSize: 6
