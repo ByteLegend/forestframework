@@ -12,7 +12,7 @@ import io.forestframework.example.todo.java.async.TodoService;
 import io.forestframework.ext.api.WithExtensions;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.core.IncludeComponents;
-import io.forestframework.ext.core.StaticResourceExtension;
+import io.forestframework.ext.core.AutoStaticResourceScanExtension;
 import io.forestframework.extensions.jdbc.JDBCClientExtension;
 import io.forestframework.utils.completablefuture.VertxCompletableFuture;
 import io.vertx.core.Vertx;
@@ -21,7 +21,7 @@ import io.vertx.ext.jdbc.JDBCClient;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.JDBCModule;
 
-@WithExtensions(extensions = {JDBCClientExtension.class, InitDataExtension.class, StaticResourceExtension.class})
+@WithExtensions(extensions = {JDBCClientExtension.class, InitDataExtension.class, AutoStaticResourceScanExtension.class})
 @ForestApplication
 @IncludeComponents(classes = {JDBCModule.class, TodoRouter.class})
 public class TodoApplicationJavaAsyncJDBC {

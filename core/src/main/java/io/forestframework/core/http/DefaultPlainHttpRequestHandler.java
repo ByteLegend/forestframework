@@ -164,6 +164,7 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
     private Object invokeFinalizingHandler(HttpContext context, Throwable... uncaughtThrowables) {
         try {
             List<Throwable> realThrowables = Stream.of(uncaughtThrowables)
+                                                   .map(this::unwrap)
                                                    .filter(Objects::nonNull)
                                                    .peek(e -> logError(context, e))
                                                    .collect(Collectors.toList());

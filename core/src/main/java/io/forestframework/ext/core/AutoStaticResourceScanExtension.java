@@ -49,14 +49,14 @@ import java.util.List;
  */
 @After(classes = AutoRoutingScanExtension.class)
 @Before(classes = HttpServerExtension.class)
-public class StaticResourceExtension implements Extension {
+public class AutoStaticResourceScanExtension implements Extension {
     private static final Method GET_RESOURCE_FILE_METHOD;
     private static final Method GET_RESOURCE_DIR_METHOD;
 
     static {
         try {
-            GET_RESOURCE_FILE_METHOD = StaticResourceExtension.class.getMethod("getResourceFile", String.class);
-            GET_RESOURCE_DIR_METHOD = StaticResourceExtension.class.getMethod("getResourceInDir", String.class, String.class);
+            GET_RESOURCE_FILE_METHOD = AutoStaticResourceScanExtension.class.getMethod("getResourceFile", String.class);
+            GET_RESOURCE_DIR_METHOD = AutoStaticResourceScanExtension.class.getMethod("getResourceInDir", String.class, String.class);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -64,22 +64,22 @@ public class StaticResourceExtension implements Extension {
 
     private final List<String> webroots;
 
-    public StaticResourceExtension() {
+    public AutoStaticResourceScanExtension() {
         this(Collections.singletonList("static"));
     }
 
-    public StaticResourceExtension(WithStaticResource withStaticResource) {
-        this(getWebroots(withStaticResource));
+    public AutoStaticResourceScanExtension(AutoStaticResourceScan autoStaticResourceScan) {
+        this(getWebroots(autoStaticResourceScan));
     }
 
-    private StaticResourceExtension(List<String> webroots) {
+    private AutoStaticResourceScanExtension(List<String> webroots) {
         this.webroots = webroots;
     }
 
-    private static List<String> getWebroots(WithStaticResource withStaticResource) {
+    private static List<String> getWebroots(AutoStaticResourceScan autoStaticResourceScan) {
         List<String> webroots = new ArrayList<>();
-        webroots.add(withStaticResource.webroot());
-        webroots.addAll(Arrays.asList(withStaticResource.webroots()));
+        webroots.add(autoStaticResourceScan.webroot());
+        webroots.addAll(Arrays.asList(autoStaticResourceScan.webroots()));
         return webroots;
     }
 
@@ -196,7 +196,7 @@ public class StaticResourceExtension implements Extension {
 
         @Override
         public Object getHandlerInstance(Injector injector) {
-            return StaticResourceExtension.this;
+            return AutoStaticResourceScanExtension.this;
         }
 
         @Override

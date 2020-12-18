@@ -11,7 +11,7 @@ import io.forestframework.core.http.websocket.OnWSClose
 import io.forestframework.core.http.websocket.OnWSError
 import io.forestframework.core.http.websocket.OnWSMessage
 import io.forestframework.core.http.websocket.OnWSOpen
-import io.forestframework.ext.core.WithStaticResource
+import io.forestframework.ext.core.AutoStaticResourceScan
 import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testsupport.ForestExtension
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
 
-@WithStaticResource(webroot = "WebSocketChatRoomBrowserTestData")
+@AutoStaticResourceScan(webroot = "WebSocketChatRoomBrowserTestData")
 @ForestApplication
 class WebSocketChatRoomBrowserTestApp {
     static void main(String[] args) {

@@ -61,7 +61,6 @@ public class AutoRoutingScanExtension implements Extension {
                 .filter(AutoRoutingScanExtension::isRouter)
                 .flatMap(this::findRoutingHandlers)
                 .peek(this::validate)
-                .peek(routing -> deleteExistingRootStaticResourceRoutingIfNecessary(routing, routings))
                 .forEach(routing -> routings.getRouting(routing.getType()).add(routing));
     }
 
@@ -105,13 +104,6 @@ public class AutoRoutingScanExtension implements Extension {
             || returnType == void.class
             || returnType == Boolean.class
             || returnType == Object.class; // Kotlin Unit, let's be lenient
-    }
-
-    // If user defined / mapping, delete the /index.html mapping, if necessary.
-    private void deleteExistingRootStaticResourceRoutingIfNecessary(Routing routing, RoutingManager routings) {
-        if (routing.getType() == RoutingType.HANDLER && "/".equals(routing.getPath())) {
-            routings.getRouting(RoutingType.HANDLER).removeIf(item -> item instanceof StaticResourceExtension.RootPathRouting);
-        }
     }
 
     private static boolean isRouter(Class<?> klass) {

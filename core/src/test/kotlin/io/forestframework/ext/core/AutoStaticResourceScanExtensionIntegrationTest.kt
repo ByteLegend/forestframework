@@ -17,7 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
-@WithStaticResource
+@AutoStaticResourceScan
 @ForestApplication
 class StaticResourceExtensionTestApplication
 
@@ -25,7 +25,7 @@ class StaticResourceExtensionTestApplication
 @ExtraConfig(value = ["forest.static.webroot=StaticResourceTestData"])
 @ForestIntegrationTest(appClass = StaticResourceExtensionTestApplication::class)
 @DisableAutoScan
-class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
+class AutoStaticResourceScanExtensionIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get resource {0}")
     @CsvSource(value = [
         "/css/a/a.css, text/css;charset=UTF-8,                   this is a.css",
@@ -68,7 +68,7 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
         """])
 @ForestIntegrationTest(appClass = StaticResourceExtensionTestApplication::class)
 @DisableAutoScan
-class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestIntegrationTest() {
+class AutoStaticResourceScanExtensionMultipleWebrootsIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get resource {0}")
     @CsvSource(value = [
         "/a/a.css, text/css;charset=UTF-8,     this is a.css",
@@ -111,14 +111,14 @@ class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestInt
 
 @ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = RouterWithPredefinedRoot::class)
-class StaticResourceExtensionTestApplicationWithPredefinedRoot : AbstractForestIntegrationTest() {
+class AutoStaticResourceScanExtensionTestApplicationWithPredefinedRoot : AbstractForestIntegrationTest() {
     @Test
     fun `index_html is not re-registered for root`() = runBlockingUnit {
         assertEquals("HelloWorld", get("/").bodyAsString())
     }
 }
 
-@WithStaticResource
+@AutoStaticResourceScan
 @ForestApplication
 class RouterWithPredefinedRoot {
     @GetPlainText("/")

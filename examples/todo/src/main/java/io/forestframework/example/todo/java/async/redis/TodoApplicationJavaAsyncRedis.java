@@ -8,13 +8,13 @@ import io.forestframework.core.ForestApplication;
 import io.forestframework.example.todo.java.async.TodoRouter;
 import io.forestframework.example.todo.java.async.TodoService;
 import io.forestframework.ext.core.IncludeComponents;
-import io.forestframework.ext.core.WithStaticResource;
+import io.forestframework.ext.core.AutoStaticResourceScan;
 import io.forestframework.extensions.redis.EnableRedisClient;
 import io.vertx.redis.client.RedisAPI;
 
 import static io.forestframework.example.todo.java.async.redis.TodoApplicationJavaAsyncRedis.RedisModule;
 
-@WithStaticResource
+@AutoStaticResourceScan
 @ForestApplication
 @IncludeComponents(classes = {RedisModule.class, TodoRouter.class})
 @EnableRedisClient

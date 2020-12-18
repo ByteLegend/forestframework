@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Extends(WithExtensions.class)
-@WithExtensions(extensions = StaticResourceExtension.class)
-public @interface WithStaticResource {
+@WithExtensions(extensions = AutoStaticResourceScanExtension.class)
+public @interface AutoStaticResourceScan {
     String webroot() default "static";
 
     String[] webroots() default {};

@@ -9,12 +9,12 @@ import io.forestframework.example.todo.java.sync.TodoService;
 import io.forestframework.ext.api.WithExtensions;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.core.IncludeComponents;
-import io.forestframework.ext.core.StaticResourceExtension;
+import io.forestframework.ext.core.AutoStaticResourceScanExtension;
 
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.JDBCModule;
 
-@WithExtensions(extensions = {StaticResourceExtension.class, InitDataExtension.class})
+@WithExtensions(extensions = {AutoStaticResourceScanExtension.class, InitDataExtension.class})
 @ForestApplication
 @IncludeComponents(classes = {TodoRouter.class, JDBCModule.class})
 public class TodoApplicationJavaSyncJDBC {

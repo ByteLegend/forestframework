@@ -34,6 +34,11 @@ class GetStaticResourceIntegrationTestApp {
 
     @GetStaticResource("/errorCodePath")
     fun errorCodePath() = ""
+
+    @GetStaticResource("/manual404")
+    fun manual404() {
+        throw HttpException(HttpStatusCode.NOT_FOUND)
+    }
 }
 
 @ExtendWith(ForestExtension::class)
@@ -54,5 +59,10 @@ class GetStaticResourceIntegrationTest : AbstractForestIntegrationTest() {
     @Test
     fun `get 404 if handler returns empty string`() = runBlockingUnit {
         get("/errorCodePath").assert404()
+    }
+
+    @Test
+    fun `get 404 programmatically`() = runBlockingUnit {
+        get("/manual404").assert404()
     }
 }
