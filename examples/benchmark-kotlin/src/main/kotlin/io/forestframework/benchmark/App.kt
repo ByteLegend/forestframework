@@ -13,7 +13,6 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.kotlin.coroutines.await
-import io.vertx.kotlin.sqlclient.executeAwait
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.Row
 import io.vertx.sqlclient.RowSet
@@ -101,7 +100,7 @@ class App @Inject constructor(private val client: PgPool, vertx: Vertx) {
         val queries = parseParam(context)
         context.response().headers().add(HEADER_SERVER, SERVER).add(HEADER_DATE, dateString)
         return (1..queries).map {
-            val result = client.preparedQuery(SELECT_WORLD).executeAwait(Tuple.of(randomWorld()))
+            val result = client.preparedQuery(SELECT_WORLD).execute(Tuple.of(randomWorld())).await()
             val row: Tuple = result.iterator().next()
             World(row.getInteger(0), row.getInteger(1))
         }

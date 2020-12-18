@@ -28,6 +28,7 @@ import io.vertx.ext.web.Session;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -355,6 +356,11 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
 
         @Override
         public MultiMap queryParams() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public MultiMap queryParams(Charset encoding) {
             throw new UnsupportedOperationException();
         }
 
