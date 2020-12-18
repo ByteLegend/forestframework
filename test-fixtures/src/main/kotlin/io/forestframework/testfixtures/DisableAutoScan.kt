@@ -2,20 +2,20 @@ package io.forestframework.testfixtures
 
 import com.github.blindpirate.annotationmagic.Extends
 import io.forestframework.ext.api.After
-import io.forestframework.ext.api.EnableExtensions
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.api.Extension
-import io.forestframework.ext.api.StartupContext
-import io.forestframework.ext.core.AutoScanComponentsExtension
+import io.forestframework.ext.api.ApplicationContext
+import io.forestframework.ext.core.AutoComponentScanExtension
 
-@EnableExtensions(extensions = [DisableAutoScanExtension::class])
-@Extends(EnableExtensions::class)
+@WithExtensions(extensions = [DisableAutoScanExtension::class])
+@Extends(WithExtensions::class)
 annotation class DisableAutoScan
 
-@After(classes = [AutoScanComponentsExtension::class])
+@After(classes = [AutoComponentScanExtension::class])
 class DisableAutoScanExtension : Extension {
-    override fun beforeInjector(startupContext: StartupContext) {
-        startupContext.componentClasses.removeIf {
-            it.`package`.name.startsWith(startupContext.appClass.`package`.name) && it != startupContext.appClass
+    override fun start(applicationContext: ApplicationContext) {
+        applicationContext.components.removeIf {
+            it.`package`.name.startsWith(applicationContext.appClass.`package`.name) && it != applicationContext.appClass
         }
     }
 }

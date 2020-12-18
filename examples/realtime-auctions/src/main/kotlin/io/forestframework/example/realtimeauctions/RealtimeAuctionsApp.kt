@@ -15,7 +15,7 @@ import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.GetJson
 import io.forestframework.core.http.routing.Patch
 import io.forestframework.core.http.routing.PreHandler
-import io.forestframework.ext.core.EnableStaticResource
+import io.forestframework.ext.core.WithStaticResource
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.shareddata.LocalMap
 import io.vertx.core.shareddata.SharedData
@@ -23,7 +23,7 @@ import java.math.BigDecimal
 import java.util.Optional
 import javax.inject.Inject
 
-@EnableStaticResource
+@WithStaticResource
 @ForestApplication
 class RealtimeAuctionsApp
 

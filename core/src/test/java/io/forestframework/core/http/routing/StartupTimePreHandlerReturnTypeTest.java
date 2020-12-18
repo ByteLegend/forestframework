@@ -2,9 +2,7 @@ package io.forestframework.core.http.routing;
 
 
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
-import io.forestframework.core.ComponentClasses;
+import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.core.AutoRoutingScanExtension;
 import io.vertx.core.http.HttpServerRequest;
@@ -117,22 +115,23 @@ public class StartupTimePreHandlerReturnTypeTest {
     @Mock
     RoutingManager mockManager;
 
+    @Mock
+    ApplicationContext applicationContext;
+
     List<Class<?>> mockComponentClasses = new ArrayList<>();
 
     @BeforeEach
     void init() {
-        // @formatter:off
-        when(injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() { }, ComponentClasses.class))).thenReturn(mockComponentClasses);
-        // @formatter:on
-
         when(injector.getInstance(RoutingManager.class)).thenReturn(mockManager);
+        when(injector.getInstance(ApplicationContext.class)).thenReturn(applicationContext);
+        when(applicationContext.getComponents()).thenReturn(mockComponentClasses);
     }
 
     @ParameterizedTest
     @ValueSource(classes = {PreHandlerReturnsString.class, PreHandlerReturnsFutureString.class})
     void throwRuntimeExceptionWhenPreHandlerReturnTypeIsNotValid(Class<?> cls) {
         mockComponentClasses.add(cls);
-        Assertions.assertThrows(RuntimeException.class, () -> autoRoutingScanExtension.afterInjector(injector));
+        Assertions.assertThrows(RuntimeException.class, () -> autoRoutingScanExtension.configure(injector));
     }
 
     @ParameterizedTest
@@ -145,6 +144,6 @@ public class StartupTimePreHandlerReturnTypeTest {
     })
     void testSuccessWhenPreHandlerReturnTypeIsValid(Class<?> cls) {
         mockComponentClasses.add(cls);
-        autoRoutingScanExtension.afterInjector(injector);
+        autoRoutingScanExtension.configure(injector);
     }
 }

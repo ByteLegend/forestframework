@@ -9,18 +9,20 @@ import io.forestframework.core.http.routing.Routing;
 import io.forestframework.core.http.routing.RoutingManager;
 import io.forestframework.core.http.routing.RoutingType;
 import io.forestframework.core.http.staticresource.StaticResource;
+import io.forestframework.ext.api.After;
+import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.Before;
 import io.forestframework.ext.api.Extension;
-import io.forestframework.ext.api.StartupContext;
 
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Scan classpath and register all classpath:/static/* resources
@@ -45,7 +47,8 @@ import java.util.stream.Stream;
  *
  * Also see {@link io.forestframework.core.http.staticresource.StaticResourceProcessor}
  */
-@Before(classes = AutoRoutingScanExtension.class)
+@After(classes = AutoRoutingScanExtension.class)
+@Before(classes = HttpServerExtension.class)
 public class StaticResourceExtension implements Extension {
     private static final Method GET_RESOURCE_FILE_METHOD;
     private static final Method GET_RESOURCE_DIR_METHOD;
@@ -59,22 +62,36 @@ public class StaticResourceExtension implements Extension {
         }
     }
 
-    @Override
-    public void beforeInjector(StartupContext startupContext) {
-        List<WithStaticResource> withStaticResources = startupContext.getEnableExtensionsAnnotation(WithStaticResource.class);
-        List<String> webroots = withStaticResources.stream().flatMap(withStaticResource -> {
-            String webroot = withStaticResource.webroot();
-            Stream<String> webrootsStream = Stream.of(withStaticResource.webroots());
-            return Stream.concat(Stream.of(webroot), webrootsStream);
-        }).collect(Collectors.toList());
+    private final List<String> webroots;
 
-        startupContext.getConfigProvider().addDefaultOptions("forest.static.webroot", () -> "static");
-        startupContext.getConfigProvider().addDefaultOptions("forest.static.webroots", () -> webroots);
+    public StaticResourceExtension() {
+        this(Collections.singletonList("static"));
+    }
+
+    public StaticResourceExtension(WithStaticResource withStaticResource) {
+        this(getWebroots(withStaticResource));
+    }
+
+    private StaticResourceExtension(List<String> webroots) {
+        this.webroots = webroots;
+    }
+
+    private static List<String> getWebroots(WithStaticResource withStaticResource) {
+        List<String> webroots = new ArrayList<>();
+        webroots.add(withStaticResource.webroot());
+        webroots.addAll(Arrays.asList(withStaticResource.webroots()));
+        return webroots;
+    }
+
+    @Override
+    public void start(ApplicationContext applicationContext) {
+        applicationContext.getConfigProvider().addDefaultOptions("forest.static.webroot", () -> "static");
+        applicationContext.getConfigProvider().addDefaultOptions("forest.static.webroots", () -> webroots);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void afterInjector(Injector injector) {
+    public void configure(Injector injector) {
         ConfigProvider configProvider = injector.getInstance(ConfigProvider.class);
         String webroot = configProvider.getInstance("forest.static.webroot", String.class);
         LinkedHashSet<String> webroots = new LinkedHashSet<>(configProvider.getInstance("forest.static.webroots", List.class));
@@ -82,12 +99,16 @@ public class StaticResourceExtension implements Extension {
         webroots.add(webroot);
 
         RoutingManager routings = injector.getInstance(RoutingManager.class);
+
+        boolean rootPathRegistered = routings.getRouting(RoutingType.HANDLER).stream()
+                                             .anyMatch(it -> "/".equals(it.getPath()));
+
         for (String root : webroots) {
-            configureOne(root, routings);
+            configureOne(root, routings, rootPathRegistered);
         }
     }
 
-    private void configureOne(String webrootDir, RoutingManager routings) {
+    private void configureOne(String webrootDir, RoutingManager routings, boolean rootPatRegistered) {
         if (webrootDir.startsWith("/")) {
             webrootDir = webrootDir.substring(1);
         }
@@ -109,7 +130,7 @@ public class StaticResourceExtension implements Extension {
                             registerDirectoryRouting(routings, webrootDir, staticResource);
                         } else {
                             registerResourceRouting(routings, webrootDir, staticResource);
-                            if ("index.html".equals(staticResource.getName())) {
+                            if ("index.html".equals(staticResource.getName()) && !rootPatRegistered) {
                                 registerRootPathRouting(routings, webrootDir);
                             }
                         }
@@ -126,7 +147,7 @@ public class StaticResourceExtension implements Extension {
      */
     private void registerResourceRouting(RoutingManager routings, String webrootDir, File resourceFile) {
         routings.getRouting(RoutingType.HANDLER).add(
-                new StaticResourceRouting("/" + resourceFile.getName(), webrootDir + "/" + resourceFile.getName(), GET_RESOURCE_FILE_METHOD));
+            new StaticResourceRouting("/" + resourceFile.getName(), webrootDir + "/" + resourceFile.getName(), GET_RESOURCE_FILE_METHOD));
     }
 
     private void registerRootPathRouting(RoutingManager routings, String webrootDir) {
@@ -138,7 +159,7 @@ public class StaticResourceExtension implements Extension {
      */
     private void registerDirectoryRouting(RoutingManager routings, String webrootDir, File resourceDir) {
         routings.getRouting(RoutingType.HANDLER).add(
-                new StaticResourceRouting("/" + resourceDir.getName() + "/**", webrootDir + "/" + resourceDir.getName() + "/", GET_RESOURCE_DIR_METHOD));
+            new StaticResourceRouting("/" + resourceDir.getName() + "/**", webrootDir + "/" + resourceDir.getName() + "/", GET_RESOURCE_DIR_METHOD));
     }
 
     @StaticResource

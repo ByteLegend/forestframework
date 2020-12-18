@@ -2,9 +2,6 @@ package io.forestframework.ext.core;
 
 import com.github.blindpirate.annotationmagic.AnnotationMagic;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
-import io.forestframework.core.ComponentClasses;
 import io.forestframework.core.http.HttpRequestHandler;
 import io.forestframework.core.http.Router;
 import io.forestframework.core.http.bridge.Bridge;
@@ -19,8 +16,9 @@ import io.forestframework.core.http.routing.RoutingType;
 import io.forestframework.core.http.websocket.WebSocket;
 import io.forestframework.core.http.websocket.WebSocketEventType;
 import io.forestframework.core.modules.WebRequestHandlingModule;
+import io.forestframework.ext.api.After;
+import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.Extension;
-import io.forestframework.ext.api.StartupContext;
 import io.vertx.core.Future;
 import org.apache.commons.lang3.StringUtils;
 import org.apiguardian.api.API;
@@ -45,28 +43,26 @@ import static io.forestframework.utils.StartupUtils.isBlockingMethod;
  * </ol>
  */
 @API(status = API.Status.INTERNAL)
+@After(classes = {AutoComponentScanExtension.class})
 public class AutoRoutingScanExtension implements Extension {
     private static final Pattern BRIDGE_ROUTING_PATH_PATTERN = Pattern.compile("(/|[^*:])*/?");
 
     @Override
-    public void beforeInjector(StartupContext startupContext) {
-        startupContext.getComponentClasses().add(WebRequestHandlingModule.class);
+    public void start(ApplicationContext applicationContext) {
+        applicationContext.getModules().add(new WebRequestHandlingModule());
     }
 
     @Override
-    public void afterInjector(Injector injector) {
+    public void configure(Injector injector) {
         RoutingManager routings = injector.getInstance(RoutingManager.class);
-
-        // @formatter:off
-        List<Class<?>> componentClasses = injector.getInstance(Key.get(new TypeLiteral<List<Class<?>>>() { }, ComponentClasses.class));
-        // @formatter:on
-
-        componentClasses.stream()
-            .filter(AutoRoutingScanExtension::isRouter)
-            .flatMap(this::findRoutingHandlers)
-            .peek(this::validate)
-            .peek(routing -> deleteExistingRootStaticResourceRoutingIfNecessary(routing, routings))
-            .forEach(routing -> routings.getRouting(routing.getType()).add(routing));
+        injector.getInstance(ApplicationContext.class)
+                .getComponents()
+                .stream()
+                .filter(AutoRoutingScanExtension::isRouter)
+                .flatMap(this::findRoutingHandlers)
+                .peek(this::validate)
+                .peek(routing -> deleteExistingRootStaticResourceRoutingIfNecessary(routing, routings))
+                .forEach(routing -> routings.getRouting(routing.getType()).add(routing));
     }
 
     // Ensure pre-handler return type is:
@@ -125,8 +121,8 @@ public class AutoRoutingScanExtension implements Extension {
 
     private Stream<Routing> findRoutingHandlers(Class<?> klass) {
         return Stream.of(klass.getMethods())
-            .filter(AutoRoutingScanExtension::isRouteMethod)
-            .map(method -> toRouting(klass, method));
+                     .filter(AutoRoutingScanExtension::isRouteMethod)
+                     .map(method -> toRouting(klass, method));
     }
 
     private static boolean isRouteMethod(Method method) {

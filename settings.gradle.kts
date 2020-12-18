@@ -1,4 +1,5 @@
 include("core")
+include("core-api")
 include("core-kotlin")
 include("junit5-extension")
 include("test-fixtures")

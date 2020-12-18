@@ -9,7 +9,7 @@ import io.forestframework.core.Forest;
 import io.forestframework.core.ForestApplication;
 import io.forestframework.example.todo.java.async.TodoRouter;
 import io.forestframework.example.todo.java.async.TodoService;
-import io.forestframework.ext.api.EnableExtensions;
+import io.forestframework.ext.api.WithExtensions;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.ext.core.StaticResourceExtension;
@@ -21,7 +21,7 @@ import io.vertx.ext.jdbc.JDBCClient;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.async.jdbc.TodoApplicationJavaAsyncJDBC.JDBCModule;
 
-@EnableExtensions(extensions = {JDBCClientExtension.class, InitDataExtension.class, StaticResourceExtension.class})
+@WithExtensions(extensions = {JDBCClientExtension.class, InitDataExtension.class, StaticResourceExtension.class})
 @ForestApplication
 @IncludeComponents(classes = {JDBCModule.class, TodoRouter.class})
 public class TodoApplicationJavaAsyncJDBC {
@@ -40,10 +40,10 @@ public class TodoApplicationJavaAsyncJDBC {
 
     public static class InitDataExtension implements Extension {
         @Override
-        public void afterInjector(Injector injector) {
+        public void configure(Injector injector) {
             try {
                 VertxCompletableFuture.from(injector.getInstance(Vertx.class).getOrCreateContext(),
-                        injector.getInstance(TodoService.class).initData()).get();
+                                            injector.getInstance(TodoService.class).initData()).get();
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }

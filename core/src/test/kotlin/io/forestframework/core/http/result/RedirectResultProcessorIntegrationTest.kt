@@ -7,7 +7,7 @@ import io.forestframework.core.http.routing.Get
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -19,7 +19,7 @@ class RedirectResultProcessorIntegrationTestApp {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = RedirectResultProcessorIntegrationTestApp::class)
+@ForestIntegrationTest(appClass = RedirectResultProcessorIntegrationTestApp::class)
 @DisableAutoScan
 class RedirectResultProcessorIntegrationTest : AbstractForestIntegrationTest() {
     @Test

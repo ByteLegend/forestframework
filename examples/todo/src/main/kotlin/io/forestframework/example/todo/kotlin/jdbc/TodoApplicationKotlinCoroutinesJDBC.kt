@@ -9,7 +9,7 @@ import io.forestframework.core.ForestApplication
 import io.forestframework.example.todo.kotlin.Todo
 import io.forestframework.example.todo.kotlin.TodoRouter
 import io.forestframework.example.todo.kotlin.TodoService
-import io.forestframework.ext.api.EnableExtensions
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.api.Extension
 import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.extensions.jdbc.EnableJDBCClient
@@ -29,7 +29,7 @@ import kotlinx.coroutines.runBlocking
 @ForestApplication
 @IncludeComponents(classes = [TodoRouter::class])
 @EnableJDBCClient
-@EnableExtensions(extensions = [InitDataExtension::class])
+@WithExtensions(extensions = [InitDataExtension::class])
 class TodoApplicationKotlinCoroutinesJDBC
 
 fun main() {
@@ -44,7 +44,7 @@ class JDBCModule : AbstractModule() {
 }
 
 class InitDataExtension : Extension {
-    override fun afterInjector(injector: Injector) {
+    override fun configure(injector: Injector) {
         runBlocking {
             injector.getInstance(TodoService::class.java).initData()
         }

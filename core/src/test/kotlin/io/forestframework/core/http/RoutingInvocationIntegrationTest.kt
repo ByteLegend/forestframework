@@ -17,7 +17,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import javax.inject.Inject
@@ -158,7 +158,7 @@ class ParamNotAbleResolveErrorRouter {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = RoutingInvocationIntegrationTestApp::class)
+@ForestIntegrationTest(appClass = RoutingInvocationIntegrationTestApp::class)
 @DisableAutoScan
 @IncludeComponents(classes = [OrderTestRouter::class, ErrorInParamResolverRouter::class, ParamNotAbleResolveErrorRouter::class])
 class RoutingInvocationIntegrationTest : AbstractForestIntegrationTest() {

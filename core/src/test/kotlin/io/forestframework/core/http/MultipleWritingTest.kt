@@ -11,7 +11,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Future
 import io.vertx.core.buffer.Buffer
 import org.junit.jupiter.api.Test
@@ -61,7 +61,7 @@ class MultiWritingTestApp {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = MultiWritingTestApp::class)
+@ForestIntegrationTest(appClass = MultiWritingTestApp::class)
 @DisableAutoScan
 class MultipleWritingTest : AbstractForestIntegrationTest() {
     @Test

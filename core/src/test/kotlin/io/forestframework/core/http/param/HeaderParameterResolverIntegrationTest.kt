@@ -6,7 +6,7 @@ import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -28,7 +28,7 @@ class HeaderParameterResolverIntegrationTestApp {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = HeaderParameterResolverIntegrationTestApp::class)
+@ForestIntegrationTest(appClass = HeaderParameterResolverIntegrationTestApp::class)
 @DisableAutoScan
 class HeaderParameterResolverIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest
@@ -39,6 +39,7 @@ class HeaderParameterResolverIntegrationTest : AbstractForestIntegrationTest() {
         "multiple matches, MultipleMatches, first"
     ])
     fun `can resolve header`(scenario: String, path: String, expectedResult: String) {
+        println(scenario)
         send(HttpMethod.GET,
             "/$path",
             headers = mapOf("OnlyOneMatch" to "OnlyOneMatch"),

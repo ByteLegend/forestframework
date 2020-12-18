@@ -4,11 +4,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.forestframework.utils.ReflectionUtils
 import io.vertx.core.Vertx
 import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.future.future
 import java.lang.reflect.Method
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.future.future
 
 class KotlinSuspendFunctionBridge {
     companion object {

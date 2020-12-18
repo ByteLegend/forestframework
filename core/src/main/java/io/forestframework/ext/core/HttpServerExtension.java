@@ -21,7 +21,7 @@ public class HttpServerExtension implements Extension {
     private Vertx vertx;
 
     @Override
-    public void afterInjector(Injector injector) {
+    public void configure(Injector injector) {
         vertx = injector.getInstance(Vertx.class);
 
         startHttpServer(injector);

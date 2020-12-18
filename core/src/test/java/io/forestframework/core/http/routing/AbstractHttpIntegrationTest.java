@@ -13,6 +13,7 @@ public class AbstractHttpIntegrationTest extends AbstractForestIntegrationTest {
         HttpClientResponse response = send(HttpMethod.valueOf(method), path,
                                            ImmutableMap.of("Accept", "application/json",
                                                            "Content-Type", "application/json"),
+                                           "",
                                            emptyMap());
         return new HttpResponse(response.getStatusCode(), response.bodyAsString());
     }

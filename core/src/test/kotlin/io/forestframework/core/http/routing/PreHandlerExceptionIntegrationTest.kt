@@ -6,7 +6,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
@@ -48,7 +48,7 @@ class PreHandlerExceptionIntegrationTestApp {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = PreHandlerExceptionIntegrationTestApp::class)
+@ForestIntegrationTest(appClass = PreHandlerExceptionIntegrationTestApp::class)
 @DisableAutoScan
 class PreHandlerExceptionIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest

@@ -6,7 +6,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.StringContains.containsString
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,14 +17,13 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
-@EnableStaticResource
+@WithStaticResource
 @ForestApplication
 class StaticResourceExtensionTestApplication
 
 @ExtendWith(ForestExtension::class)
-@EnableStaticResource
 @ExtraConfig(value = ["forest.static.webroot=StaticResourceTestData"])
-@ForestTest(appClass = StaticResourceExtensionTestApplication::class)
+@ForestIntegrationTest(appClass = StaticResourceExtensionTestApplication::class)
 @DisableAutoScan
 class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get resource {0}")
@@ -67,7 +66,7 @@ class StaticResourceExtensionIntegrationTest : AbstractForestIntegrationTest() {
                 "StaticResourceTestData/css"
             ]
         """])
-@ForestTest(appClass = StaticResourceExtensionTestApplication::class)
+@ForestIntegrationTest(appClass = StaticResourceExtensionTestApplication::class)
 @DisableAutoScan
 class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get resource {0}")
@@ -111,7 +110,7 @@ class StaticResourceExtensionMultipleWebrootsIntegrationTest : AbstractForestInt
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = RouterWithPredefinedRoot::class)
+@ForestIntegrationTest(appClass = RouterWithPredefinedRoot::class)
 class StaticResourceExtensionTestApplicationWithPredefinedRoot : AbstractForestIntegrationTest() {
     @Test
     fun `index_html is not re-registered for root`() = runBlockingUnit {
@@ -119,7 +118,7 @@ class StaticResourceExtensionTestApplicationWithPredefinedRoot : AbstractForestI
     }
 }
 
-@EnableStaticResource
+@WithStaticResource
 @ForestApplication
 class RouterWithPredefinedRoot {
     @GetPlainText("/")

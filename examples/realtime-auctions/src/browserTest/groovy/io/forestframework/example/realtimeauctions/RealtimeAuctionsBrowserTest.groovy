@@ -5,11 +5,11 @@ import geb.Configuration
 import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = RealtimeAuctionsApp.class)
+@ForestIntegrationTest(appClass = RealtimeAuctionsApp.class)
 class RealtimeAuctionsBrowserTest extends AbstractBrowserTest {
     @BrowserTest
     void 'realtime auctions test'(Configuration configuration) {

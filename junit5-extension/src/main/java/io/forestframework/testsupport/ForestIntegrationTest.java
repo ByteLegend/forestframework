@@ -1,7 +1,7 @@
 package io.forestframework.testsupport;
 
 import com.github.blindpirate.annotationmagic.Extends;
-import io.forestframework.ext.api.EnableExtensions;
+import io.forestframework.ext.api.WithExtensions;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -16,9 +16,9 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Extends(EnableExtensions.class)
-@EnableExtensions(extensions = {BindFreePortExtension.class})
-public @interface ForestTest {
+@Extends(WithExtensions.class)
+@WithExtensions(extensions = {BindFreePortExtension.class})
+public @interface ForestIntegrationTest {
     /**
      * The target Forest application class to test. Usually the test application is
      * started and some HTTP requests are made against it to test its functionalities.

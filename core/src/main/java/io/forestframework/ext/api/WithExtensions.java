@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EnableExtensions {
+public @interface WithExtensions {
     Class<? extends Extension>[] extensions();
 }

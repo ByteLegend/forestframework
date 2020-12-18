@@ -6,7 +6,7 @@ import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -25,7 +25,7 @@ class CookieParameterResolverIntegrationTestApp {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = CookieParameterResolverIntegrationTestApp::class)
+@ForestIntegrationTest(appClass = CookieParameterResolverIntegrationTestApp::class)
 @DisableAutoScan
 class CookieParameterResolverIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest

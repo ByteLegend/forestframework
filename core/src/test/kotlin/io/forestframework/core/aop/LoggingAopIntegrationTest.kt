@@ -8,14 +8,14 @@ import com.google.inject.matcher.Matchers
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.param.QueryParam
 import io.forestframework.core.http.result.GetPlainText
-import io.forestframework.ext.api.EnableExtensions
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.api.Extension
-import io.forestframework.ext.api.StartupContext
+import io.forestframework.ext.api.ApplicationContext
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.aopalliance.intercept.MethodInterceptor
 import org.aopalliance.intercept.MethodInvocation
 import org.junit.jupiter.api.Assertions
@@ -51,14 +51,14 @@ class Logger {
 }
 
 class LogAopExtension : Extension {
-    override fun beforeInjector(startupContext: StartupContext) {
-        startupContext.componentClasses.add(LogAopModule::class.java)
+    override fun start(applicationContext: ApplicationContext) {
+        applicationContext.modules.add(LogAopModule())
     }
 }
 
 @ForestApplication
 @DisableAutoScan
-@EnableExtensions(extensions = [LogAopExtension::class])
+@WithExtensions(extensions = [LogAopExtension::class])
 class LoggingAopApp @Inject constructor(private val interfacedService: InterfacedService, private val classedService: ClassedService) {
     @GetPlainText("/interfaced")
     fun interfaced(@QueryParam("param1") param1: String, @QueryParam("param2") param2: Int) = interfacedService.interfaced(param1, param2)
@@ -84,7 +84,7 @@ open class ClassedService {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = LoggingAopApp::class)
+@ForestIntegrationTest(appClass = LoggingAopApp::class)
 class LoggingAopIntegrationTest : AbstractForestIntegrationTest() {
     @Inject
     lateinit var logger: Logger

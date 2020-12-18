@@ -5,7 +5,7 @@ import io.forestframework.core.ForestApplication
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -15,7 +15,7 @@ import javax.inject.Inject
 class TestApp
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = TestApp::class)
+@ForestIntegrationTest(appClass = TestApp::class)
 @DisableAutoScan
 class RequestHandlerIntegrationTest : AbstractForestIntegrationTest() {
     @Inject

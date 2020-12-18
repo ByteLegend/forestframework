@@ -1,18 +1,17 @@
 package io.forestframework.testsupport;
 
-import com.github.blindpirate.annotationmagic.AnnotationMagic;
-import io.forestframework.core.Application;
-import io.forestframework.core.Forest;
 import io.forestframework.core.config.ConfigProvider;
-import io.forestframework.ext.api.EnableExtensions;
-import io.forestframework.ext.api.StartupContext;
+import io.forestframework.core.internal.ExtensionScanner;
+import io.forestframework.ext.api.DefaultApplicationContext;
 import io.vertx.core.Vertx;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -27,36 +26,39 @@ import java.util.stream.IntStream;
  * </ul>
  */
 public class ForestExtension implements BeforeAllCallback, AfterAllCallback, TestInstancePostProcessor {
-    private Application application;
+    private DefaultApplicationContext applicationContext;
 
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
-        this.application.close();
+        if (applicationContext != null) {
+            applicationContext.close();
+        }
     }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         ConfigProvider configProvider = ConfigProvider.load();
-        application = Forest.run(createStartupContext(context.getTestClass().get(), configProvider));
+        applicationContext = createStartupContext(context.getTestClass().get(), configProvider);
+        applicationContext.start();
     }
 
     @Override
     public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
-        if (application != null) {
-            application.getInjector().injectMembers(testInstance);
+        if (applicationContext != null) {
+            applicationContext.getInjector().injectMembers(testInstance);
         }
     }
 
-    private static List<EnableExtensions> scanEnableExtensions(Class<?> appClass, Class<?> testClass) {
-        List<EnableExtensions> annotationsOnAppClass = AnnotationMagic.getAnnotationsOnClass(appClass, EnableExtensions.class);
-        List<EnableExtensions> annotationsOnTestClass = AnnotationMagic.getAnnotationsOnClass(testClass, EnableExtensions.class);
+    private static List<Annotation> scanEnableExtensions(Class<?> appClass, Class<?> testClass) {
+        List<Annotation> annotationsOnAppClass = Arrays.asList(appClass.getAnnotations());
+        List<Annotation> annotationsOnTestClass = Arrays.asList(testClass.getAnnotations());
 
-        List<EnableExtensions> result = new ArrayList<>();
+        List<Annotation> result = new ArrayList<>();
 
         int testAnnoIterationIndex = 0;
         for (; testAnnoIterationIndex < annotationsOnTestClass.size(); ++testAnnoIterationIndex) {
-            EnableExtensions anno = annotationsOnTestClass.get(testAnnoIterationIndex);
-            if (AnnotationMagic.instanceOf(anno, ForestTest.class)) {
+            Annotation anno = annotationsOnTestClass.get(testAnnoIterationIndex);
+            if (anno instanceof ForestIntegrationTest) {
                 break;
             } else {
                 result.add(anno);
@@ -69,14 +71,17 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
         return result;
     }
 
-    private static StartupContext createStartupContext(Class<?> testClass, ConfigProvider configProvider) {
-        ForestTest forestTestAnno = testClass.getAnnotation(ForestTest.class);
+    private static DefaultApplicationContext createStartupContext(Class<?> testClass, ConfigProvider configProvider) {
+        ForestIntegrationTest forestTestAnno = testClass.getAnnotation(ForestIntegrationTest.class);
         if (forestTestAnno == null) {
             throw new IllegalArgumentException("Test class must be annotated with @ForestTest!");
         }
 
-        List<EnableExtensions> annotations = scanEnableExtensions(forestTestAnno.appClass(), testClass);
-
-        return new TestApplicationStartupContext(Vertx.vertx(), forestTestAnno.appClass(), configProvider, annotations);
+        List<Annotation> annotations = scanEnableExtensions(forestTestAnno.appClass(), testClass);
+        return new DefaultApplicationContext(
+            Vertx.vertx(),
+            forestTestAnno.appClass(),
+            configProvider,
+            ExtensionScanner.scan(annotations));
     }
 }

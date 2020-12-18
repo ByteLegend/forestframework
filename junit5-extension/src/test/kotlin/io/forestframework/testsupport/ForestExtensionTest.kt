@@ -3,11 +3,11 @@ package io.forestframework.testsupport
 import com.github.blindpirate.annotationmagic.Extends
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.config.ConfigProvider
-import io.forestframework.ext.api.EnableExtensions
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.api.Extension
-import io.forestframework.ext.api.StartupContext
+import io.forestframework.ext.api.ApplicationContext
 import io.forestframework.ext.core.AutoRoutingScanExtension
-import io.forestframework.ext.core.AutoScanComponentsExtension
+import io.forestframework.ext.core.AutoComponentScanExtension
 import io.forestframework.ext.core.BannerExtension
 import io.forestframework.ext.core.ExtraConfig
 import io.forestframework.ext.core.HttpServerExtension
@@ -24,41 +24,41 @@ class Extension5 : Extension
 class Extension6 : Extension
 class Extension7 : Extension
 
-@Extends(EnableExtensions::class)
-@EnableExtensions(extensions = [Extension1::class])
+@Extends(WithExtensions::class)
+@WithExtensions(extensions = [Extension1::class])
 annotation class EnableExtension1
 
-@Extends(EnableExtensions::class)
-@EnableExtensions(extensions = [Extension2::class])
+@Extends(WithExtensions::class)
+@WithExtensions(extensions = [Extension2::class])
 annotation class EnableExtension2
 
-@Extends(EnableExtensions::class)
-@EnableExtensions(extensions = [Extension4::class])
+@Extends(WithExtensions::class)
+@WithExtensions(extensions = [Extension4::class])
 annotation class EnableExtension4
 
-@Extends(EnableExtensions::class)
-@EnableExtensions(extensions = [Extension5::class])
+@Extends(WithExtensions::class)
+@WithExtensions(extensions = [Extension5::class])
 annotation class EnableExtension5
 
-@Extends(EnableExtensions::class)
-@EnableExtensions(extensions = [Extension7::class])
+@Extends(WithExtensions::class)
+@WithExtensions(extensions = [Extension7::class])
 annotation class EnableExtension7
 
 @EnableExtension2
 @ForestApplication
-@EnableExtensions(extensions = [Extension3::class])
+@WithExtensions(extensions = [Extension3::class])
 @EnableExtension4
 @EnableExtension5
 class App
 
 @ExtendWith(ForestExtension::class)
 @EnableExtension1
-@ForestTest(appClass = App::class)
-@EnableExtensions(extensions = [Extension6::class])
+@ForestIntegrationTest(appClass = App::class)
+@WithExtensions(extensions = [Extension6::class])
 @EnableExtension7
 class ForestExtensionOrderTest {
     @Inject
-    lateinit var startupContext: StartupContext
+    lateinit var applicationContext: ApplicationContext
 
     @Test
     fun `extensions are strictly ordered`() {
@@ -67,7 +67,7 @@ class ForestExtensionOrderTest {
                 Extension1::class.java,
                 Extension2::class.java,
                 BannerExtension::class.java,
-                AutoScanComponentsExtension::class.java,
+                AutoComponentScanExtension::class.java,
                 AutoRoutingScanExtension::class.java,
                 HttpServerExtension::class.java,
                 Extension3::class.java,
@@ -77,7 +77,7 @@ class ForestExtensionOrderTest {
                 Extension6::class.java,
                 Extension7::class.java
             ),
-            startupContext.extensions.map { it.javaClass })
+            applicationContext.extensions.map { it.javaClass })
     }
 }
 
@@ -86,7 +86,7 @@ class ForestExtensionOrderTest {
 class AppWithExtraConfig
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = AppWithExtraConfig::class)
+@ForestIntegrationTest(appClass = AppWithExtraConfig::class)
 @ExtraConfig(value = ["forest.order.test=2"])
 class TestExtraConfigOverwritingAppExtraConfigTest {
     @Inject
@@ -100,7 +100,7 @@ class TestExtraConfigOverwritingAppExtraConfigTest {
 
 @ExtendWith(ForestExtension::class)
 @ExtraConfig(value = ["forest.order.test=2"])
-@ForestTest(appClass = AppWithExtraConfig::class)
+@ForestIntegrationTest(appClass = AppWithExtraConfig::class)
 class TestExtraConfigNotOverwritingAppExtraConfigText {
     @Inject
     lateinit var configProvider: ConfigProvider

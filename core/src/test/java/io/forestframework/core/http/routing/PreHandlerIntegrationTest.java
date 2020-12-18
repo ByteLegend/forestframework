@@ -6,7 +6,7 @@ import io.forestframework.core.http.HttpResponse;
 import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.testfixtures.DisableAutoScan;
 import io.forestframework.testsupport.ForestExtension;
-import io.forestframework.testsupport.ForestTest;
+import io.forestframework.testsupport.ForestIntegrationTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +54,7 @@ class PreHandlerTestApp extends AbstractTraceableRouter {
 
 @DisplayName("When pre-handler methods default")
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = PreHandlerTestApp.class)
+@ForestIntegrationTest(appClass = PreHandlerTestApp.class)
 @DisableAutoScan
 @IncludeComponents(classes = {PreHandlerTestApp.class})
 public class PreHandlerIntegrationTest extends AbstractHandlerIntegrationTest {

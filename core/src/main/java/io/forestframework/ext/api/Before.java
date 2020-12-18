@@ -35,6 +35,4 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Before {
     Class<? extends Extension>[] classes() default {};
-
-    String[] classNames() default {};
 }

@@ -4,9 +4,9 @@ import com.github.blindpirate.annotationmagic.CompositeOf;
 import com.github.blindpirate.annotationmagic.Extends;
 import com.google.inject.BindingAnnotation;
 import io.forestframework.core.http.Router;
-import io.forestframework.ext.api.EnableExtensions;
+import io.forestframework.ext.api.WithExtensions;
+import io.forestframework.ext.core.AutoComponentScanExtension;
 import io.forestframework.ext.core.AutoRoutingScanExtension;
-import io.forestframework.ext.core.AutoScanComponentsExtension;
 import io.forestframework.ext.core.BannerExtension;
 import io.forestframework.ext.core.HttpServerExtension;
 
@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Scope
 @BindingAnnotation
-@Extends(EnableExtensions.class)
-@EnableExtensions(extensions = {BannerExtension.class, AutoScanComponentsExtension.class, AutoRoutingScanExtension.class, HttpServerExtension.class})
+@Extends(WithExtensions.class)
+@WithExtensions(extensions = {BannerExtension.class, AutoComponentScanExtension.class, AutoRoutingScanExtension.class, HttpServerExtension.class})
 @CompositeOf({Component.class, Router.class, Singleton.class})
 public @interface ForestApplication {
 }

@@ -6,7 +6,7 @@ import io.forestframework.core.Forest;
 import io.forestframework.core.ForestApplication;
 import io.forestframework.example.todo.java.sync.TodoRouter;
 import io.forestframework.example.todo.java.sync.TodoService;
-import io.forestframework.ext.api.EnableExtensions;
+import io.forestframework.ext.api.WithExtensions;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.ext.core.StaticResourceExtension;
@@ -14,7 +14,7 @@ import io.forestframework.ext.core.StaticResourceExtension;
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.InitDataExtension;
 import static io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDBC.JDBCModule;
 
-@EnableExtensions(extensions = {StaticResourceExtension.class, InitDataExtension.class})
+@WithExtensions(extensions = {StaticResourceExtension.class, InitDataExtension.class})
 @ForestApplication
 @IncludeComponents(classes = {TodoRouter.class, JDBCModule.class})
 public class TodoApplicationJavaSyncJDBC {
@@ -31,9 +31,8 @@ public class TodoApplicationJavaSyncJDBC {
 
     public static class InitDataExtension implements Extension {
         @Override
-        public void afterInjector(Injector injector) {
+        public void configure(Injector injector) {
             injector.getInstance(TodoService.class).initData();
         }
     }
-
 }

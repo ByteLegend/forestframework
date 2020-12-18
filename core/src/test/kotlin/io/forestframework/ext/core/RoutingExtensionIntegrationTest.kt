@@ -4,7 +4,7 @@ import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.result.GetJson
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 
 data class User(val id: Int)
 
@@ -20,7 +20,7 @@ class TestRouter {
 @ForestApplication
 class RouterTestApplication
 
-@ForestTest(appClass = RouterTestApplication::class)
+@ForestIntegrationTest(appClass = RouterTestApplication::class)
 class RoutingExtensionIntegrationTest {
     fun `can define prefixed in Router`() {
         // get(/users)

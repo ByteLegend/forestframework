@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.apache.http.HttpResponse
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.RequestBuilder
+import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
@@ -82,6 +83,7 @@ class HttpClient(private val delegate: CloseableHttpClient) {
         port: Int,
         path: String,
         headers: Map<String, String> = emptyMap(),
+        body: String = "",
         multiHeaders: Map<String, List<String>> = emptyMap()
     ): HttpClientResponse {
         val request = RequestBuilder.create(httpMethod.name)
@@ -90,6 +92,7 @@ class HttpClient(private val delegate: CloseableHttpClient) {
                 config = RequestConfig.custom().setRedirectsEnabled(false).build()
                 headers.forEach(this::setHeader)
                 multiHeaders.forEach { (name, values) -> values.forEach { this.addHeader(name, it) } }
+                entity = StringEntity(body)
             }
             .build()
         return HttpClientResponse(delegate.execute(request))
@@ -174,11 +177,14 @@ abstract class AbstractForestIntegrationTest {
         httpMethod: HttpMethod,
         path: String,
         headers: Map<String, String> = emptyMap(),
+        body: String = "",
         multiHeaders: Map<String, List<String>> = emptyMap()
     ): HttpClientResponse =
-        client.send(httpMethod, port.toInt(), path, headers, multiHeaders)
+        client.send(httpMethod, port.toInt(), path, headers, body, multiHeaders)
 
     fun get(path: String, headers: Map<String, String> = emptyMap()): HttpClientResponse = send(HttpMethod.GET, path, headers)
+
+    fun post(path: String, headers: Map<String, String> = emptyMap(), body: String = ""): HttpClientResponse = send(HttpMethod.POST, path, headers, body)
 
     suspend fun openWebsocket(uri: String) = WebSocketClient(vertxClient.webSocket(port.toInt(), "localhost", uri).await(), uri)
 

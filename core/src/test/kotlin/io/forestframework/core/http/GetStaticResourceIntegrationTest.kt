@@ -8,7 +8,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -37,7 +37,7 @@ class GetStaticResourceIntegrationTestApp {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = GetStaticResourceIntegrationTestApp::class)
+@ForestIntegrationTest(appClass = GetStaticResourceIntegrationTestApp::class)
 @DisableAutoScan
 class GetStaticResourceIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get static resource via {0}")

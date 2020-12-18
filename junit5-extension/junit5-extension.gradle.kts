@@ -7,6 +7,8 @@ dependencies {
     implementation(libs("junit-jupiter-engine"))
     implementation(libs("junit-jupiter-engine"))
     implementation(libs("commons-lang3"))
+
+    testImplementation(project(":test-fixtures"))
 }
 
 val configurePublication: Project.() -> Unit by rootProject.ext

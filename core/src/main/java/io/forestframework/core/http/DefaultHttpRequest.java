@@ -28,6 +28,7 @@ public class DefaultHttpRequest implements HttpRequest {
     private final io.vertx.core.http.HttpServerRequest delegate;
     private final HttpResponse response;
     private final RoutingMatchResult routingMatchResult;
+    private Future<Buffer> bodyCache;
 
     public DefaultHttpRequest(io.vertx.core.http.HttpServerRequest delegate, RoutingMatchResult routingMatchResult) {
         this.delegate = delegate;
@@ -196,7 +197,10 @@ public class DefaultHttpRequest implements HttpRequest {
 
     @Override
     public Future<Buffer> body() {
-        return delegate.body();
+        if (bodyCache == null) {
+            bodyCache = delegate.body();
+        }
+        return bodyCache;
     }
 
     @Override

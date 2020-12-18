@@ -11,13 +11,13 @@ public interface Extension extends AutoCloseable {
     /**
      * Configure the context which is used to create the injector.
      */
-    default void beforeInjector(StartupContext startupContext) {
+    default void start(ApplicationContext applicationContext) {
     }
 
     /**
      * Configure the services inside the injector.
      */
-    default void afterInjector(Injector injector) {
+    default void configure(Injector injector) {
     }
 
     @Override

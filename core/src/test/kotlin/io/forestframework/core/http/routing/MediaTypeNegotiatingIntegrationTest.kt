@@ -1,14 +1,13 @@
 package io.forestframework.core.http.routing
 
 import com.google.inject.Injector
-import io.forestframework.core.Forest
 import io.forestframework.core.config.ConfigProvider
 import io.forestframework.core.http.HttpMethod
 import io.forestframework.core.http.routing.RoutingType.HANDLER
 import io.forestframework.core.modules.WebRequestHandlingModule
-import io.forestframework.ext.api.DefaultStartupContext
+import io.forestframework.ext.api.ApplicationContext
+import io.forestframework.ext.api.DefaultApplicationContext
 import io.forestframework.ext.api.Extension
-import io.forestframework.ext.api.StartupContext
 import io.forestframework.ext.core.HttpServerExtension
 import io.forestframework.testfixtures.HttpClient
 import io.forestframework.testfixtures.runBlockingUnit
@@ -122,11 +121,11 @@ class MediaTypeNegotiatingIntegrationTest {
         val extensions = listOf(
             BindFreePortExtension(),
             object : Extension {
-                override fun beforeInjector(startupContext: StartupContext?) {
-                    startupContext!!.componentClasses.add(WebRequestHandlingModule::class.java)
+                override fun start(applicationContext: ApplicationContext?) {
+                    applicationContext!!.modules.add(WebRequestHandlingModule())
                 }
 
-                override fun afterInjector(injector: Injector) {
+                override fun configure(injector: Injector) {
                     injector.getInstance(RoutingManager::class.java).getRouting(HANDLER).add(
                         DefaultRouting(false,
                             HANDLER,
@@ -142,9 +141,7 @@ class MediaTypeNegotiatingIntegrationTest {
             },
             HttpServerExtension()
         )
-        val context = DefaultStartupContext(vertx, MediaTypeNegotiatingIntegrationTest::class.java, configProvider, extensions)
-        Forest.run(context)
-
+        DefaultApplicationContext(vertx, MediaTypeNegotiatingIntegrationTest::class.java, configProvider, extensions).start()
         return configProvider.getInstance("forest.http.port", Integer::class.java).toInt()
     }
 

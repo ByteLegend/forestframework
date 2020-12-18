@@ -15,7 +15,7 @@ import io.forestframework.ext.core.WithStaticResource
 import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.ServerWebSocket
@@ -88,7 +88,7 @@ class WebSocketChatRoomRouter {
 
 
 @ExtendWith(ForestExtension.class)
-@ForestTest(appClass = WebSocketChatRoomBrowserTestApp.class)
+@ForestIntegrationTest(appClass = WebSocketChatRoomBrowserTestApp.class)
 class WebSocketChatRoomBrowserTest extends AbstractBrowserTest {
     @BrowserTest
     void chatroomTest(Configuration configuration) {

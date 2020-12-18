@@ -7,7 +7,7 @@ import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import javax.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -53,7 +53,7 @@ class Component1 @Inject constructor(val component2: Component2)
 class Component2
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = ForestApplicationSingletonTestApp::class)
+@ForestIntegrationTest(appClass = ForestApplicationSingletonTestApp::class)
 class ForestApplicationSingletonTest : AbstractForestIntegrationTest() {
     @Inject
     lateinit var app: ForestApplicationSingletonTestApp

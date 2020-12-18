@@ -6,7 +6,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -35,7 +35,7 @@ class PathParamResolverIntegrationTestApp {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = PathParamResolverIntegrationTestApp::class)
+@ForestIntegrationTest(appClass = PathParamResolverIntegrationTestApp::class)
 @DisableAutoScan
 class PathParamResolverIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can convert path param value for {1}")

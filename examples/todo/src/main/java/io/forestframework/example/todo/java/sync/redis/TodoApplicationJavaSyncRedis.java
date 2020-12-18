@@ -8,8 +8,8 @@ import io.forestframework.core.ForestApplication;
 import io.forestframework.core.config.Config;
 import io.forestframework.example.todo.java.sync.TodoRouter;
 import io.forestframework.example.todo.java.sync.TodoService;
-import io.forestframework.ext.core.EnableStaticResource;
 import io.forestframework.ext.core.IncludeComponents;
+import io.forestframework.ext.core.WithStaticResource;
 import io.forestframework.extensions.redis.EnableRedisClient;
 import io.vertx.redis.client.RedisOptions;
 import redis.clients.jedis.JedisPool;
@@ -20,7 +20,7 @@ import java.net.URISyntaxException;
 
 import static io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRedis.RedisModule;
 
-@EnableStaticResource
+@WithStaticResource
 @IncludeComponents(classes = {TodoRouter.class, RedisModule.class})
 @EnableRedisClient
 @ForestApplication

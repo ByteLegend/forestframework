@@ -10,7 +10,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions
@@ -89,7 +89,7 @@ class ErrorInCustomErrorHandler {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = CustomErrorHandlerApp::class)
+@ForestIntegrationTest(appClass = CustomErrorHandlerApp::class)
 @DisableAutoScan
 @IncludeComponents(classes = [Custom500HandlerRouter::class, ErrorInCustomErrorHandler::class])
 class HandlerExecutionIntegrationTest : AbstractForestIntegrationTest() {

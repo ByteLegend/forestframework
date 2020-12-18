@@ -8,7 +8,7 @@ import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
 import io.forestframework.testsupport.ForestExtension
-import io.forestframework.testsupport.ForestTest
+import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.ext.web.handler.sockjs.SockJSSocket
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -20,19 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 @ForestApplication
-class WebSocketTestApp {
-    val messages = mutableListOf<String>()
-
-//    @WebSocket("/test1")
-//    suspend fun webSocketWriteBackDirectly(socket: SockJSSocket, messageType: SockJSEventType, message: Buffer) {
-//        messages.add(message.toString())
-//        when (messageType) {
-//            SockJSEventType.OPEN -> socket.writeAwait("open")
-//            SockJSEventType.MESSAGE -> socket.writeAwait(message)
-//            SockJSEventType.CLOSE -> socket.writeAwait("close")
-//        }
-//    }
-}
+class WebSocketTestApp
 
 @Router("/chat/:username")
 class SockJSRouter {
@@ -67,7 +55,7 @@ class SockJSRouter {
 }
 
 @ExtendWith(ForestExtension::class)
-@ForestTest(appClass = WebSocketTestApp::class)
+@ForestIntegrationTest(appClass = WebSocketTestApp::class)
 @DisableAutoScan
 @IncludeComponents(classes = [SockJSRouter::class])
 @Disabled

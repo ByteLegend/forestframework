@@ -1,8 +1,8 @@
 package io.forestframework.ext.core;
 
 import io.forestframework.core.Forest;
+import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.Extension;
-import io.forestframework.ext.api.StartupContext;
 
 
 /**
@@ -26,10 +26,10 @@ public class BannerExtension implements Extension {
             "`----'                            `----'             version " + Forest.VERSION;
 
     @Override
-    public void beforeInjector(StartupContext startupContext) {
-        startupContext.getConfigProvider().addDefaultOptions("forest.banner", BannerOptions::new);
-        if (startupContext.getConfigProvider().getInstance("forest.banner.enabled", Boolean.class)) {
-            System.out.println(startupContext.getConfigProvider().getInstance("forest.banner.text", String.class));
+    public void start(ApplicationContext applicationContext) {
+        applicationContext.getConfigProvider().addDefaultOptions("forest.banner", BannerOptions::new);
+        if (applicationContext.getConfigProvider().getInstance("forest.banner.enabled", Boolean.class)) {
+            System.out.println(applicationContext.getConfigProvider().getInstance("forest.banner.text", String.class));
         }
     }
 
