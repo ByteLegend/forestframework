@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,7 +66,12 @@ class PropertyUtils {
             if (paramRawType instanceof ParameterizedType) {
                 ParameterizedType pType = (ParameterizedType) paramRawType;
                 assertTrue(pType.getRawType() == List.class || pType.getRawType() == Set.class, "Setter " + setter.get() + " raw type must be List or Set!");
-                setter.get().invoke(bean, getListOrSet(list, pType.getRawType(), pType.getActualTypeArguments()[0]));
+                if (pType.getActualTypeArguments()[0] instanceof WildcardType) {
+                    // List<?>, set directly
+                    setter.get().invoke(bean, list);
+                } else {
+                    setter.get().invoke(bean, getListOrSet(list, pType.getRawType(), pType.getActualTypeArguments()[0]));
+                }
             } else {
                 assertTrue(paramRawType == List.class || paramRawType == Set.class, "Setter " + setter.get() + " raw type must be List or Set!");
                 Class genericType = getPropertyAdder(bean, key).map(method -> (Class) method.getParameterTypes()[0]).orElse(Object.class);
@@ -100,9 +106,9 @@ class PropertyUtils {
 
     private static Optional<Method> getPropertyAdderOrSetter(Object bean, String methodName) {
         Optional<Method> result = Stream.of(bean.getClass().getMethods())
-                .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method.getParameters().length == 1)
-                .findFirst();
+                                        .filter(method -> methodName.equals(method.getName()))
+                                        .filter(method -> method.getParameters().length == 1)
+                                        .findFirst();
         // fallback to ignoreCase
         // for example setHaEnabled -> setHAEnabled
         if (!result.isPresent()) {
@@ -114,9 +120,9 @@ class PropertyUtils {
 
     private static Optional<Method> getPropertyAdderOrSetterIgnoreCase(Object bean, String methodName) {
         return Stream.of(bean.getClass().getMethods())
-                .filter(method -> methodName.equalsIgnoreCase(method.getName()))
-                .filter(method -> method.getParameters().length == 1)
-                .findFirst();
+                     .filter(method -> methodName.equalsIgnoreCase(method.getName()))
+                     .filter(method -> method.getParameters().length == 1)
+                     .findFirst();
     }
 
     private static String singularize(String plural) {
@@ -139,9 +145,9 @@ class PropertyUtils {
 
     public static Method getPropertyGetter(Object bean, String key) {
         return Stream.of(bean.getClass().getMethods())
-                .filter(method -> isGetter(method, key))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Can't find setter " + key + " from " + bean + "!"));
+                     .filter(method -> isGetter(method, key))
+                     .findFirst()
+                     .orElseThrow(() -> new IllegalStateException("Can't find setter " + key + " from " + bean + "!"));
     }
 
     private static boolean isGetter(Method method, String key) {

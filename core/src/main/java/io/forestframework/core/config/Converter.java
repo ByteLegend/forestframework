@@ -11,6 +11,10 @@ import java.util.Map;
 import java.util.Objects;
 
 public interface Converter<IN, OUT> {
+    default boolean accept(IN in, Class<? extends IN> inType, Class<? extends OUT> outType) {
+        return true;
+    }
+
     OUT convert(IN in, Class<? extends IN> inType, Class<? extends OUT> outType);
 
     @SuppressWarnings("rawtypes")
@@ -24,17 +28,18 @@ enum DefaultConverter implements Converter<Object, Object> {
     INSTANCE;
 
     private final Map<Pair<Class, Class>, Converter> converters = ImmutableMap.<Pair<Class, Class>, Converter>builder()
-            .put(Pair.of(Object.class, String.class), new ObjectToString())
-            .put(Pair.of(Object.class, JsonObject.class), new ObjectToJsonObject())
-            .put(Pair.of(String.class, Enum.class), new StringToEnum())
-            .put(Pair.of(Object.class, long.class), new ObjectToLong())
-            .put(Pair.of(String.class, Long.class), new ObjectToLong())
-            .put(Pair.of(Object.class, Integer.class), new ObjectToInteger())
-            .put(Pair.of(Object.class, int.class), new ObjectToInteger())
-            .put(Pair.of(Object.class, Boolean.class), new ObjectToBoolean())
-            .put(Pair.of(Object.class, boolean.class), new ObjectToBoolean())
-            .put(Pair.of(Map.class, Object.class), new JsonObjectConstructorConverter())
-            .build();
+        .put(Pair.of(Object.class, String.class), new ObjectToString())
+        .put(Pair.of(Object.class, JsonObject.class), new ObjectToJsonObject())
+        .put(Pair.of(String.class, Enum.class), new StringToEnum())
+        .put(Pair.of(Object.class, long.class), new ObjectToLong())
+        .put(Pair.of(String.class, Long.class), new ObjectToLong())
+        .put(Pair.of(Object.class, Integer.class), new ObjectToInteger())
+        .put(Pair.of(Object.class, int.class), new ObjectToInteger())
+        .put(Pair.of(Object.class, Boolean.class), new ObjectToBoolean())
+        .put(Pair.of(Object.class, boolean.class), new ObjectToBoolean())
+        .put(Pair.of(Map.class, Object.class), new JsonObjectConstructorConverter())
+        .put(Pair.of(Map.class, Object.class), new ReflectionMapToObjectConverter())
+        .build();
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
@@ -43,7 +48,8 @@ enum DefaultConverter implements Converter<Object, Object> {
             return obj;
         }
         for (Map.Entry<Pair<Class, Class>, Converter> entry : converters.entrySet()) {
-            if (entry.getKey().getLeft().isAssignableFrom(inType) && entry.getKey().getRight().isAssignableFrom(outType)) {
+            if (entry.getKey().getLeft().isAssignableFrom(inType) && entry.getKey().getRight().isAssignableFrom(outType)
+                && entry.getValue().accept(obj, inType, outType)) {
                 return entry.getValue().convert(obj, inType, outType);
             }
         }
@@ -54,13 +60,47 @@ enum DefaultConverter implements Converter<Object, Object> {
 @SuppressWarnings("rawtypes")
 class JsonObjectConstructorConverter implements Converter<Map, Object> {
     @Override
+    public boolean accept(Map map, Class<? extends Map> inType, Class<?> outType) {
+        try {
+            outType.getConstructor(JsonObject.class);
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
+    @Override
     public Object convert(Map map, Class<? extends Map> inType, Class<?> outType) {
         try {
             Constructor<?> constructor = outType.getConstructor(JsonObject.class);
             return constructor.newInstance(new JsonObject(map));
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException("Can't convert " + map + " to type " + outType, e);
+        }
+    }
+}
+
+@SuppressWarnings("ALL")
+class ReflectionMapToObjectConverter implements Converter<Map, Object> {
+    @Override
+    public boolean accept(Map map, Class<? extends Map> inType, Class<?> outType) {
+        try {
+            outType.getConstructor();
+            return true;
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Can't convert " + map + " to type " + outType + " because constructor accepting JsonObject not found");
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public Object convert(Map map, Class<? extends Map> inType, Class<?> outType) {
+        try {
+            Object ret = outType.getConstructor().newInstance();
+            map.forEach((key, value) -> {
+                PropertyUtils.setProperty(ret, key.toString(), value);
+            });
+            return ret;
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("Can't convert " + map + " to type " + outType, e);
         }
     }

@@ -28,8 +28,9 @@ class ConfigProviderTest {
     val jsonParser = ObjectMapper()
 
     @ParameterizedTest(name = "{index}")
-    @ValueSource(strings = [
-        """
+    @ValueSource(
+        strings = [
+            """
 aaa:
   bbb:
     ccc:
@@ -41,7 +42,7 @@ aaa:
         - 42
         - "c"
     """,
-        """
+            """
 {
     "aaa": {
         "bbb": {
@@ -55,7 +56,8 @@ aaa:
         }
     }
 }
-        """])
+        """]
+    )
     fun `can read raw property`(configString: String) {
         val parser = if (configString.trim().startsWith("{")) jsonParser else yamlParser
         val provider = ConfigProvider(parser.readValue(configString, Map::class.java) as MutableMap<String, Any>, emptyMap())
@@ -211,14 +213,16 @@ forest:
     }
 
     @Test
-    @SystemProperty(name = "forest.http", value = """
+    @SystemProperty(
+        name = "forest.http", value = """
         {
             "port": 12345,
             "initialSettings": {
                  "headerTableSize": 8192
             }
         }
-        """)
+        """
+    )
     fun `environment json config overwrites file config`(@TempDir tempDir: File) {
         withSystemPropertyConfigFile(tempDir, realWorldConfig) {
             val provider = ConfigProvider.load()
@@ -267,7 +271,8 @@ forest:
     }
 
     @Test
-    @SystemProperty(name = "forest.bridge", value = """
+    @SystemProperty(
+        name = "forest.bridge", value = """
         {
             "outboundPermitteds": [
               {
@@ -275,7 +280,8 @@ forest:
               }
             ]
         }
-        """)
+        """
+    )
     fun `can configure option list`() {
         val provider = ConfigProvider.load()
 
@@ -283,6 +289,47 @@ forest:
         val options = provider.getInstance("forest.bridge", SockJSBridgeOptions::class.java)
         assertEquals(listOf("auction\\.[0-9]+"), options.outboundPermitteds.map { it.addressRegex })
     }
+
+    class TestPOJO {
+        var intValue: Int? = null
+        var stringValue: String? = null
+        var listValue: List<Any>? = null
+        var mapValue: Map<String, Any>? = null
+        var nestedValue: TestPOJO? = null
+    }
+
+    @Test
+    fun `can read map to POJO`() {
+        val provider = ConfigProvider(
+            mapOf(
+                "pojo" to
+                    mapOf(
+                        "intValue" to 1,
+                        "stringValue" to "abc",
+                        "listValue" to listOf(1, "a", 'b'),
+                        "mapValue" to mapOf("a" to 1),
+                        "nestedValue" to mapOf(
+                            "intValue" to 1,
+                            "stringValue" to "abc",
+                            "listValue" to listOf(1, "a", 'b'),
+                            "mapValue" to mapOf("a" to 1),
+                        )
+                    )
+            ), mapOf()
+        )
+
+        val pojo = provider.getInstance("pojo", TestPOJO::class.java)
+
+        assertEquals(1, pojo.intValue)
+        assertEquals(1, pojo.nestedValue!!.intValue)
+        assertEquals("abc", pojo.stringValue)
+        assertEquals("abc", pojo.nestedValue!!.stringValue)
+        assertEquals(listOf(1, "a", 'b'), pojo.listValue)
+        assertEquals(listOf(1, "a", 'b'), pojo.nestedValue!!.listValue)
+        assertEquals(mapOf("a" to 1), pojo.mapValue)
+        assertEquals(mapOf("a" to 1), pojo.nestedValue!!.mapValue)
+    }
+
 
     private fun withSystemPropertyConfigFile(tempDir: File, fileContent: String, function: () -> Unit) {
         val originalConfig = System.getProperty("forest.config.file")
