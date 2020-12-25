@@ -91,7 +91,14 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
                     // pre-handler says no
                     return CompletableFuture.completedFuture(Boolean.FALSE);
                 } else {
-                    return invokeRouting(preHandler, context);
+                    return invokeRouting(preHandler, context).thenApply((Object returnValue) -> {
+                        // special handing for suspend fun():Unit
+                        if (returnValue != null && "kotlin.Unit".equals(returnValue.getClass().getName())) {
+                            return true;
+                        } else {
+                            return (Boolean) returnValue;
+                        }
+                    });
                 }
             });
         }

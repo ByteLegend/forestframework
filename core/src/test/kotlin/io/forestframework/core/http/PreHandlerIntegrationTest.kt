@@ -1,9 +1,33 @@
 package io.forestframework.core.http
 
-import io.forestframework.core.http.routing.Get
+import io.forestframework.core.ForestApplication
+import io.forestframework.core.http.result.GetPlainText
+import io.forestframework.core.http.routing.PreHandler
+import io.forestframework.testfixtures.AbstractForestIntegrationTest
+import io.forestframework.testfixtures.DisableAutoScan
+import io.forestframework.testsupport.ForestExtension
+import io.forestframework.testsupport.ForestIntegrationTest
+import kotlinx.coroutines.delay
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
-@Router("/preHandlersChain")
-class PreHandlerIntegrationTest : AbstractTracingRouter() {
-    @Get("/get")
-    fun preHandle1() = runUnderTrace("preHandler1") {}
+@ForestApplication
+class PreHandlerIntegrationTestApp {
+    @PreHandler("/**")
+    suspend fun preHandlerReturningUnit() {
+        delay(100)
+    }
+
+    @GetPlainText("/test")
+    fun test() = ""
+}
+
+@DisableAutoScan
+@ForestIntegrationTest(appClass = PreHandlerIntegrationTestApp::class)
+@ExtendWith(ForestExtension::class)
+class PreHandlerIntegrationTest : AbstractForestIntegrationTest() {
+    @Test
+    fun test() {
+        get("/test").assert200()
+    }
 }
