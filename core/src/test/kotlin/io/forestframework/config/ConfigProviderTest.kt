@@ -312,7 +312,7 @@ forest:
                             "intValue" to 1,
                             "stringValue" to "abc",
                             "listValue" to listOf(1, "a", 'b'),
-                            "mapValue" to mapOf("a" to 1),
+                            "mapValue" to mapOf("a" to 1)
                         )
                     )
             ), mapOf()
@@ -329,7 +329,6 @@ forest:
         assertEquals(mapOf("a" to 1), pojo.mapValue)
         assertEquals(mapOf("a" to 1), pojo.nestedValue!!.mapValue)
     }
-
 
     private fun withSystemPropertyConfigFile(tempDir: File, fileContent: String, function: () -> Unit) {
         val originalConfig = System.getProperty("forest.config.file")
