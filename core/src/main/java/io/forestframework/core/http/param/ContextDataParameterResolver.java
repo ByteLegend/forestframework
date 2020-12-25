@@ -8,11 +8,11 @@ import javax.inject.Singleton;
 import static com.github.blindpirate.annotationmagic.AnnotationMagic.getOneAnnotationOnMethodParameterOrNull;
 
 @Singleton
-public class CookieParameterResolver implements RoutingParameterResolver<WebContext> {
+public class ContextDataParameterResolver implements RoutingParameterResolver<WebContext> {
     @Override
     public Object resolveParameter(WebContext context, Routing routing, int paramIndex) {
-        Cookie anno = getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), paramIndex, Cookie.class);
-        io.vertx.core.http.Cookie cookie = context.request().getCookie(anno.value());
-        return cookie == null ? null : cookie.getValue();
+        ContextData anno = getOneAnnotationOnMethodParameterOrNull(routing.getHandlerMethod(), paramIndex, ContextData.class);
+        Class<?> parameterType = routing.getHandlerMethod().getParameterTypes()[paramIndex];
+        return parameterType.cast(context.get(anno.value()));
     }
 }
