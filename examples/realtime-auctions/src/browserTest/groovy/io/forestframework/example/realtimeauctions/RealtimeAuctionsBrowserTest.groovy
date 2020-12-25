@@ -4,11 +4,8 @@ import geb.Browser
 import geb.Configuration
 import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.BrowserTest
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
-import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(ForestExtension.class)
 @ForestIntegrationTest(appClass = RealtimeAuctionsApp.class)
 class RealtimeAuctionsBrowserTest extends AbstractBrowserTest {
     @BrowserTest

@@ -10,7 +10,6 @@ import io.forestframework.core.http.websocket.WebSocketEventType
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.ServerWebSocket
@@ -23,7 +22,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.junit.jupiter.api.extension.ExtendWith
 import javax.inject.Inject
 
 @ForestApplication
@@ -53,7 +51,6 @@ class WebSocketTestApp {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = WebSocketTestApp::class)
 @DisableAutoScan
 @Timeout(120)

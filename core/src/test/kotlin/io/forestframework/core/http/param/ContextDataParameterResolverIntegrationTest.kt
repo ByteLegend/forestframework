@@ -7,10 +7,8 @@ import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.core.http.routing.PreHandler
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -36,7 +34,6 @@ class ContextDataParameterResolverIntegrationTestApp {
     fun readIntFromContextIncorrect(@ContextData("int") data: String?) = data
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = ContextDataParameterResolverIntegrationTestApp::class)
 @DisableAutoScan
 class ContextDataParameterResolverIntegrationTest : AbstractForestIntegrationTest() {

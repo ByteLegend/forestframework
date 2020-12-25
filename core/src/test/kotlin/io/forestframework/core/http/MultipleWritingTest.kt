@@ -10,12 +10,10 @@ import io.forestframework.core.http.routing.Routing
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Future
 import io.vertx.core.buffer.Buffer
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 @Retention(AnnotationRetention.RUNTIME)
 @Extends(ResultProcessor::class)
@@ -60,7 +58,6 @@ class MultiWritingTestApp {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = MultiWritingTestApp::class)
 @DisableAutoScan
 class MultipleWritingTest : AbstractForestIntegrationTest() {

@@ -7,16 +7,14 @@ import io.forestframework.core.http.HttpResponse
 import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.ext.api.After
 import io.forestframework.ext.api.Before
-import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.api.Extension
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.core.AutoRoutingScanExtension
 import io.forestframework.ext.core.HttpServerExtension
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 class DynamicAddingRoutingExtension : Extension {
     override fun configure(injector: Injector) {
@@ -84,7 +82,6 @@ class DynamicRoutingIntegrationTestApp {
     fun index() = "index_"
 }
 
-@ExtendWith(ForestExtension::class)
 @WithExtensions(extensions = [DynamicAddingRoutingExtension::class])
 @ForestIntegrationTest(appClass = DynamicRoutingIntegrationTestApp::class)
 @DisableAutoScan

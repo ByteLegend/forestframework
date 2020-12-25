@@ -8,12 +8,10 @@ import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.Router;
 import io.forestframework.ext.core.IncludeComponents;
 import io.forestframework.testfixtures.DisableAutoScan;
-import io.forestframework.testsupport.ForestExtension;
 import io.forestframework.testsupport.ForestIntegrationTest;
 import io.vertx.core.http.HttpServerRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -175,7 +173,6 @@ class PrehandlerErrorPreventPropagation extends AbstractTraceableRouter {
     }
 }
 
-@ExtendWith(ForestExtension.class)
 @ForestIntegrationTest(appClass = MyCustomErrorHandlerApp.class)
 @DisableAutoScan
 @IncludeComponents(classes = {

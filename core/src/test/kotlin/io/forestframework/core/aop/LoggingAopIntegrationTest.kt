@@ -8,18 +8,16 @@ import com.google.inject.matcher.Matchers
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.param.QueryParam
 import io.forestframework.core.http.result.GetPlainText
-import io.forestframework.ext.api.WithExtensions
-import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.ApplicationContext
+import io.forestframework.ext.api.Extension
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.aopalliance.intercept.MethodInterceptor
 import org.aopalliance.intercept.MethodInvocation
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.lang.reflect.Method
@@ -83,7 +81,6 @@ open class ClassedService {
     open fun classed(param1: String, param2: Int) = "$param1 $param2"
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = LoggingAopApp::class)
 class LoggingAopIntegrationTest : AbstractForestIntegrationTest() {
     @Inject

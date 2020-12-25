@@ -5,13 +5,11 @@ import io.forestframework.core.http.HttpResponse
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import kotlinx.coroutines.delay
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
@@ -47,7 +45,6 @@ class PreHandlerExceptionIntegrationTestApp {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = PreHandlerExceptionIntegrationTestApp::class)
 @DisableAutoScan
 class PreHandlerExceptionIntegrationTest : AbstractForestIntegrationTest() {

@@ -6,10 +6,8 @@ import io.forestframework.core.http.param.QueryParam
 import io.forestframework.core.http.routing.Get
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 @ForestApplication
 class RedirectResultProcessorIntegrationTestApp {
@@ -18,7 +16,6 @@ class RedirectResultProcessorIntegrationTestApp {
     fun redirect(@QueryParam("to") to: String) = to
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = RedirectResultProcessorIntegrationTestApp::class)
 @DisableAutoScan
 class RedirectResultProcessorIntegrationTest : AbstractForestIntegrationTest() {

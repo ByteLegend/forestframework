@@ -7,7 +7,6 @@ import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.kotlin.coroutines.await
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.condition.EnabledOnJre
 import org.junit.jupiter.api.condition.JRE.JAVA_11
-import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -79,7 +77,6 @@ class WebSocketChatRoomRouter {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = WebSocketChatRoomApp::class)
 @DisableAutoScan
 @IncludeComponents(classes = [WebSocketChatRoomRouter::class])

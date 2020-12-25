@@ -9,10 +9,8 @@ import io.forestframework.core.http.result.RoutingResultProcessor
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 @Retention(AnnotationRetention.RUNTIME)
 @Extends(ResultProcessor::class)
@@ -37,7 +35,6 @@ class RoutingResultProcessorIntegrationTestApp {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = RoutingResultProcessorIntegrationTestApp::class)
 @DisableAutoScan
 class RoutingResultProcessorIntegrationTest : AbstractForestIntegrationTest() {

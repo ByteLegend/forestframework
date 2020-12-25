@@ -3,13 +3,12 @@ package io.forestframework.testsupport
 import com.google.inject.Module
 import io.forestframework.core.ForestApplication
 import io.forestframework.ext.api.After
-import io.forestframework.ext.api.WithExtensions
-import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.ApplicationContext
+import io.forestframework.ext.api.Extension
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.testfixtures.DisableAutoScan
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import javax.inject.Inject
 
 interface MockableService {
@@ -49,7 +48,6 @@ class MockBeanExtension : Extension {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = MockBeanIntegrationTestApp::class)
 @DisableAutoScan
 @WithExtensions(extensions = [MockBeanExtension::class])

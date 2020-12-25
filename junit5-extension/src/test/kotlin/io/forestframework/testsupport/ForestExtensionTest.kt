@@ -3,18 +3,17 @@ package io.forestframework.testsupport
 import com.github.blindpirate.annotationmagic.Extends
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.config.ConfigProvider
-import io.forestframework.ext.api.WithExtensions
-import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.ApplicationContext
-import io.forestframework.ext.core.AutoRoutingScanExtension
+import io.forestframework.ext.api.Extension
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.core.AutoComponentScanExtension
+import io.forestframework.ext.core.AutoRoutingScanExtension
 import io.forestframework.ext.core.BannerExtension
 import io.forestframework.ext.core.ExtraConfig
 import io.forestframework.ext.core.HttpServerExtension
-import javax.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
+import javax.inject.Inject
 
 class Extension1 : Extension
 class Extension2 : Extension
@@ -51,7 +50,6 @@ annotation class EnableExtension7
 @EnableExtension5
 class App
 
-@ExtendWith(ForestExtension::class)
 @EnableExtension1
 @ForestIntegrationTest(appClass = App::class)
 @WithExtensions(extensions = [Extension6::class])
@@ -85,7 +83,6 @@ class ForestExtensionOrderTest {
 @ExtraConfig(value = ["forest.order.test=1"])
 class AppWithExtraConfig
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = AppWithExtraConfig::class)
 @ExtraConfig(value = ["forest.order.test=2"])
 class TestExtraConfigOverwritingAppExtraConfigTest {
@@ -98,7 +95,6 @@ class TestExtraConfigOverwritingAppExtraConfigTest {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ExtraConfig(value = ["forest.order.test=2"])
 @ForestIntegrationTest(appClass = AppWithExtraConfig::class)
 class TestExtraConfigNotOverwritingAppExtraConfigText {

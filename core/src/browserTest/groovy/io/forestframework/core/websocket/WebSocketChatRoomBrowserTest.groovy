@@ -14,13 +14,11 @@ import io.forestframework.core.http.websocket.OnWSOpen
 import io.forestframework.ext.core.AutoStaticResourceScan
 import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.BrowserTest
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.ServerWebSocket
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.junit.jupiter.api.extension.ExtendWith
 
 import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
@@ -86,8 +84,6 @@ class WebSocketChatRoomRouter {
     }
 }
 
-
-@ExtendWith(ForestExtension.class)
 @ForestIntegrationTest(appClass = WebSocketChatRoomBrowserTestApp.class)
 class WebSocketChatRoomBrowserTest extends AbstractBrowserTest {
     @BrowserTest

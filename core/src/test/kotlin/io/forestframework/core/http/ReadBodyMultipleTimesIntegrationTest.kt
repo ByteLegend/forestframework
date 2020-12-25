@@ -10,10 +10,8 @@ import io.forestframework.core.http.routing.Post
 import io.forestframework.core.http.routing.PreHandler
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 @ForestApplication
 class ReadBodyMultipleTimesIntegrationTestApp {
@@ -26,7 +24,6 @@ class ReadBodyMultipleTimesIntegrationTestApp {
     fun getText(@JsonRequestBody body: String) = body
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = ReadBodyMultipleTimesIntegrationTestApp::class)
 @DisableAutoScan
 class ReadBodyMultipleTimesIntegrationTest : AbstractForestIntegrationTest() {

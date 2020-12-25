@@ -5,14 +5,12 @@ import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.StringContains.containsString
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -21,7 +19,6 @@ import org.junit.jupiter.params.provider.ValueSource
 @ForestApplication
 class StaticResourceExtensionTestApplication
 
-@ExtendWith(ForestExtension::class)
 @ExtraConfig(value = ["forest.static.webroot=StaticResourceTestData"])
 @ForestIntegrationTest(appClass = StaticResourceExtensionTestApplication::class)
 @DisableAutoScan
@@ -59,7 +56,6 @@ class AutoStaticResourceScanExtensionIntegrationTest : AbstractForestIntegration
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ExtraConfig(value = ["""forest.static.webroots=[
                 "StaticResourceTestData/img",
                 "StaticResourceTestData/js",
@@ -109,7 +105,6 @@ class AutoStaticResourceScanExtensionMultipleWebrootsIntegrationTest : AbstractF
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = RouterWithPredefinedRoot::class)
 class AutoStaticResourceScanExtensionTestApplicationWithPredefinedRoot : AbstractForestIntegrationTest() {
     @Test

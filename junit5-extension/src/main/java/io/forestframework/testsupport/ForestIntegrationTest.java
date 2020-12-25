@@ -2,6 +2,7 @@ package io.forestframework.testsupport;
 
 import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.ext.api.WithExtensions;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -17,6 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Extends(WithExtensions.class)
+@ExtendWith(ForestExtension.class)
 @WithExtensions(extensions = {BindFreePortExtension.class})
 public @interface ForestIntegrationTest {
     /**

@@ -5,9 +5,7 @@ import io.forestframework.core.http.HttpMethod
 import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import java.util.Objects
@@ -27,7 +25,6 @@ class HeaderParameterResolverIntegrationTestApp {
     fun multipleMatches(@Header("MultipleMatches") header: String) = header
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = HeaderParameterResolverIntegrationTestApp::class)
 @DisableAutoScan
 class HeaderParameterResolverIntegrationTest : AbstractForestIntegrationTest() {

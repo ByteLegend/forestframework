@@ -5,11 +5,9 @@ import io.forestframework.core.http.result.GetPlainText
 import io.forestframework.core.http.routing.PreHandler
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 @ForestApplication
 class PreHandlerIntegrationTestApp {
@@ -24,7 +22,6 @@ class PreHandlerIntegrationTestApp {
 
 @DisableAutoScan
 @ForestIntegrationTest(appClass = PreHandlerIntegrationTestApp::class)
-@ExtendWith(ForestExtension::class)
 class PreHandlerIntegrationTest : AbstractForestIntegrationTest() {
     @Test
     fun test() {

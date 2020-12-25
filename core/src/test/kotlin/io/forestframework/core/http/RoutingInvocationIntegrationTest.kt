@@ -16,17 +16,15 @@ import io.forestframework.ext.core.IncludeComponents
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Promise
 import io.vertx.core.Vertx
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @ForestApplication
 class RoutingInvocationIntegrationTestApp
@@ -157,7 +155,6 @@ class ParamNotAbleResolveErrorRouter {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = RoutingInvocationIntegrationTestApp::class)
 @DisableAutoScan
 @IncludeComponents(classes = [OrderTestRouter::class, ErrorInParamResolverRouter::class, ParamNotAbleResolveErrorRouter::class])

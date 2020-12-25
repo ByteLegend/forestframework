@@ -11,13 +11,13 @@ import io.forestframework.example.todo.java.sync.jdbc.TodoApplicationJavaSyncJDB
 import io.forestframework.example.todo.java.sync.redis.TodoApplicationJavaSyncRedis
 import io.forestframework.example.todo.kotlin.jdbc.TodoApplicationKotlinCoroutinesJDBC
 import io.forestframework.example.todo.kotlin.redis.TodoApplicationKotlinCoroutinesRedis
-import io.forestframework.ext.api.WithExtensions
-import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.ApplicationContext
+import io.forestframework.ext.api.Extension
+import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.core.ExtraConfig
 import io.forestframework.testfixtures.AbstractBrowserTest
-import io.forestframework.testfixtures.EmbeddedRedisExtension
 import io.forestframework.testfixtures.BrowserTest
+import io.forestframework.testfixtures.EmbeddedRedisExtension
 import io.forestframework.testfixtures.RedisSetUpExtension
 import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
@@ -51,7 +51,6 @@ abstract class AbstractTodoApplicationBrowserTest extends AbstractBrowserTest {
 }
 
 
-@ExtendWith(ForestExtension.class)
 @ForestIntegrationTest(appClass = TodoApplicationKotlinCoroutinesJDBC.class)
 @ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCBrowserTest;DATABASE_TO_UPPER=false"])
 @WithExtensions(extensions = JsSpecExtension.class)
@@ -59,39 +58,31 @@ class TodoApplicationKotlinCoroutinesJDBCBrowserTest extends AbstractTodoApplica
 }
 
 
-@ExtendWith(EmbeddedRedisExtension.class)
-@ExtendWith(RedisSetUpExtension.class)
-@ExtendWith(ForestExtension.class)
+@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class, ForestExtension.class])
 @ForestIntegrationTest(appClass = TodoApplicationKotlinCoroutinesRedis.class)
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationRedisKotlinCoroutinesBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
-@ExtendWith(ForestExtension.class)
 @ForestIntegrationTest(appClass = TodoApplicationJavaAsyncJDBC.class)
 @ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaAsyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
-@ExtendWith(EmbeddedRedisExtension.class)
-@ExtendWith(RedisSetUpExtension.class)
-@ExtendWith(ForestExtension.class)
+@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class, ForestExtension.class])
 @ForestIntegrationTest(appClass = TodoApplicationJavaAsyncRedis.class)
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaAsyncRedisBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
-@ExtendWith(ForestExtension.class)
 @ForestIntegrationTest(appClass = TodoApplicationJavaSyncJDBC.class)
 @ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaSyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
-@ExtendWith(EmbeddedRedisExtension.class)
-@ExtendWith(RedisSetUpExtension.class)
-@ExtendWith(ForestExtension.class)
+@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class, ForestExtension.class])
 @ForestIntegrationTest(appClass = TodoApplicationJavaSyncRedis.class)
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaSyncBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {

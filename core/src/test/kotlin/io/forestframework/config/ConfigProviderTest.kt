@@ -13,14 +13,14 @@ import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions
 import io.vertx.redis.client.RedisClientType
 import io.vertx.redis.client.RedisOptions
 import io.vertx.redis.client.RedisRole
-import java.io.File
-import java.util.Collections.emptyList
-import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.io.File
+import java.util.Collections.emptyList
+import java.util.concurrent.TimeUnit
 
 @Suppress("UNCHECKED_CAST")
 class ConfigProviderTest {

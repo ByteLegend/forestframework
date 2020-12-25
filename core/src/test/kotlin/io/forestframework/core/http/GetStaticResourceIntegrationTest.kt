@@ -7,11 +7,9 @@ import io.forestframework.core.http.staticresource.GetStaticResource
 import io.forestframework.testfixtures.AbstractForestIntegrationTest
 import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testfixtures.runBlockingUnit
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
@@ -41,7 +39,6 @@ class GetStaticResourceIntegrationTestApp {
     }
 }
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = GetStaticResourceIntegrationTestApp::class)
 @DisableAutoScan
 class GetStaticResourceIntegrationTest : AbstractForestIntegrationTest() {
