@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -67,7 +68,10 @@ public class DefaultBridgeRequestHandler extends AbstractWebRequestHandler imple
 
     @SuppressWarnings("unchecked")
     private SockJSBridgeOptions getOptions(String path) {
-        Map<String, Map<String, Object>> allOptions = configProvider.getInstance("forest.bridge", Map.class);
+        Map<String, Map<String, Object>> allOptions = configProvider.getInstance("bridge", Map.class);
+        if (allOptions == null) {
+            allOptions = Collections.emptyMap();
+        }
         Map<String, Object> optionsOfPath = allOptions.get(path);
         if (optionsOfPath == null) {
             return new SockJSBridgeOptions();

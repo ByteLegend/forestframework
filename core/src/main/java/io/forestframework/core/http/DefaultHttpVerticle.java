@@ -19,7 +19,7 @@ public class DefaultHttpVerticle extends AbstractVerticle {
     @Inject
     public DefaultHttpVerticle(Vertx vertx,
                                HttpRequestHandler httpRequestHandler,
-                               @Config("forest.http") HttpServerOptions httpServerOptions) {
+                               @Config("http") HttpServerOptions httpServerOptions) {
         this.vertx = vertx;
         this.httpRequestHandler = httpRequestHandler;
         this.httpServerOptions = httpServerOptions;

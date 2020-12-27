@@ -17,7 +17,7 @@ public class JDBCClientExtension implements Extension {
 
     public static class JDBCModule extends AbstractModule {
         @Provides
-        public JDBCClient createClient(@Config("forest.jdbc") JsonObject config, Vertx vertx) {
+        public JDBCClient createClient(@Config("jdbc") JsonObject config, Vertx vertx) {
             return JDBCClient.create(vertx, config);
         }
     }

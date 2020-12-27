@@ -117,7 +117,7 @@ class MediaTypeNegotiatingIntegrationTest {
         produces: List<String> = listOf("*/*"),
         consumes: List<String> = listOf("*/*")
     ): Int {
-        val configProvider = ConfigProvider(HashMap(), HashMap())
+        val configProvider = ConfigProvider()
         val extensions = listOf(
             BindFreePortExtension(),
             object : Extension {
@@ -142,7 +142,7 @@ class MediaTypeNegotiatingIntegrationTest {
             HttpServerExtension()
         )
         DefaultApplicationContext(vertx, MediaTypeNegotiatingIntegrationTest::class.java, configProvider, extensions).start()
-        return configProvider.getInstance("forest.http.port", Integer::class.java).toInt()
+        return configProvider.getInstance("http.port", Integer::class.java).toInt()
     }
 
     @TestFactory

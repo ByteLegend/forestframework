@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.ValueSource
 @ForestApplication
 class StaticResourceExtensionTestApplication
 
-@ExtraConfig(value = ["forest.static.webroot=StaticResourceTestData"])
+@ExtraConfig(value = ["static.webroot=StaticResourceTestData"])
 @ForestIntegrationTest(appClass = StaticResourceExtensionTestApplication::class)
 @DisableAutoScan
 class AutoStaticResourceScanExtensionIntegrationTest : AbstractForestIntegrationTest() {
@@ -56,7 +56,7 @@ class AutoStaticResourceScanExtensionIntegrationTest : AbstractForestIntegration
     }
 }
 
-@ExtraConfig(value = ["""forest.static.webroots=[
+@ExtraConfig(value = ["""static.webroots=[
                 "StaticResourceTestData/img",
                 "StaticResourceTestData/js",
                 "StaticResourceTestData/css"

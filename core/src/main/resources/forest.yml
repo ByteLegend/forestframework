@@ -1,150 +1,149 @@
-forest:
-  deploy:
-    instances: 2
-  environment: dev
-  static:
-    webroot: static
-  vertx:
-    eventLoopPoolSize: 8
-    workerPoolSize: 20
-    internalBlockingPoolSize: 20
-    blockedThreadCheckInterval: 1000
-    blockedThreadCheckIntervalUnit: MILLISECONDS
-    maxEventLoopExecuteTime: 2000000000
-    maxEventLoopExecuteTimeUnit: NANOSECONDS
-    maxWorkerExecuteTime: 60000000000
-    maxWorkerExecuteTimeUnit: NANOSECONDS
-    warningExceptionTime: 5000000000
-    warningExceptionTimeUnit: NANOSECONDS
-    haEnabled: false
-    quorumSize: 1
-    haGroup: __DEFAULT__
-    metricsOptions:
-      enabled: false
-    eventBusOptions:
-      port: 0
-      host: 0.0.0.0
-      acceptBacklog: -1
-      clientAuth: NONE
-      reconnectAttempts: 0
-      reconnectInterval: 1000
-      connectTimeout: 60000
-      trustAll: true
-    addressResolverOptions:
-      servers: null
-      optResourceEnabled: false
-      cacheMinTimeToLive: 0
-      cacheMaxTimeToLive: 0x7fffffff
-      cacheNegativeTimeToLive: 0
-      queryTimeout: 5000
-      maxQueries: 4
-      rdFlag: true
-      searchDomains: null
-      ndots: 1
-      rotateServers: false
-  http:
-    # https://github.com/eclipse-vertx/vert.x/blob/3cfe7dc620fb8bd7acf63b61231cebd5a8d3c62c/src/main/java/io/vertx/core/http/HttpServerOptions.java#L30
-    #
-    port: 8080
-    compressionSupported: false
-    compressionLevel: 6
-    maxWebSocketFrameSize: 65536
-    maxWebSocketMessageSize: 262144
-    handle100ContinueAutomatically: false
-    maxChunkSize: 8192
-    maxInitialLineLength: 4096
-    maxHeaderSize: 8192
-    initialSettings:
-      headerTableSize: 4096
-      pushEnabled: true
-      maxConcurrentStreams: 100
-      initialWindowSize: 65535
-      maxFrameSize: 16384
-      maxHeaderListSize: 0x7fffffff
-      extraSettings: {}
-    alpnVersions:
-      - HTTP_2
-      - HTTP_1_1
-    http2ConnectionWindowSize: -1
-    decompressionSupported: false
-    acceptUnmaskedFrames: false
-    decoderInitialBufferSize: 128
-    perFrameWebSocketCompressionSupported: true
-    perMessageWebSocketCompressionSupported: true
-    webSocketCompressionLevel: 6
-    webSocketPreferredClientNoContext: false
-    webSocketAllowServerNoContext: false
-  jdbc:
-    url: ""
-    # https://vertx.io/docs/vertx-jdbc-client/java/#_configuration
-    # https://github.com/vert-x3/vertx-jdbc-client/blob/01e9e0f4e74c0a3b4ea2f2d185cd9fc4c8ff4d7a/src/main/java/io/vertx/ext/jdbc/spi/impl/C3P0DataSourceProvider.java#L38-L49
-    # https://github.com/swaldman/c3p0/blob/c422ead14de1ca530b72d5e0515880b7ed27df1e/src/java/com/mchange/v2/c3p0/impl/C3P0Defaults.java#L44
-    provider_class: "io.vertx.ext.jdbc.spi.impl.C3P0DataSourceProvider"
-    c3p0:
-      driver_class: ""
-      user: ""
-      password: ""
-      max_pool_size: 15
-      initial_pool_size: 3
-      min_pool_size: 3
-      max_statements: 0
-      max_statements_per_connection: 0
-      max_idle_time: 0
-      acquire_retry_attempts: 30
-      acquire_retry_delay: 1000
-      break_after_acquire_failure: false
-  redis:
-    # https://vertx.io/docs/vertx-redis-client/java
-    # https://github.com/vert-x3/vertx-redis-client/blob/18a672b/src/main/java/io/vertx/redis/client/RedisOptions.java
-    netClientOptions:
-      connectTimeout: 60000
-      trustAll: false
-      metricsName: ""
-      proxyOptions: null
-      localAddress: null
-      tcpNoDelay: true
-      tcpKeepAlive: true
-      soLinger: -1
-      idleTimeout: 0
-      idleTimeoutUnit: SECONDS
-      ssl: false
-      sslHandshakeTimeout: 10
-      sslHandshakeTimeoutUnit: SECONDS
-      enabledCipherSuites: []
-      crlPaths: []
-      crlValues: []
-      useAlpn: false
-      sslEngineOptions: null
-      enabledSecureTransportProtocols:
-        - TLSv1
-        - TLSv1.1
-        - TLSv1.2
-      tcpFastOpen: false
-      tcpCork: false
-      tcpQuickAck: false
-      reconnectAttempts: 0
-      reconnectInterval: 1000
-      hostnameVerificationAlgorithm: ""
-    maxWaitingHandlers: 2048
-    maxNestedArrays: 32
-    masterName: mymaster
-    role: MASTER
-    type: STANDALONE
-    poolCleanerInterval: -1
-    maxPoolSize: 6
-    maxPoolWaiting: 24
-    poolRecycleTimeout: 15000
-  pg:
-    connect:
-      host: localhost
-      port: 5432
-      database: db
-      user: user
-      password: pass
-      cachePreparedStatements: false
-      pipeliningLimit: 256
-      sslMode: DISABLE
-    pool:
-      maxSize: 4
-      maxWaitQueueSize: -1
+deploy:
+  instances: 2
+environment: dev
+static:
+  webroot: static
+vertx:
+  eventLoopPoolSize: 8
+  workerPoolSize: 20
+  internalBlockingPoolSize: 20
+  blockedThreadCheckInterval: 1000
+  blockedThreadCheckIntervalUnit: MILLISECONDS
+  maxEventLoopExecuteTime: 2000000000
+  maxEventLoopExecuteTimeUnit: NANOSECONDS
+  maxWorkerExecuteTime: 60000000000
+  maxWorkerExecuteTimeUnit: NANOSECONDS
+  warningExceptionTime: 5000000000
+  warningExceptionTimeUnit: NANOSECONDS
+  haEnabled: false
+  quorumSize: 1
+  haGroup: __DEFAULT__
+  metricsOptions:
+    enabled: false
+  eventBusOptions:
+    port: 0
+    host: 0.0.0.0
+    acceptBacklog: -1
+    clientAuth: NONE
+    reconnectAttempts: 0
+    reconnectInterval: 1000
+    connectTimeout: 60000
+    trustAll: true
+  addressResolverOptions:
+    servers: null
+    optResourceEnabled: false
+    cacheMinTimeToLive: 0
+    cacheMaxTimeToLive: 0x7fffffff
+    cacheNegativeTimeToLive: 0
+    queryTimeout: 5000
+    maxQueries: 4
+    rdFlag: true
+    searchDomains: null
+    ndots: 1
+    rotateServers: false
+http:
+  # https://github.com/eclipse-vertx/vert.x/blob/3cfe7dc620fb8bd7acf63b61231cebd5a8d3c62c/src/main/java/io/vertx/core/http/HttpServerOptions.java#L30
+  #
+  port: 8080
+  compressionSupported: false
+  compressionLevel: 6
+  maxWebSocketFrameSize: 65536
+  maxWebSocketMessageSize: 262144
+  handle100ContinueAutomatically: false
+  maxChunkSize: 8192
+  maxInitialLineLength: 4096
+  maxHeaderSize: 8192
+  initialSettings:
+    headerTableSize: 4096
+    pushEnabled: true
+    maxConcurrentStreams: 100
+    initialWindowSize: 65535
+    maxFrameSize: 16384
+    maxHeaderListSize: 0x7fffffff
+    extraSettings: {}
+  alpnVersions:
+    - HTTP_2
+    - HTTP_1_1
+  http2ConnectionWindowSize: -1
+  decompressionSupported: false
+  acceptUnmaskedFrames: false
+  decoderInitialBufferSize: 128
+  perFrameWebSocketCompressionSupported: true
+  perMessageWebSocketCompressionSupported: true
+  webSocketCompressionLevel: 6
+  webSocketPreferredClientNoContext: false
+  webSocketAllowServerNoContext: false
+jdbc:
+  url: ""
+  # https://vertx.io/docs/vertx-jdbc-client/java/#_configuration
+  # https://github.com/vert-x3/vertx-jdbc-client/blob/01e9e0f4e74c0a3b4ea2f2d185cd9fc4c8ff4d7a/src/main/java/io/vertx/ext/jdbc/spi/impl/C3P0DataSourceProvider.java#L38-L49
+  # https://github.com/swaldman/c3p0/blob/c422ead14de1ca530b72d5e0515880b7ed27df1e/src/java/com/mchange/v2/c3p0/impl/C3P0Defaults.java#L44
+  provider_class: "io.vertx.ext.jdbc.spi.impl.C3P0DataSourceProvider"
+  c3p0:
+    driver_class: ""
+    user: ""
+    password: ""
+    max_pool_size: 15
+    initial_pool_size: 3
+    min_pool_size: 3
+    max_statements: 0
+    max_statements_per_connection: 0
+    max_idle_time: 0
+    acquire_retry_attempts: 30
+    acquire_retry_delay: 1000
+    break_after_acquire_failure: false
+redis:
+  # https://vertx.io/docs/vertx-redis-client/java
+  # https://github.com/vert-x3/vertx-redis-client/blob/18a672b/src/main/java/io/vertx/redis/client/RedisOptions.java
+  netClientOptions:
+    connectTimeout: 60000
+    trustAll: false
+    metricsName: ""
+    proxyOptions: null
+    localAddress: null
+    tcpNoDelay: true
+    tcpKeepAlive: true
+    soLinger: -1
+    idleTimeout: 0
+    idleTimeoutUnit: SECONDS
+    ssl: false
+    sslHandshakeTimeout: 10
+    sslHandshakeTimeoutUnit: SECONDS
+    enabledCipherSuites: []
+    crlPaths: []
+    crlValues: []
+    useAlpn: false
+    sslEngineOptions: null
+    enabledSecureTransportProtocols:
+      - TLSv1
+      - TLSv1.1
+      - TLSv1.2
+    tcpFastOpen: false
+    tcpCork: false
+    tcpQuickAck: false
+    reconnectAttempts: 0
+    reconnectInterval: 1000
+    hostnameVerificationAlgorithm: ""
+  maxWaitingHandlers: 2048
+  maxNestedArrays: 32
+  masterName: mymaster
+  role: MASTER
+  type: STANDALONE
+  poolCleanerInterval: -1
+  maxPoolSize: 6
+  maxPoolWaiting: 24
+  poolRecycleTimeout: 15000
+pg:
+  connect:
+    host: localhost
+    port: 5432
+    database: db
+    user: user
+    password: pass
+    cachePreparedStatements: false
+    pipeliningLimit: 256
+    sslMode: DISABLE
+  pool:
+    maxSize: 4
+    maxWaitQueueSize: -1
 

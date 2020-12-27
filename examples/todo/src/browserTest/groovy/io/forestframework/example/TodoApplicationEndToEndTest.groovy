@@ -52,7 +52,7 @@ abstract class AbstractTodoApplicationBrowserTest extends AbstractBrowserTest {
 
 
 @ForestIntegrationTest(appClass = TodoApplicationKotlinCoroutinesJDBC.class)
-@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCBrowserTest;DATABASE_TO_UPPER=false"])
+@ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCBrowserTest;DATABASE_TO_UPPER=false"])
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationKotlinCoroutinesJDBCBrowserTest extends AbstractTodoApplicationBrowserTest {
 }
@@ -65,7 +65,7 @@ class TodoApplicationRedisKotlinCoroutinesBrowserIntegrationTest extends Abstrac
 }
 
 @ForestIntegrationTest(appClass = TodoApplicationJavaAsyncJDBC.class)
-@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
+@ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationJavaAsyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaAsyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
@@ -77,7 +77,7 @@ class TodoApplicationJavaAsyncRedisBrowserIntegrationTest extends AbstractTodoAp
 }
 
 @ForestIntegrationTest(appClass = TodoApplicationJavaSyncJDBC.class)
-@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
+@ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCEndToEndIntegrationTest;DATABASE_TO_UPPER=false"])
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaSyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }

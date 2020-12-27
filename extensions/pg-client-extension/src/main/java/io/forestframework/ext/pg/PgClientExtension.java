@@ -16,8 +16,8 @@ public class PgClientExtension implements Extension {
     @Override
     public void start(ApplicationContext applicationContext) {
         applicationContext.getComponents().add(PgClientModule.class);
-        applicationContext.getConfigProvider().addDefaultOptions("forest.pg.connect", PgConnectOptions::new);
-        applicationContext.getConfigProvider().addDefaultOptions("forest.pg.pool", PoolOptions::new);
+        applicationContext.getConfigProvider().addDefaultOptions("pg.connect", PgConnectOptions::new);
+        applicationContext.getConfigProvider().addDefaultOptions("pg.pool", PoolOptions::new);
     }
 
     public static class PgClientModule extends AbstractModule {
@@ -25,11 +25,11 @@ public class PgClientExtension implements Extension {
         private Vertx vertx;
 
         @Inject
-        @Config("forest.pg.connect")
+        @Config("pg.connect")
         private PgConnectOptions pgConnectOptions;
 
         @Inject
-        @Config("forest.pg.pool")
+        @Config("pg.pool")
         private PoolOptions poolOptions;
 
         @Provides

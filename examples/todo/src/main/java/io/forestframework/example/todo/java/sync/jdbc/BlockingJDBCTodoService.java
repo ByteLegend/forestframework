@@ -47,9 +47,9 @@ public class BlockingJDBCTodoService implements TodoService {
 
     @Inject
     public BlockingJDBCTodoService(ConfigProvider configProvider) {
-        this.databaseUrl = configProvider.getInstance("forest.jdbc.url", String.class);
-        this.databaseUsername = configProvider.getInstance("forest.jdbc.root", String.class);
-        this.databasePassword = configProvider.getInstance("forest.jdbc.root", String.class);
+        this.databaseUrl = configProvider.getInstance("jdbc.url", String.class);
+        this.databaseUsername = configProvider.getInstance("jdbc.root", String.class);
+        this.databasePassword = configProvider.getInstance("jdbc.root", String.class);
 
     }
 

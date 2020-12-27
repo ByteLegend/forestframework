@@ -32,7 +32,7 @@ public class TodoApplicationJavaSyncRedis {
     public static class RedisModule extends AbstractModule {
         @Singleton
         @Provides
-        public TodoService getTodoService(@Config("forest.redis") RedisOptions redisOptions) throws URISyntaxException {
+        public TodoService getTodoService(@Config("redis") RedisOptions redisOptions) throws URISyntaxException {
             JedisPool pool = new JedisPool(new URI(redisOptions.getEndpoint()));
             return new BlockingRedisTodoService(pool);
         }

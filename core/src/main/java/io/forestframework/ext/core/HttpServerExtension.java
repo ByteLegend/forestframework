@@ -34,7 +34,7 @@ public class HttpServerExtension implements Extension {
 
     protected void startHttpServer(Injector injector) {
         ConfigProvider configProvider = injector.getInstance(ConfigProvider.class);
-        DeploymentOptions deploymentOptions = configProvider.getInstance("forest.deploy", DeploymentOptions.class);
+        DeploymentOptions deploymentOptions = configProvider.getInstance("deploy", DeploymentOptions.class);
 
         ((DefaultRoutingManager) injector.getInstance(RoutingManager.class)).finalizeRoutings();
 
@@ -42,7 +42,7 @@ public class HttpServerExtension implements Extension {
         CompletableFuture<String> future = VertxCompletableFuture.from(vertx.getOrCreateContext(), vertxFuture);
         try {
             deploymentId = future.get();
-            LOGGER.info("Http server successful started on {} with {} instances", configProvider.getInstance("forest.http.port", String.class), deploymentOptions.getInstances());
+            LOGGER.info("Http server successful started on {} with {} instances", configProvider.getInstance("http.port", String.class), deploymentOptions.getInstances());
         } catch (Throwable e) {
             LOGGER.error("", e);
             throw new RuntimeException(e);

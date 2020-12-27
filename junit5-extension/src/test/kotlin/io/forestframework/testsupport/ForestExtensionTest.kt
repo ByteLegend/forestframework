@@ -80,22 +80,22 @@ class ForestExtensionOrderTest {
 }
 
 @ForestApplication
-@ExtraConfig(value = ["forest.order.test=1"])
+@ExtraConfig(value = ["order.test=1"])
 class AppWithExtraConfig
 
 @ForestIntegrationTest(appClass = AppWithExtraConfig::class)
-@ExtraConfig(value = ["forest.order.test=2"])
+@ExtraConfig(value = ["order.test=2"])
 class TestExtraConfigOverwritingAppExtraConfigTest {
     @Inject
     lateinit var configProvider: ConfigProvider
 
     @Test
     fun `ExtraConfig on AppTest overwrites that on App`() {
-        assertEquals(2, configProvider.getInstance("forest.order.test", Integer::class.java))
+        assertEquals(2, configProvider.getInstance("order.test", Integer::class.java))
     }
 }
 
-@ExtraConfig(value = ["forest.order.test=2"])
+@ExtraConfig(value = ["order.test=2"])
 @ForestIntegrationTest(appClass = AppWithExtraConfig::class)
 class TestExtraConfigNotOverwritingAppExtraConfigText {
     @Inject
@@ -103,6 +103,6 @@ class TestExtraConfigNotOverwritingAppExtraConfigText {
 
     @Test
     fun `ExtraConfig on App overwrites that on AppTest`() {
-        assertEquals(1, configProvider.getInstance("forest.order.test", Integer::class.java))
+        assertEquals(1, configProvider.getInstance("order.test", Integer::class.java))
     }
 }

@@ -7,6 +7,6 @@ import io.forestframework.testsupport.utils.FreePortFinder;
 public class BindFreePortExtension implements Extension {
     @Override
     public void start(ApplicationContext applicationContext) {
-        applicationContext.getConfigProvider().addConfig("forest.http.port", "" + FreePortFinder.findFreeLocalPort());
+        applicationContext.getConfigProvider().addConfig("http.port", "" + FreePortFinder.findFreeLocalPort());
     }
 }

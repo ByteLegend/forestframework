@@ -17,7 +17,7 @@ import io.vertx.redis.client.RedisOptions;
 public class RedisClientExtension implements Extension {
     @Override
     public void start(ApplicationContext applicationContext) {
-        applicationContext.getConfigProvider().addDefaultOptions("forest.redis", RedisOptions::new);
+        applicationContext.getConfigProvider().addDefaultOptions("redis", RedisOptions::new);
         applicationContext.getModules().add(new RedisClientModule());
     }
 
@@ -29,7 +29,7 @@ public class RedisClientExtension implements Extension {
     public static class RedisClientModule extends AbstractModule {
         @Provides
         @Singleton
-        public RedisAPI createRedisClient(@Config("forest.redis") RedisOptions redisOptions, Vertx vertx) {
+        public RedisAPI createRedisClient(@Config("redis") RedisOptions redisOptions, Vertx vertx) {
             VertxCompletableFuture<RedisConnection> future = VertxCompletableFuture.from(vertx.getOrCreateContext(), Redis.createClient(vertx, redisOptions).connect());
             try {
                 return RedisAPI.api(future.get());

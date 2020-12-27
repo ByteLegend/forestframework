@@ -32,7 +32,7 @@ import java.util.List;
  *
  * Specially, classpath:/static/index.html will be registered as '/' routing.
  *
- * The "static" directory name can be configured via "forest.static.webroot" and "forest.static.webroots"
+ * The "static" directory name can be configured via "static.webroot" and "static.webroots"
  *
  * Note that existing routings will not be overwritten. For example, if your application
  * defines route path '/', the default classpath:/static/index.html will not be registered.
@@ -85,16 +85,16 @@ public class AutoStaticResourceScanExtension implements Extension {
 
     @Override
     public void start(ApplicationContext applicationContext) {
-        applicationContext.getConfigProvider().addDefaultOptions("forest.static.webroot", () -> "static");
-        applicationContext.getConfigProvider().addDefaultOptions("forest.static.webroots", () -> webroots);
+        applicationContext.getConfigProvider().addDefaultOptions("static.webroot", () -> "static");
+        applicationContext.getConfigProvider().addDefaultOptions("static.webroots", () -> webroots);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void configure(Injector injector) {
         ConfigProvider configProvider = injector.getInstance(ConfigProvider.class);
-        String webroot = configProvider.getInstance("forest.static.webroot", String.class);
-        LinkedHashSet<String> webroots = new LinkedHashSet<>(configProvider.getInstance("forest.static.webroots", List.class));
+        String webroot = configProvider.getInstance("static.webroot", String.class);
+        LinkedHashSet<String> webroots = new LinkedHashSet<>(configProvider.getInstance("static.webroots", List.class));
 
         webroots.add(webroot);
 

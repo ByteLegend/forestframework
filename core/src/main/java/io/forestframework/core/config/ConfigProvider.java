@@ -3,6 +3,7 @@ package io.forestframework.core.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.annotations.VisibleForTesting;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServerOptions;
@@ -29,18 +30,18 @@ import java.util.regex.Pattern;
  * You can get such a configuration instance via two ways:
  *
  * 1. Call {@link ConfigProvider#getInstance(String, Class)}, e.g.
- * {@code configProvider.getInstance("forest.http.port", Integer.class)}.
+ * {@code configProvider.getInstance("http.port", Integer.class)}.
  *
  * 2. Inject the configuration instance via Guice DI, e.g.
  * <pre>
  * public class MyService {
  *     {@literal @}Inject
- *     public MyService(@literal @Config("forest.http.port") int port) {
+ *     public MyService(@literal @Config("http.port") int port) {
  *         ...
  *     }
  * }
  * </pre>
- * We make it deeply integrated into Guice DI (in a hacky way, don't want to talk it too much).
+ * We make it deeply integrated into Guice DI (in a hacky way, don't want to talk too much about it).
  *
  * When the configuration value is a complicated instance (usually Vert.x option classes), it's constructed by three steps:
  * <ol>
@@ -53,22 +54,21 @@ import java.util.regex.Pattern;
  * For example, given configuration file:
  *
  * <pre>
- *     forest:
- *       http:
- *         port: 8081
- *         compressionSupported: false
- *         initialSettings:
- *           headerTableSize: 4096
+ *     http:
+ *       port: 8081
+ *       compressionSupported: false
+ *       initialSettings:
+ *         headerTableSize: 4096
  * </pre>
  *
- * You can get the port via {@code configProvider.getInstance("forest.http.port", Integer.class)}, or get the
+ * You can get the port via {@code configProvider.getInstance("http.port", Integer.class)}, or get the
  * fully configured {@link HttpServerOptions} instance, with the corresponding properties in the config file overwritten
- * via {@code configProvider.getInstance("forest.http", HttpServerOptions.class)}.
+ * via {@code configProvider.getInstance("http", HttpServerOptions.class)}.
  */
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 @Singleton
 public class ConfigProvider {
-    private static final Pattern ENVIRONMENT_CONFIG_PATTERN = Pattern.compile("forest(\\.[\\w-])+");
+    private static final Pattern ENVIRONMENT_CONFIG_PATTERN = Pattern.compile("forest(\\.[\\w\\d$])+");
     private static final ObjectMapper YAML_PARSER = new ObjectMapper(new YAMLFactory());
     private static final ObjectMapper JSON_PARSER = new ObjectMapper();
     private final Map<String, Supplier<?>> defaultOptions = new ConcurrentHashMap<>();
@@ -77,22 +77,28 @@ public class ConfigProvider {
      */
     private final Map<String, Object> configFileModel;
     /**
-     * The config data in environment. By default, system properties with prefix "forest." go into this model,
-     * for example, the application starts with {@code -Dforest.http.port=8080 -Dforest.pg.connect.port=5432} will
-     * have this model @literal {forest.http.port=8080, forest.pg.connect.port=5432}.
+     * The config data in environment. By default, system properties with prefix "forest." go into this model, with "forest." prefix
+     * removed as key. For example, the application starts with {@code -Dforest.http.port=8080 -Dforest.pg.connect.port=5432} will
+     * have this model @literal {http.port=8080, pg.connect.port=5432}.
      *
      * Note that you can pass a JSON string like this: @literal -Dforest.http='{"port":8080,compressionSupported:false}'
      */
     private final Map<String, Object> environmentModel;
 
     {
-        defaultOptions.put("forest.http", HttpServerOptions::new);
-        defaultOptions.put("forest.vertx", VertxOptions::new);
-        defaultOptions.put("forest.deploy", DeploymentOptions::new);
-        defaultOptions.put("forest.environment", () -> "dev");
+        defaultOptions.put("http", HttpServerOptions::new);
+        defaultOptions.put("vertx", VertxOptions::new);
+        defaultOptions.put("deploy", DeploymentOptions::new);
+        defaultOptions.put("environment", () -> "dev");
     }
 
-    public ConfigProvider(Map<String, Object> configFileModel, Map<String, Object> environmentModel) {
+    public ConfigProvider() {
+        this.configFileModel = new HashMap<>();
+        this.environmentModel = new HashMap<>();
+    }
+
+    @VisibleForTesting
+    ConfigProvider(Map<String, Object> configFileModel, Map<String, Object> environmentModel) {
         this.configFileModel = configFileModel;
         this.environmentModel = environmentModel;
     }
@@ -126,11 +132,7 @@ public class ConfigProvider {
     }
 
     public void addConfig(String key, String value) {
-        if (ENVIRONMENT_CONFIG_PATTERN.matcher(key).find()) {
-            addConfigTo(key, value, configFileModel);
-        } else {
-            throw new IllegalArgumentException("Config key must match pattern x.y.z!");
-        }
+        addConfigTo(key, value, environmentModel);
     }
 
     @SuppressWarnings("unchecked")
@@ -151,7 +153,7 @@ public class ConfigProvider {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();
             if (ENVIRONMENT_CONFIG_PATTERN.matcher(key).find()) {
-                addConfigTo(key, value, resultMap);
+                addConfigTo(key.substring(7), value, resultMap);
             }
         }
         return resultMap;
@@ -279,11 +281,11 @@ public class ConfigProvider {
 
         private boolean isNonNestedPropertyType(Class<?> klass) {
             return klass.isPrimitive()
-                    || klass == Boolean.class
-                    || Number.class.isAssignableFrom(klass)
-                    || klass == String.class
-                    || klass.isEnum()
-                    || List.class.isAssignableFrom(klass);
+                || klass == Boolean.class
+                || Number.class.isAssignableFrom(klass)
+                || klass == String.class
+                || klass.isEnum()
+                || List.class.isAssignableFrom(klass);
         }
 
         @SuppressWarnings("unchecked")

@@ -1,13 +1,12 @@
-forest:
-  static:
-    webroot: static
-  http:
-    port: 8080
-  redis:
-    endpoints:
-      - redis://localhost:6379
-  jdbc:
-    url: jdbc:h2:file:./todo;DATABASE_TO_UPPER=false
-    driver_class: org.h2.Driver
-    user: root
-    password: root
+static:
+  webroot: static
+http:
+  port: 8080
+redis:
+  endpoints:
+    - redis://localhost:6379
+jdbc:
+  url: jdbc:h2:file:./todo;DATABASE_TO_UPPER=false
+  driver_class: org.h2.Driver
+  user: root
+  password: root

@@ -15,7 +15,7 @@ annotation class BrowserTest
 abstract class AbstractBrowserTest {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     @Inject
-    @Config("forest.http.port")
+    @Config("http.port")
     lateinit var port: Integer
 
     @TestFactory

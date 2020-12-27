@@ -1,18 +1,17 @@
-forest:
-  http:
-    port: 8081
-  pg:
-    connect:
-      host: localhost
-      port: 5432
-      database: hello_world
-      user: benchmarkdbuser
-      password: benchmarkdbpass
-      cachePreparedStatements: true
-    pool:
-      maxSize: 48
-      maxWaitQueueSize: -1
-  vertx:
-    preferNativeTransport: true
-  deploy:
-    instances: 16
+http:
+  port: 8081
+pg:
+  connect:
+    host: localhost
+    port: 5432
+    database: hello_world
+    user: benchmarkdbuser
+    password: benchmarkdbpass
+    cachePreparedStatements: true
+  pool:
+    maxSize: 48
+    maxWaitQueueSize: -1
+vertx:
+  preferNativeTransport: true
+deploy:
+  instances: 16

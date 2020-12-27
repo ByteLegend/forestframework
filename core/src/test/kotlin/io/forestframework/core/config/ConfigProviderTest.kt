@@ -1,8 +1,7 @@
-package io.forestframework.config
+package io.forestframework.core.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import io.forestframework.core.config.ConfigProvider
 import io.github.glytching.junit.extension.system.SystemProperties
 import io.github.glytching.junit.extension.system.SystemProperty
 import io.vertx.core.http.Http2Settings
@@ -72,91 +71,90 @@ aaa:
     }
 
     val realWorldConfig = """
-forest:
-  http:
-    port: 12345
-    compressionSupported: true
-    initialSettings:
-      pushEnabled: false
-      maxHeaderListSize: 0x7ffffffe
-  redis:
-    endpoints:
-      - redis://localhost:6380
-    netClientOptions:
-      sslHandshakeTimeout: 1
-      sslHandshakeTimeoutUnit: MINUTES
-      enabledCipherSuites:
-        - a
-        - b
-      crlPaths:
-        - aaa
-      enabledSecureTransportProtocols:
-        - TLSv1
-      tcpQuickAck: true
-    role: SENTINEL
-    type: CLUSTER
-    maxPoolSize: 10
+http:
+  port: 12345
+  compressionSupported: true
+  initialSettings:
+    pushEnabled: false
+    maxHeaderListSize: 0x7ffffffe
+redis:
+  endpoints:
+    - redis://localhost:6380
+  netClientOptions:
+    sslHandshakeTimeout: 1
+    sslHandshakeTimeoutUnit: MINUTES
+    enabledCipherSuites:
+      - a
+      - b
+    crlPaths:
+      - aaa
+    enabledSecureTransportProtocols:
+      - TLSv1
+    tcpQuickAck: true
+  role: SENTINEL
+  type: CLUSTER
+  maxPoolSize: 10
 """
 
     @Test
     fun `can read Options property`() {
         val provider = ConfigProvider(yamlParser.readValue(realWorldConfig, Map::class.java) as MutableMap<String, Any>, emptyMap())
 
-        val httpJsonObject = provider.getInstance("forest.http", JsonObject::class.java)
+        val httpJsonObject = provider.getInstance("http", JsonObject::class.java)
         assertEquals(12345, httpJsonObject.getInteger("port"))
 
-        val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
+        val httpServerOptions: HttpServerOptions = provider.getInstance("http", HttpServerOptions::class.java)
         assertEquals(12345, httpServerOptions.port)
-        assertEquals(12345, provider.getInstance("forest.http.port", Integer::class.java))
+        assertEquals(12345, provider.getInstance("http.port", Integer::class.java))
         assertEquals(true, httpServerOptions.isCompressionSupported)
-        assertEquals(true, provider.getInstance("forest.http.compressionSupported", Boolean::class.java))
+        assertEquals(true, provider.getInstance("http.compressionSupported", Boolean::class.java))
         assertEquals(false, httpServerOptions.initialSettings.isPushEnabled)
-        assertEquals(false, provider.getInstance("forest.http.initialSettings.pushEnabled", Boolean::class.java))
+        assertEquals(false, provider.getInstance("http.initialSettings.pushEnabled", Boolean::class.java))
         assertEquals(0x7ffffffe, httpServerOptions.initialSettings.maxHeaderListSize)
-        assertEquals(0x7ffffffe, provider.getInstance("forest.http.initialSettings.maxHeaderListSize", Integer::class.java))
+        assertEquals(0x7ffffffe, provider.getInstance("http.initialSettings.maxHeaderListSize", Integer::class.java))
 
-        provider.addDefaultOptions("forest.redis", { RedisOptions() })
+        provider.addDefaultOptions("redis", { RedisOptions() })
 
-        val redisOptions: RedisOptions = provider.getInstance("forest.redis", RedisOptions::class.java)
+        val redisOptions: RedisOptions = provider.getInstance("redis", RedisOptions::class.java)
 
         assertEquals(1, redisOptions.netClientOptions.sslHandshakeTimeout)
-        assertEquals(1, provider.getInstance("forest.redis.netClientOptions.sslHandshakeTimeout", Integer::class.java))
+        assertEquals(1, provider.getInstance("redis.netClientOptions.sslHandshakeTimeout", Integer::class.java))
         assertEquals(TimeUnit.MINUTES, redisOptions.netClientOptions.sslHandshakeTimeoutUnit)
-        assertEquals(TimeUnit.MINUTES, provider.getInstance("forest.redis.netClientOptions.sslHandshakeTimeoutUnit", TimeUnit::class.java))
+        assertEquals(TimeUnit.MINUTES, provider.getInstance("redis.netClientOptions.sslHandshakeTimeoutUnit", TimeUnit::class.java))
         assertEquals(listOf("a", "b"), ArrayList(redisOptions.netClientOptions.enabledCipherSuites))
-        assertEquals(listOf("a", "b"), provider.getInstance("forest.redis.netClientOptions.enabledCipherSuites", List::class.java))
-        assertEquals(listOf("a", "b"), provider.getInstance("forest.redis.netClientOptions.enabledCipherSuites", ArrayList::class.java))
+        assertEquals(listOf("a", "b"), provider.getInstance("redis.netClientOptions.enabledCipherSuites", List::class.java))
+        assertEquals(listOf("a", "b"), provider.getInstance("redis.netClientOptions.enabledCipherSuites", ArrayList::class.java))
         assertEquals(listOf("aaa"), redisOptions.netClientOptions.crlPaths)
-        assertEquals(listOf("aaa"), provider.getInstance("forest.redis.netClientOptions.crlPaths", List::class.java))
-        assertEquals(listOf("aaa"), provider.getInstance("forest.redis.netClientOptions.crlPaths", ArrayList::class.java))
+        assertEquals(listOf("aaa"), provider.getInstance("redis.netClientOptions.crlPaths", List::class.java))
+        assertEquals(listOf("aaa"), provider.getInstance("redis.netClientOptions.crlPaths", ArrayList::class.java))
         assertEquals(listOf("TLSv1"), ArrayList(redisOptions.netClientOptions.enabledSecureTransportProtocols))
-        assertEquals(listOf("TLSv1"), provider.getInstance("forest.redis.netClientOptions.enabledSecureTransportProtocols", List::class.java))
+        assertEquals(listOf("TLSv1"), provider.getInstance("redis.netClientOptions.enabledSecureTransportProtocols", List::class.java))
         assertEquals(true, redisOptions.netClientOptions.isTcpQuickAck)
-        assertEquals(true, provider.getInstance("forest.redis.netClientOptions.tcpQuickAck", Boolean::class.java))
+        assertEquals(true, provider.getInstance("redis.netClientOptions.tcpQuickAck", Boolean::class.java))
 
         assertEquals(listOf("redis://localhost:6380"), redisOptions.endpoints)
-        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis.endpoints", List::class.java))
+        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("redis.endpoints", List::class.java))
         assertEquals(RedisRole.SENTINEL, redisOptions.role)
-        assertEquals(RedisRole.SENTINEL, provider.getInstance("forest.redis.role", RedisRole::class.java))
+        assertEquals(RedisRole.SENTINEL, provider.getInstance("redis.role", RedisRole::class.java))
         assertEquals(RedisClientType.CLUSTER, redisOptions.type)
-        assertEquals(RedisClientType.CLUSTER, provider.getInstance("forest.redis.type", RedisClientType::class.java))
+        assertEquals(RedisClientType.CLUSTER, provider.getInstance("redis.type", RedisClientType::class.java))
         assertEquals(10, redisOptions.maxPoolSize)
-        assertEquals(10, provider.getInstance("forest.redis.maxPoolSize", Integer::class.java))
+        assertEquals(10, provider.getInstance("redis.maxPoolSize", Integer::class.java))
     }
 
     @Test
     fun `return default value if not defined`() {
         val provider = ConfigProvider(emptyMap(), emptyMap())
 
-        val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
+        val httpServerOptions: HttpServerOptions = provider.getInstance("http", HttpServerOptions::class.java)
         assertEquals(HttpServerOptions.DEFAULT_PORT, httpServerOptions.port)
         assertEquals(HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED, httpServerOptions.isCompressionSupported)
         assertEquals(Http2Settings.DEFAULT_ENABLE_PUSH, httpServerOptions.initialSettings.isPushEnabled)
         assertEquals(Http2Settings.DEFAULT_MAX_HEADER_LIST_SIZE.toLong(), httpServerOptions.initialSettings.maxHeaderListSize)
         assertEquals(null, httpServerOptions.initialSettings.extraSettings)
 
-        provider.addDefaultOptions("forest.redis", { RedisOptions() })
-        val redisOptions: RedisOptions = provider.getInstance("forest.redis", RedisOptions::class.java)
+        provider.addDefaultOptions("redis", { RedisOptions() })
+        val redisOptions: RedisOptions = provider.getInstance("redis", RedisOptions::class.java)
 
         assertEquals(NetClientOptions.DEFAULT_SSL_HANDSHAKE_TIMEOUT, redisOptions.netClientOptions.sslHandshakeTimeout)
         assertEquals(NetClientOptions.DEFAULT_SSL_HANDSHAKE_TIMEOUT_TIME_UNIT, redisOptions.netClientOptions.sslHandshakeTimeoutUnit)
@@ -180,13 +178,13 @@ forest:
     fun `environment config overwrites default value`() {
         val provider = ConfigProvider.load()
 
-        val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
+        val httpServerOptions: HttpServerOptions = provider.getInstance("http", HttpServerOptions::class.java)
         assertEquals(12345, httpServerOptions.port)
         assertEquals(8192, httpServerOptions.initialSettings.headerTableSize)
         assertEquals(HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED, httpServerOptions.isCompressionSupported)
         assertEquals(Http2Settings.DEFAULT_ENABLE_PUSH, httpServerOptions.initialSettings.isPushEnabled)
 
-        val initialSettings: Http2Settings = provider.getInstance("forest.http.initialSettings", Http2Settings::class.java)
+        val initialSettings: Http2Settings = provider.getInstance("http.initialSettings", Http2Settings::class.java)
         assertEquals(8192, initialSettings.headerTableSize)
     }
 
@@ -199,16 +197,16 @@ forest:
         withSystemPropertyConfigFile(tempDir, realWorldConfig) {
             val provider = ConfigProvider.load()
 
-            val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
+            val httpServerOptions: HttpServerOptions = provider.getInstance("http", HttpServerOptions::class.java)
             assertEquals(12345, httpServerOptions.port)
             assertEquals(8192, httpServerOptions.initialSettings.headerTableSize)
             assertEquals(true, httpServerOptions.isCompressionSupported)
             assertEquals(false, httpServerOptions.initialSettings.isPushEnabled)
 
-            val initialSettings: Http2Settings = provider.getInstance("forest.http.initialSettings", Http2Settings::class.java)
+            val initialSettings: Http2Settings = provider.getInstance("http.initialSettings", Http2Settings::class.java)
             assertEquals(8192, initialSettings.headerTableSize)
 
-            assertEquals(8192, provider.getInstance("forest.http.initialSettings.headerTableSize", Integer::class.java))
+            assertEquals(8192, provider.getInstance("http.initialSettings.headerTableSize", Integer::class.java))
         }
     }
 
@@ -227,16 +225,16 @@ forest:
         withSystemPropertyConfigFile(tempDir, realWorldConfig) {
             val provider = ConfigProvider.load()
 
-            val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
+            val httpServerOptions: HttpServerOptions = provider.getInstance("http", HttpServerOptions::class.java)
             assertEquals(12345, httpServerOptions.port)
             assertEquals(8192, httpServerOptions.initialSettings.headerTableSize)
             assertEquals(true, httpServerOptions.isCompressionSupported)
             assertEquals(false, httpServerOptions.initialSettings.isPushEnabled)
 
-            val initialSettings: Http2Settings = provider.getInstance("forest.http.initialSettings", Http2Settings::class.java)
+            val initialSettings: Http2Settings = provider.getInstance("http.initialSettings", Http2Settings::class.java)
             assertEquals(8192, initialSettings.headerTableSize)
 
-            assertEquals(8192, provider.getInstance("forest.http.initialSettings.headerTableSize", Integer::class.java))
+            assertEquals(8192, provider.getInstance("http.initialSettings.headerTableSize", Integer::class.java))
         }
     }
 
@@ -244,29 +242,29 @@ forest:
     @SystemProperty(name = "forest.redis.endpoints", value = "[\"redis://localhost:6380\"]")
     fun `can parse JSON array`() {
         val provider = ConfigProvider.load()
-        provider.addDefaultOptions("forest.redis") { RedisOptions() }
+        provider.addDefaultOptions("redis") { RedisOptions() }
 
-        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis.endpoints", List::class.java))
-        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("forest.redis", RedisOptions::class.java).endpoints)
+        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("redis.endpoints", List::class.java))
+        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("redis", RedisOptions::class.java).endpoints)
     }
 
     @Test
     fun `can add to config`(@TempDir tempDir: File) {
         withSystemPropertyConfigFile(tempDir, realWorldConfig) {
             val provider = ConfigProvider.load()
-            provider.addConfig("forest.http.port", "12345")
-            provider.addConfig("forest.http.initialSettings.headerTableSize", "8192")
+            provider.addConfig("http.port", "12345")
+            provider.addConfig("http.initialSettings.headerTableSize", "8192")
 
-            val httpServerOptions: HttpServerOptions = provider.getInstance("forest.http", HttpServerOptions::class.java)
+            val httpServerOptions: HttpServerOptions = provider.getInstance("http", HttpServerOptions::class.java)
             assertEquals(12345, httpServerOptions.port)
             assertEquals(8192, httpServerOptions.initialSettings.headerTableSize)
             assertEquals(true, httpServerOptions.isCompressionSupported)
             assertEquals(false, httpServerOptions.initialSettings.isPushEnabled)
 
-            val initialSettings: Http2Settings = provider.getInstance("forest.http.initialSettings", Http2Settings::class.java)
+            val initialSettings: Http2Settings = provider.getInstance("http.initialSettings", Http2Settings::class.java)
             assertEquals(8192, initialSettings.headerTableSize)
 
-            assertEquals(8192, provider.getInstance("forest.http.initialSettings.headerTableSize", Integer::class.java))
+            assertEquals(8192, provider.getInstance("http.initialSettings.headerTableSize", Integer::class.java))
         }
     }
 
@@ -285,8 +283,8 @@ forest:
     fun `can configure option list`() {
         val provider = ConfigProvider.load()
 
-        provider.addDefaultOptions("forest.bridge", ::SockJSBridgeOptions)
-        val options = provider.getInstance("forest.bridge", SockJSBridgeOptions::class.java)
+        provider.addDefaultOptions("bridge", ::SockJSBridgeOptions)
+        val options = provider.getInstance("bridge", SockJSBridgeOptions::class.java)
         assertEquals(listOf("auction\\.[0-9]+"), options.outboundPermitteds.map { it.addressRegex })
     }
 

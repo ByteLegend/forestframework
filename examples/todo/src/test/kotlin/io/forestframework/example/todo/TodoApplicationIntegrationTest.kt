@@ -60,23 +60,23 @@ class TodoApplicationJavaSyncRedisIntegrationTest : TodoApplicationIntegrationTe
 
 @ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = TodoApplicationKotlinCoroutinesJDBC::class)
-@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
+@ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
 class TodoApplicationKotlinCoroutinesJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
 @ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = TodoApplicationJavaAsyncJDBC::class)
-@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaAsyncJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
+@ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationJavaAsyncJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
 class TodoApplicationJavaAsyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
 @ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = TodoApplicationJavaSyncJDBC::class)
-@ExtraConfig(value = ["forest.jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
+@ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
 class TodoApplicationJavaSyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
 abstract class TodoApplicationIntegrationTest {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     @Inject
-    @Config("forest.http.port")
+    @Config("http.port")
     lateinit var port: Integer
 
     @Inject

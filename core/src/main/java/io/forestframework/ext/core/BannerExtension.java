@@ -8,7 +8,7 @@ import io.forestframework.ext.api.Extension;
 /**
  * Do nothing but display banner at startup.
  *
- * You can disable it by "forest.banner.enabled=false" configuration.
+ * You can disable it by "banner.enabled=false" configuration.
  */
 public class BannerExtension implements Extension {
     private static final String DEFAULT_BANNER = "    ,---,.                                                  ___     \n" +
@@ -27,9 +27,9 @@ public class BannerExtension implements Extension {
 
     @Override
     public void start(ApplicationContext applicationContext) {
-        applicationContext.getConfigProvider().addDefaultOptions("forest.banner", BannerOptions::new);
-        if (applicationContext.getConfigProvider().getInstance("forest.banner.enabled", Boolean.class)) {
-            System.out.println(applicationContext.getConfigProvider().getInstance("forest.banner.text", String.class));
+        applicationContext.getConfigProvider().addDefaultOptions("banner", BannerOptions::new);
+        if (applicationContext.getConfigProvider().getInstance("banner.enabled", Boolean.class)) {
+            System.out.println(applicationContext.getConfigProvider().getInstance("banner.text", String.class));
         }
     }
 

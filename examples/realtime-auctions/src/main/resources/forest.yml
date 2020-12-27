@@ -1,7 +1,6 @@
-forest:
-  http:
-    port: 8080
-  bridge:
-    /eventbus:
-      outboundPermitteds:
-        - addressRegex: auction\.[0-9]+
+http:
+  port: 8080
+bridge:
+  /eventbus:
+    outboundPermitteds:
+      - addressRegex: auction\.[0-9]+
