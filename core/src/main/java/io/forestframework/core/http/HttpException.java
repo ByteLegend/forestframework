@@ -16,6 +16,11 @@ public class HttpException extends RuntimeException {
         return code;
     }
 
+    @Override
+    public String getMessage() {
+        return super.getMessage() == null ? code.toString() : super.getMessage();
+    }
+
     public static HttpException notFound() {
         return new HttpException(HttpStatusCode.NOT_FOUND);
     }

@@ -272,7 +272,12 @@ public class ConfigProvider {
                     if (value == null || isNonNestedPropertyType(value.getClass())) {
                         PropertyUtils.setProperty(destBean, key, value);
                     } else {
-                        mergeConfigValueToDefault(PropertyUtils.getProperty(destBean, key), (Map<String, Object>) value);
+                        Object destBeanProperty = PropertyUtils.getProperty(destBean, key);
+                        if (destBeanProperty == null) {
+                            PropertyUtils.setProperty(destBean, key, value);
+                        } else {
+                            mergeConfigValueToDefault(PropertyUtils.getProperty(destBean, key), (Map<String, Object>) value);
+                        }
                     }
                 });
             }

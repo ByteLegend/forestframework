@@ -7,6 +7,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
 /*
  For internal use. Don't use Apache Commons BeanUtils, it has known bugs in our scenarios.
  */
+@SuppressWarnings("ALL")
 class PropertyUtils {
     public static Object getProperty(Object obj, String key) {
         if (obj == null) {
@@ -49,6 +51,21 @@ class PropertyUtils {
                 Class<?> parameterType = propertySetter.getParameterTypes()[0];
                 if (value == null || parameterType == value.getClass()) {
                     propertySetter.invoke(bean, value);
+                } else if (parameterType.isInterface() &&
+                    !parameterType.isAssignableFrom(Map.class) &&
+                    !parameterType.isAssignableFrom(List.class)
+                ) {
+                    // polymorphism setter. Extract "type" from value
+                    if (value instanceof Map && ((Map<?, ?>) value).containsKey("type")) {
+                        String fqcn = ((Map<?, ?>) value).get("type").toString();
+                        Class<?> actualType = Class.forName(fqcn);
+
+                        Map copy = new HashMap((Map) value);
+                        copy.remove("type");
+                        propertySetter.invoke(bean, DefaultConverter.INSTANCE.convert(copy, Map.class, actualType));
+                    } else {
+                        throw new IllegalStateException("Can't invoke setter " + propertySetter + " with interface parameter type: " + value);
+                    }
                 } else {
                     propertySetter.invoke(bean, DefaultConverter.INSTANCE.convert(value, value.getClass(), parameterType));
                 }

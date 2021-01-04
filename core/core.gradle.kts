@@ -38,6 +38,7 @@ dependencies {
     testImplementation(libs("vertx-unit"))
     testImplementation(libs("vertx-codegen"))  // Keep this or https://github.com/mockito/mockito/issues/366
     testImplementation(libs("vertx-redis-client"))
+    testImplementation(libs("vertx-zookeeper"))
 
     testImplementation(libs("junit"))
     testImplementation(libs("junit-extensions"))
@@ -46,6 +47,11 @@ dependencies {
     testImplementation(libs("mockito-junit-jupiter"))
 
     testImplementation(libs("mockk"))
+    testImplementation(libs("org.testcontainers:testcontainers"))
+    testImplementation(libs("org.testcontainers:selenium"))
+    testImplementation(libs("org.testcontainers:junit-jupiter"))
+    testImplementation(libs("selenium-api"))
+    testImplementation(libs("selenium-chrome-driver"))
 
     testRuntimeOnly(libs("junit-vintage-engine"))
 }

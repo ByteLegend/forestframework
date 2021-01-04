@@ -2,6 +2,7 @@ package io.forestframework.core.http.routing;
 
 import io.forestframework.core.http.DefaultHttpRequest;
 import io.forestframework.core.http.DefaultPlainHttpRequestHandler;
+import io.forestframework.core.http.HttpException;
 import io.forestframework.core.http.bridge.BridgeEventType;
 import io.forestframework.core.http.bridge.DefaultBridgeRequestHandler;
 import io.forestframework.core.http.websocket.DefaultWebSocketRequestHandler;
@@ -70,6 +71,23 @@ public interface RoutingMatchResult {
 
         public void setRoutings(Map<WebSocketEventType, WebSocketRouting> routings) {
             this.routings = routings;
+        }
+    }
+
+    class ErrorRoutingMatchResult implements RoutingMatchResult {
+        private final HttpException httpException;
+
+        public ErrorRoutingMatchResult(HttpException httpException) {
+            this.httpException = httpException;
+        }
+
+        @Override
+        public void select(HttpServerRequest request,
+                           DefaultBridgeRequestHandler bridgeRequestHandler,
+                           DefaultWebSocketRequestHandler webSocketRequestHandler,
+                           DefaultPlainHttpRequestHandler plainHttpRequestHandler) {
+            request.response().setStatusCode(httpException.getCode().getCode());
+            request.response().end(httpException.getMessage());
         }
     }
 }

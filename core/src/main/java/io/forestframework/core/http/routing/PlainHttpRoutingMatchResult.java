@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.MediaType;
 import io.forestframework.core.http.DefaultHttpRequest;
 import io.forestframework.core.http.DefaultPlainHttpRequestHandler;
+import io.forestframework.core.http.HttpException;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.bridge.DefaultBridgeRequestHandler;
@@ -42,8 +43,8 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
 
     public void addResult(HttpServerRequest request, List<Routing> routings, Map<String, String> pathVariables) {
         routings.stream()
-            .collect(Collectors.groupingBy(Routing::getType))
-            .forEach((key, value) -> putIntoResult(request, key, value, pathVariables));
+                .collect(Collectors.groupingBy(Routing::getType))
+                .forEach((key, value) -> putIntoResult(request, key, value, pathVariables));
     }
 
     private void putIntoResult(HttpServerRequest request, RoutingType routingType, List<Routing> routings, Map<String, String> pathVariables) {
@@ -137,7 +138,7 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
         private static final List<MediaType> ANY = Collections.singletonList(MediaType.ANY_TYPE);
         private static final Comparator<Routing> ROUTING_COMPARATOR =
             Comparator.comparing(Routing::getOrder)
-                .thenComparing(routing -> routing.getHandlerMethod().toString());
+                      .thenComparing(routing -> routing.getHandlerMethod().toString());
 
         // 200, 405, 406, 415
         private final HttpStatusCode code;
@@ -201,12 +202,16 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
         private List<MediaType> getMediaTypes(HttpServerRequest request, CharSequence headerName) {
             String header = request.getHeader(headerName);
 
-            return header == null
-                ? ANY
-                : Stream.of(StringUtils.split(header, ','))
-                        .map(String::trim)
-                        .map(MediaType::parse)
-                        .collect(Collectors.toList());
+            try {
+                return header == null
+                       ? ANY
+                       : Stream.of(StringUtils.split(header, ','))
+                               .map(String::trim)
+                               .map(MediaType::parse)
+                               .collect(Collectors.toList());
+            } catch (Exception e) {
+                throw new HttpException(HttpStatusCode.BAD_REQUEST, "Can't parse media type from request " + request.path() + ": " + header);
+            }
         }
 
         private static List<MediaType> getServerMediaTypes(List<String> producesOrConsumes) {

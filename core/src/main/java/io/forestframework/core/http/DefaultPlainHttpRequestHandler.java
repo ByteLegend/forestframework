@@ -122,26 +122,6 @@ public class DefaultPlainHttpRequestHandler extends AbstractWebRequestHandler im
         return (throwable instanceof HttpException) ? ((HttpException) throwable).getCode() : HttpStatusCode.INTERNAL_SERVER_ERROR;
     }
 
-    // If matched error handler found, invoke it:
-    //   If the error handler exit normally, returns a CompletableFuture which completes normally
-    //   If the error handler exit abnormally, returns CompletableFuture with that failure
-    // If matched error handler not found, returns a CompletableFuture with the original failure
-//    private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultHttpContext context, PlainHttpRoutingMatchResult routingMatchResult, Throwable t) {
-//        Throwable throwable = unwrap(t);
-//
-//        HttpStatusCode statusCode = (throwable instanceof HttpException) ? ((HttpException) throwable).getCode() : HttpStatusCode.INTERNAL_SERVER_ERROR;
-//        if (context.response().headWritten() && context.response().getStatusCode() != statusCode.getCode()) {
-//            LOGGER.warn("Trying to set status code " + statusCode.getCode() + " but header is written.");
-//        }
-//        context.getArgumentInjector().with(throwable).withParameter(HttpStatusCode.class, statusCode);
-//
-//        Routing matchedErrorHandler = routingMatchResult.getMatchingErrorHandler(statusCode);
-//        if (matchedErrorHandler == null) {
-//            return failedFuture(throwable);
-//        } else {
-//            return invokeRouting(matchedErrorHandler, context);
-//        }
-//    }
     private CompletableFuture<Object> invokeMatchedErrorHandler(DefaultHttpContext context, Routing matchedErrorHandler, HttpStatusCode statusCode, Throwable t) {
         safeSetStatusCode(context.response(), statusCode);
         context.getArgumentInjector().with(t).withParameter(HttpStatusCode.class, statusCode);

@@ -15,6 +15,7 @@ import kotlin.coroutines.Continuation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,19 +55,23 @@ public abstract class AbstractWebRequestHandler {
         return (CompletableFuture) current;
     }
 
-    private <T> CompletableFuture<T> invokeMethod(Routing routing, Object[] arguments) {
-        if (isKotlinSuspendFunction(routing)) {
-            return invokeViaKotlinBridge(routing, arguments);
-        } else if (routing.isBlocking()) {
-            return invokeBlockingViaJavaReflection(routing, arguments);
+    protected <T> CompletableFuture<T> invokeMethod(Object instance, Method method, Object[] arguments, boolean blocking) {
+        if (isKotlinSuspendFunction(method)) {
+            return invokeViaKotlinBridge(instance, method, arguments);
+        } else if (blocking) {
+            return invokeBlockingViaJavaReflection(instance, method, arguments);
         } else {
-            return invokeViaJavaReflection(routing, arguments);
+            return invokeViaJavaReflection(instance, method, arguments);
         }
     }
 
-    private <T> CompletableFuture<T> invokeViaJavaReflection(Routing routing, Object[] arguments) {
+    private <T> CompletableFuture<T> invokeMethod(Routing routing, Object[] arguments) {
+        return invokeMethod(routing.getHandlerInstance(injector), routing.getHandlerMethod(), arguments, routing.isBlocking());
+    }
+
+    private <T> CompletableFuture<T> invokeViaJavaReflection(Object instance, Method method, Object[] arguments) {
         try {
-            return adapt(ReflectionUtils.invoke(routing.getHandlerMethod(), routing.getHandlerInstance(injector), arguments));
+            return adapt(ReflectionUtils.invoke(method, instance, arguments));
         } catch (Throwable e) {
             return failedFuture(e);
         }
@@ -78,18 +83,18 @@ public abstract class AbstractWebRequestHandler {
         return failedFuture;
     }
 
-    private <T> CompletableFuture<T> invokeBlockingViaJavaReflection(Routing routing, Object[] arguments) {
+    private <T> CompletableFuture<T> invokeBlockingViaJavaReflection(Object instance, Method method, Object[] arguments) {
         return VertxCompletableFuture.from(vertx.executeBlocking((Promise<T> promise) -> {
             try {
-                promise.complete(ReflectionUtils.invoke(routing.getHandlerMethod(), routing.getHandlerInstance(injector), arguments));
+                promise.complete(ReflectionUtils.invoke(method, instance, arguments));
             } catch (Throwable e) {
                 promise.fail(e);
             }
         }));
     }
 
-    private boolean isKotlinSuspendFunction(Routing routing) {
-        Class<?>[] parameterTypes = routing.getHandlerMethod().getParameterTypes();
+    private boolean isKotlinSuspendFunction(Method method) {
+        Class<?>[] parameterTypes = method.getParameterTypes();
         return parameterTypes.length != 0 && isContinuation(parameterTypes[parameterTypes.length - 1]);
     }
 
@@ -138,13 +143,12 @@ public abstract class AbstractWebRequestHandler {
         return argumentType == Continuation.class;
     }
 
-    private <T> CompletableFuture<T> invokeViaKotlinBridge(Routing routing, Object[] arguments) {
+    private <T> CompletableFuture<T> invokeViaKotlinBridge(Object instance, Method method, Object[] arguments) {
         return KotlinSuspendFunctionBridge.Companion.invoke(
             vertx,
-            routing.getHandlerMethod(),
-            routing.getHandlerInstance(injector),
+            method,
+            instance,
             arguments
         );
     }
-
 }

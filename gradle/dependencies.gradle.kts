@@ -2,8 +2,8 @@ val vertxVersion = "4.0.0"
 val guiceVersion = "4.2.3-SNAPSHOT"
 val guavaVersion = "28.2-jre"
 val jacksonVersion = "2.10.3"
-val kotlinVersion = "1.4.10"
-val kotlinxVersion = "1.3.9"
+val kotlinVersion = "1.4.21"
+val kotlinxVersion = "1.4.2"
 val junitVersion = "5.6.2"
 val junit4Version = "4.13"
 val mockKVersion = "1.9.3"
@@ -27,6 +27,7 @@ val testContainersVersion = "1.15.1"
 val dependencies = listOf(
     "io.vertx:vertx-core:$vertxVersion",
     "io.vertx:vertx-web:$vertxVersion",
+    "io.vertx:vertx-zookeeper:$vertxVersion",
     "io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion",
     "io.vertx:vertx-lang-kotlin:$vertxVersion",
     "io.vertx:vertx-unit:$vertxVersion",

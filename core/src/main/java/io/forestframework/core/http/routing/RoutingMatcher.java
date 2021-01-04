@@ -1,5 +1,6 @@
 package io.forestframework.core.http.routing;
 
+import io.forestframework.core.http.HttpException;
 import io.forestframework.core.http.HttpMethod;
 import io.forestframework.core.http.bridge.BridgeEventType;
 import io.forestframework.core.http.routing.RoutingMatchResult.BridgeRoutingMatchResult;
@@ -8,6 +9,8 @@ import io.forestframework.utils.Assert;
 import io.vertx.core.http.HttpServerRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apiguardian.api.API;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,6 +30,7 @@ import static io.forestframework.core.http.routing.RoutingMatchResult.WebSocketR
 @API(status = API.Status.INTERNAL, since = "0.1")
 @Singleton
 public class RoutingMatcher {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoutingMatcher.class);
     // Special handling for "/"
     private static final String[] ROOT_PATH = new String[]{""};
     private final RouteSegmentNode root = new StringConstantNode("");
@@ -36,28 +40,33 @@ public class RoutingMatcher {
     @Inject
     public RoutingMatcher(RoutingManager routingManager) {
         Stream.of(RoutingType.values())
-                .filter(type -> type != RoutingType.BRIDGE)
-                .forEach(type -> addRoutings(routingManager.getRouting(type)));
+              .filter(type -> type != RoutingType.BRIDGE)
+              .forEach(type -> addRoutings(routingManager.getRouting(type)));
         bridgeRoutings = ((DefaultRoutingManager) routingManager).getBridgeRoutings();
         webSocketRoutings = ((DefaultRoutingManager) routingManager).getWebSocketRoutings();
     }
 
     public RoutingMatchResult match(HttpServerRequest request) {
-        RoutingMatchResult bridgeResult = matchBridge(request);
-        if (bridgeResult != null) {
-            return bridgeResult;
-        }
+        try {
+            RoutingMatchResult bridgeResult = matchBridge(request);
+            if (bridgeResult != null) {
+                return bridgeResult;
+            }
 
-        String[] pathSegments = split(request.path());
-        AtomicReference<RoutingMatchResult> result = new AtomicReference<>(new PlainHttpRoutingMatchResult());
-        root.getChildren().forEach(child -> visit(result, request, child, pathSegments, 0, new HashMap<>(pathSegments.length)));
+            String[] pathSegments = split(request.path());
+            AtomicReference<RoutingMatchResult> result = new AtomicReference<>(new PlainHttpRoutingMatchResult());
+            root.getChildren().forEach(child -> visit(result, request, child, pathSegments, 0, new HashMap<>(pathSegments.length)));
 
-        if (alreadySeenMatchedWebSocket(result)) {
-            WebSocketRoutingMatchResult webSocketResult = (WebSocketRoutingMatchResult) result.get();
-            webSocketResult.setRoutings(webSocketRoutings.get(webSocketResult.getPath()));
-            return webSocketResult;
-        } else {
-            return result.get();
+            if (alreadySeenMatchedWebSocket(result)) {
+                WebSocketRoutingMatchResult webSocketResult = (WebSocketRoutingMatchResult) result.get();
+                webSocketResult.setRoutings(webSocketRoutings.get(webSocketResult.getPath()));
+                return webSocketResult;
+            } else {
+                return result.get();
+            }
+        } catch (HttpException e) {
+            LOGGER.error("", e);
+            return new RoutingMatchResult.ErrorRoutingMatchResult(e);
         }
     }
 
@@ -143,9 +152,9 @@ class CacheKey {
         }
         CacheKey cacheKey = (CacheKey) o;
         return Objects.equals(accept, cacheKey.accept) &&
-                Objects.equals(contentType, cacheKey.contentType) &&
-                httpMethod == cacheKey.httpMethod &&
-                Objects.equals(path, cacheKey.path);
+            Objects.equals(contentType, cacheKey.contentType) &&
+            httpMethod == cacheKey.httpMethod &&
+            Objects.equals(path, cacheKey.path);
     }
 
     @Override

@@ -2,8 +2,10 @@ package io.forestframework.core.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import io.forestframework.testfixtures.withSystemPropertyConfigFile
 import io.github.glytching.junit.extension.system.SystemProperties
 import io.github.glytching.junit.extension.system.SystemProperty
+import io.vertx.core.VertxOptions
 import io.vertx.core.http.Http2Settings
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.JsonObject
@@ -12,6 +14,7 @@ import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions
 import io.vertx.redis.client.RedisClientType
 import io.vertx.redis.client.RedisOptions
 import io.vertx.redis.client.RedisRole
+import io.vertx.spi.cluster.zookeeper.ZookeeperClusterManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -328,18 +331,43 @@ redis:
         assertEquals(mapOf("a" to 1), pojo.nestedValue!!.mapValue)
     }
 
-    private fun withSystemPropertyConfigFile(tempDir: File, fileContent: String, function: () -> Unit) {
-        val originalConfig = System.getProperty("forest.config.file")
-        val configFile = File(tempDir, "config.yml").apply { writeText(fileContent) }
-        System.setProperty("forest.config.file", configFile.absolutePath)
-        try {
-            function()
-        } finally {
-            if (originalConfig != null) {
-                System.setProperty("forest.config.file", originalConfig)
-            } else {
-                System.clearProperty("forest.config.file")
-            }
+    @Test
+    fun `polymorphism setter test`(@TempDir tempDir: File) {
+
+        withSystemPropertyConfigFile(
+            tempDir,
+            """
+http:
+  port: 8081
+vertx:
+  clusterManager:
+    type: io.vertx.spi.cluster.zookeeper.ZookeeperClusterManager
+    zookeeperHosts: "localhost:2181"
+    sessionTimeout: 20001
+    connectTimeout: 3001
+    rootPath: "io.vertx"
+    retry:
+      initialSleepTime: 101
+      intervalTimes: 10001
+      maxTimes: 5
+  eventBusOptions:
+    clusterPublicHost: localhost
+    clusterPublicPort: 8082
+    host: localhost
+    port: 8082
+"""
+        ) {
+            val vertxOptions = ConfigProvider.load().getInstance("vertx", VertxOptions::class.java)
+
+            val zcm = vertxOptions.clusterManager as ZookeeperClusterManager
+            assertEquals("localhost:2181", zcm.config.getString("zookeeperHosts"))
+            assertEquals(20001, zcm.config.getInteger("sessionTimeout"))
+            assertEquals(3001, zcm.config.getInteger("connectTimeout"))
+            assertEquals(10001, zcm.config.getJsonObject("retry").getInteger("intervalTimes"))
+            assertEquals("localhost", vertxOptions.eventBusOptions.clusterPublicHost)
+            assertEquals("localhost", vertxOptions.eventBusOptions.host)
+            assertEquals(8082, vertxOptions.eventBusOptions.port)
+            assertEquals(8082, vertxOptions.eventBusOptions.clusterPublicPort)
         }
     }
 }

@@ -65,7 +65,8 @@ val producesAcceptCases = listOf(
     ProducesAcceptCase("get 200 when matching double wildcard case 4", produces = listOf("*/*"), accept = "application/xhtml+xml;q=0.7, image/jxr;level=1", expectedStatusCode = 200),
 
     ProducesAcceptCase("get 200 when matching with parameter", produces = listOf("application/json;charset=UTF-8"), accept = "application/json;q=0.3", expectedStatusCode = 200),
-    ProducesAcceptCase("get 406 when not matching with parameter", produces = listOf("application/json;charset=UTF-8"), accept = "application/json;level=1;charset=UTF-16", expectedStatusCode = 406)
+    ProducesAcceptCase("get 406 when not matching with parameter", produces = listOf("application/json;charset=UTF-8"), accept = "application/json;level=1;charset=UTF-16", expectedStatusCode = 406),
+    ProducesAcceptCase("get 400 if accept can not be parsed", produces = listOf("text/html"), accept = "this is bad!", expectedStatusCode = 400)
 )
 
 val consumesContentTypeCases = listOf(
@@ -79,7 +80,8 @@ val consumesContentTypeCases = listOf(
     ConsumesContentTypeCase("get 200 when matching double wildcard case 2", consumes = listOf("*/*"), contentType = "text/*", expectedStatusCode = 200),
 
     ConsumesContentTypeCase("get 200 when matching with parameter", consumes = listOf("application/json;charset=UTF-8"), contentType = "application/json;q=0.9", expectedStatusCode = 200),
-    ConsumesContentTypeCase("get 415 when not matching with parameter", consumes = listOf("application/json;charset=UTF-8"), contentType = "application/json;charset=UTF-16", expectedStatusCode = 415)
+    ConsumesContentTypeCase("get 415 when not matching with parameter", consumes = listOf("application/json;charset=UTF-8"), contentType = "application/json;charset=UTF-16", expectedStatusCode = 415),
+    ConsumesContentTypeCase("get 400 if content type can not be parsed", consumes = listOf("application/json;charset=UTF-8"), contentType = "this is bad!", expectedStatusCode = 400)
 )
 
 val testMethodGet = listOf(
@@ -127,7 +129,8 @@ class MediaTypeNegotiatingIntegrationTest {
 
                 override fun configure(injector: Injector) {
                     injector.getInstance(RoutingManager::class.java).getRouting(HANDLER).add(
-                        DefaultRouting(false,
+                        DefaultRouting(
+                            false,
                             HANDLER,
                             "/test",
                             "",
@@ -135,7 +138,8 @@ class MediaTypeNegotiatingIntegrationTest {
                             MediaTypeNegotiatingIntegrationTest::class.java.getMethod("dummy"),
                             0,
                             produces,
-                            consumes)
+                            consumes
+                        )
                     )
                 }
             },
