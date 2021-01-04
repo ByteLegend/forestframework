@@ -1,7 +1,6 @@
 package io.forestframework.core.websocket
 
 import geb.Browser
-import geb.Configuration
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.Blocking
@@ -87,9 +86,9 @@ class WebSocketChatRoomRouter {
 @ForestIntegrationTest(appClass = WebSocketChatRoomBrowserTestApp.class)
 class WebSocketChatRoomBrowserTest extends AbstractBrowserTest {
     @BrowserTest
-    void chatroomTest(Configuration configuration) {
-        Browser.drive(configuration) {
-            baseUrl = "http://localhost:${port}/"
+    void chatroomTest(Map conf) {
+        Browser.drive(conf) {
+            baseUrl = "http://$host:${port}/"
             go "/index.html"
 
             assert title == 'Quarkus Chat!'

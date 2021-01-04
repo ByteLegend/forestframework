@@ -22,8 +22,9 @@ val groovyVersion = "2.5.12"
 val findBugsAnnotationVersion = "3.0.1"
 val httpclient = "4.5.12"
 val mockitoVersion = "3.5.10"
+val testContainersVersion = "1.15.1"
 
-val libs = listOf(
+val dependencies = listOf(
     "io.vertx:vertx-core:$vertxVersion",
     "io.vertx:vertx-web:$vertxVersion",
     "io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion",
@@ -73,8 +74,13 @@ val libs = listOf(
     "io.github.glytching:junit-extensions:$junitExtensionsVersion",
 
     "org.gebish:geb-core:$gebVersion",
+    "org.testcontainers:testcontainers:$testContainersVersion",
+    "org.testcontainers:selenium:$testContainersVersion",
+    "org.testcontainers:junit-jupiter:$testContainersVersion",
     "org.seleniumhq.selenium:selenium-firefox-driver:${seleniumVersion}",
+    "org.seleniumhq.selenium:selenium-api:${seleniumVersion}",
     "org.seleniumhq.selenium:selenium-chrome-driver:${seleniumVersion}",
+    "org.seleniumhq.selenium:selenium-remote-driver:${seleniumVersion}",
     "org.seleniumhq.selenium:selenium-support:${seleniumVersion}",
     "org.codehaus.groovy:groovy-all:$groovyVersion",
     "com.google.code.findbugs:annotations:$findBugsAnnotationVersion",
@@ -82,7 +88,23 @@ val libs = listOf(
     "org.apache.httpcomponents:httpclient:$httpclient",
     "org.mockito:mockito-core:$mockitoVersion",
     "org.mockito:mockito-junit-jupiter:$mockitoVersion"
-).map { it.split(":")[1] to it }.toMap()
+)
+
+val libs = mutableMapOf<String,String>()
+
+dependencies.forEach {
+    val artifactId = it.split(":")[1]
+    if (libs.contains(artifactId)) {
+        // artifactId conflict, remove
+        val gav = libs.remove(artifactId)!!
+        libs[it.substringBeforeLast(":")] = it
+        libs[gav.substringBeforeLast(":")] = gav
+    } else {
+        libs[artifactId] = it
+    }
+
+    libs[it.substringBeforeLast(":")] = it
+}
 
 rootProject.extensions.configure<org.gradle.api.plugins.ExtraPropertiesExtension>("ext") {
     val function: (String) -> String = libs::getValue

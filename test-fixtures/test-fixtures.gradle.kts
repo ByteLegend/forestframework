@@ -10,6 +10,11 @@ dependencies {
     api(libs("junit-jupiter-params"))
     api(libs("junit-jupiter-api"))
     api(libs("geb-core"))
+    api(libs("org.testcontainers:testcontainers"))
+    implementation(libs("org.testcontainers:selenium"))
+    implementation(libs("org.testcontainers:junit-jupiter"))
+    api(libs("selenium-api"))
+    implementation(libs("selenium-chrome-driver"))
 
     implementation(libs("selenium-firefox-driver"))
     implementation(libs("selenium-chrome-driver"))

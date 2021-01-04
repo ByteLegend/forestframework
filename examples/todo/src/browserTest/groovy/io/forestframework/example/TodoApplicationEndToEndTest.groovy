@@ -1,7 +1,6 @@
 package io.forestframework.example
 
 import geb.Browser
-import geb.Configuration
 import io.forestframework.core.http.Router
 import io.forestframework.core.http.param.PathParam
 import io.forestframework.core.http.staticresource.GetStaticResource
@@ -25,18 +24,18 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 abstract class AbstractTodoApplicationBrowserTest extends AbstractBrowserTest {
     @BrowserTest
-    void 'run js spec successfully'(Configuration configuration) {
+    void 'run js spec successfully'(Map configuration) {
         Browser.drive(configuration) {
-            baseUrl = "http://localhost:${port}/js-spec/"
+            baseUrl = "http://$host:${port}/js-spec/"
             go "index.html"
 
             assert title == 'Reference Specs for Todo-Backend'
 
-            $("#target-root-url").value "http://localhost:$port/todos"
+            $("#target-root-url").value "http://$host:$port/todos"
 
             $("#run-tests-btn").click()
 
-            assert $("#target-info > h2").text() == "these tests are targeting: http://localhost:$port/todos"
+            assert $("#target-info > h2").text() == "these tests are targeting: http://$host:$port/todos"
 
             // style.css
             assert $('#target-info').css('background-color') in ['rgb(36, 110, 190)', 'rgba(36, 110, 190, 1)']

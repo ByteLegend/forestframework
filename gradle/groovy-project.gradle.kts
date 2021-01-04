@@ -22,6 +22,7 @@ rootProject.extensions.configure<ExtraPropertiesExtension>("ext") {
             classpath = sourceSets["browserTest"].runtimeClasspath
             useJUnitPlatform()
             mustRunAfter("test")
+            systemProperty("recording.dir", project.buildDir)
         }
         tasks.named("check").configure { dependsOn(tasks.withType<Test>()) }
     }

@@ -32,7 +32,4 @@ jobs:
       - name: Show Gradle version
         run: ./gradlew --version
       - name: Build with Gradle
-        run: ./gradlew check --scan
-        env: # Skip browser tests
-          GECKOWEBDRIVER: ''
-          CHROMEWEBDRIVER: ''
+        run: ./gradlew check --scan -x browserTest

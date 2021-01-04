@@ -1,7 +1,6 @@
 package io.forestframework.example.realtimeauctions
 
 import geb.Browser
-import geb.Configuration
 import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testsupport.ForestIntegrationTest
@@ -9,9 +8,9 @@ import io.forestframework.testsupport.ForestIntegrationTest
 @ForestIntegrationTest(appClass = RealtimeAuctionsApp.class)
 class RealtimeAuctionsBrowserTest extends AbstractBrowserTest {
     @BrowserTest
-    void 'realtime auctions test'(Configuration configuration) {
+    void 'realtime auctions test'(Map configuration) {
         Browser.drive(configuration) {
-            baseUrl = "http://localhost:${port}/"
+            baseUrl = "http://$host:${port}/"
             go "/index.html"
 
             assert title == 'The best realtime auctions!'

@@ -31,10 +31,6 @@ jobs:
             ${{ runner.os }}-
       - name: Show Gradle version
         run: ./gradlew --version
-      - name: Start Xvfb
-        run: Xvfb :99 -screen 0 2560x1600x24 &
       - name: Build with Gradle
         run: ./gradlew browserTest --scan
-        env:
-          DISPLAY: ':99'
 
