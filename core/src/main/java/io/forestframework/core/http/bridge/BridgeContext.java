@@ -1,46 +1,29 @@
 package io.forestframework.core.http.bridge;
 
 import com.google.inject.Injector;
-import io.forestframework.core.http.HttpRequest;
-import io.forestframework.core.http.HttpResponse;
-import io.forestframework.core.http.WebContext;
 import io.forestframework.core.http.websocket.AbstractWebContext;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.handler.sockjs.SockJSSocket;
 
 import java.util.Map;
 
 public class BridgeContext extends AbstractWebContext {
-    public BridgeContext(Injector injector) {
+    private final HttpServerRequest request;
+
+    public BridgeContext(Injector injector, SockJSSocket socket) {
         super(injector);
+        this.request = socket.routingContext().request();
     }
 
     @Override
-    public HttpRequest request() {
-        throw new UnsupportedOperationException();
+    public HttpServerRequest request() {
+        return request;
     }
 
     @Override
-    public HttpResponse response() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public WebContext put(String key, Object obj) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T> T get(String key) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T> T remove(String key) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Map<String, Object> data() {
-        throw new UnsupportedOperationException();
+    public HttpServerResponse response() {
+        return request.response();
     }
 
     @Override

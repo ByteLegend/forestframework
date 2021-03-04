@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>BridgeMethodInvocationIntegrationTest</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
+    <script src="https://unpkg.io/@vertx/eventbus-bridge-client.js@1.0.0-2/vertx-eventbus.js"></script>
+    <script>
+        var eventBus = new EventBus('/api/v1');
+        var token = '{TOKEN}'
+
+        function invokeBackendMethod(id, protocolId, param) {
+            eventBus.send(protocolId, param, function (err, ret) {
+                var p = document.createElement("p")
+                if (ret.headers && ret.headers.type === "returnValue") {
+                    p.id = id
+                } else {
+                    p.id = id + "-error"
+                }
+
+                if (typeof ret.body === 'string' || ret.body instanceof String) {
+                    p.innerText = ret.body
+                } else {
+                    p.innerText = JSON.stringify(ret.body)
+                }
+
+                document.body.appendChild(p)
+            })
+        }
+
+    </script>
+</head>
+
+<body>
+
+<button id="echoButton" onclick="invokeBackendMethod('echo', 'protocol.echo', 'EchoMessage');">echo</button>
+<button id="echoSuspendButton" onclick="invokeBackendMethod('echoSuspend', 'protocol.echo.suspend', 'EchoMessageSuspend');">echoSuspend</button>
+<button id="returnVoidButton" onclick="invokeBackendMethod('returnVoid', 'protocol.return.void', 'Whatever');">returnVoid</button>
+<button id="returnVoidSuspendButton" onclick="invokeBackendMethod('returnVoidSuspend', 'protocol.return.void.suspend');">returnVoidSuspend</button>
+<button id="mapTransformButton" onclick="invokeBackendMethod('mapTransform', 'protocol.map.transform', {a:1,b:'bala',c:[{},{}]});">mapTransform</button>
+<button id="mapTransformSuspendButton" onclick="invokeBackendMethod('mapTransformSuspend', 'protocol.map.transform.suspend', {a:1,b:'bala',c:[{},{}]});">mapTransformSuspend</button>
+<button id="errorButton" onclick="invokeBackendMethod('error', 'protocol.error')">error</button>
+
+<button id="echoNameButton" onclick="invokeBackendMethod('echoName', 'protocol.echo.name', token)">echoName</button>
+
+<h3>Received Response:</h3>
+
+</body>
+
+</html>

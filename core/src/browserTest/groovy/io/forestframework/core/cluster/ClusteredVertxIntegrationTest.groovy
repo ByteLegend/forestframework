@@ -1,14 +1,13 @@
 package io.forestframework.core.cluster
 
-
 import geb.Browser
 import io.forestframework.core.Forest
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.http.bridge.Bridge
 import io.forestframework.core.http.bridge.BridgeEvent
 import io.forestframework.core.http.result.GetPlainText
-import io.forestframework.ext.api.ConsumeEvent
 import io.forestframework.ext.api.DefaultApplicationContext
+import io.forestframework.ext.api.OnEvent
 import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.core.AutoEventConsumerScanExtension
 import io.forestframework.ext.core.AutoStaticResourceScan
@@ -151,7 +150,7 @@ class ClusteredVertxIntegrationTestApp {
 
     Set<String> receivedClientEvents = []
 
-    @ConsumeEvent("client.event")
+    @OnEvent("client.event")
     void onClientEvent(String message) {
         receivedClientEvents.add(message)
     }
@@ -167,28 +166,3 @@ class ClusteredVertxIntegrationTestApp {
         event.complete(true)
     }
 }
-
-//@After(classes = [AutoComponentScanExtension.class])
-//class AutoEventBusHandlerScanner implements Extension {
-//    @Override
-//    void configure(Injector injector) {
-//        ApplicationContext ac = injector.getInstance(ApplicationContext.class)
-//        ac.getComponents().each { registerEventConsumers(injector, ac.getVertx(), it) }
-//    }
-//
-//    private static void registerEventConsumers(Injector injector, Vertx vertx, Class<?> component) {
-//        component.methods.each { method ->
-//            EventConsumer anno = method.getAnnotation(EventConsumer.class)
-//            if (anno != null) {
-//                vertx.eventBus().consumer(anno.value()) {
-//                    method.invoke(injector.getInstance(method.getDeclaringClass()), it.body())
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Retention(RetentionPolicy.RUNTIME)
-//@interface EventConsumer {
-//    String value()
-//}

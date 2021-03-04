@@ -366,7 +366,7 @@ public class DefaultHttpResponse implements HttpResponse {
     public void write(String chunk, Handler<AsyncResult<Void>> handler) {
         flush().onComplete(result -> {
             if (result.succeeded()) {
-                write(chunk, handler);
+                delegate.write(chunk, handler);
             } else {
                 handler.handle(result);
             }

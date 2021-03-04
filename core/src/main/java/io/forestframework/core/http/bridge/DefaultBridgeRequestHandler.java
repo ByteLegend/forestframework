@@ -48,7 +48,7 @@ public class DefaultBridgeRequestHandler extends AbstractWebRequestHandler imple
 
     private void configure(Router router, String path, Map<BridgeEventType, BridgeRouting> routings) {
         router.mountSubRouter(path, SockJSHandler.create(vertx).bridge(getOptions(path), event -> {
-            BridgeContext context = new BridgeContext(injector);
+            BridgeContext context = new BridgeContext(injector, event.socket());
 
             if (event.type() == io.vertx.ext.bridge.BridgeEventType.SOCKET_CREATED) {
                 event.socket().exceptionHandler(e -> {

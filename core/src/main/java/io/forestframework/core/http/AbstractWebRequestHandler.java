@@ -139,7 +139,7 @@ public abstract class AbstractWebRequestHandler {
         }
     }
 
-    boolean isContinuation(Class<?> argumentType) {
+    protected boolean isContinuation(Class<?> argumentType) {
         return argumentType == Continuation.class;
     }
 
