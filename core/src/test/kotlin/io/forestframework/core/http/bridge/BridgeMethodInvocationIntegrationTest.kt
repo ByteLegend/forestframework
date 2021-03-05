@@ -24,6 +24,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledOnOs
+import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -37,6 +39,7 @@ import java.util.UUID
 import java.util.logging.Level
 import javax.inject.Singleton
 
+@DisabledOnOs(OS.MAC, OS.WINDOWS)
 class BridgeMethodInvocationIntegrationTest {
     companion object {
         @JvmStatic

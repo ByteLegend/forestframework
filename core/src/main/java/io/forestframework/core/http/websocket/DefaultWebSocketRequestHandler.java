@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import static io.forestframework.core.http.websocket.WebSocketEventType.CLOSE;
 import static io.forestframework.core.http.websocket.WebSocketEventType.ERROR;
@@ -50,22 +53,31 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
         Map<WebSocketEventType, WebSocketRouting> typeToHandlers = routingMatchResult.getRoutings();
         DefaultWebSocketContext context = new DefaultWebSocketContext(injector, request, webSocket, routingMatchResult);
 
-        // OnWSOpen
-        invokeWebSocketHandler(typeToHandlers, OPEN, context, null, null);
+        // Make sure all messages are processed in sequence
+        AtomicReference<CompletableFuture<Object>> sequence = new AtomicReference<>(
+            // OnWSOpen
+            invokeWebSocketHandler(typeToHandlers, OPEN, context, null, null)
+        );
 
         webSocket.handler(buffer -> {
             // OnWSMessage
-            invokeWebSocketHandler(typeToHandlers, MESSAGE, context, buffer, null);
+            addMessageHandlerToSequence(sequence, __ -> invokeWebSocketHandler(typeToHandlers, MESSAGE, context, buffer, null));
         }).exceptionHandler(throwable -> {
             // OnWSError
-            invokeWebSocketHandler(typeToHandlers, ERROR, context, null, throwable);
+            addMessageHandlerToSequence(sequence, __ -> invokeWebSocketHandler(typeToHandlers, ERROR, context, null, throwable));
         }).endHandler(v -> {
             // OnWSClose
-            invokeWebSocketHandler(typeToHandlers, CLOSE, context, null, null);
+            addMessageHandlerToSequence(sequence, __ -> invokeWebSocketHandler(typeToHandlers, CLOSE, context, null, null));
         });
     }
 
-    private void invokeWebSocketHandler(Map<WebSocketEventType, WebSocketRouting> routings, WebSocketEventType eventType, DefaultWebSocketContext context, Buffer buffer, Throwable throwable) {
+    private void addMessageHandlerToSequence(AtomicReference<CompletableFuture<Object>> sequence, Function<Object, CompletableFuture<Object>> next) {
+        sequence.set(
+            sequence.get().thenCompose(next)
+        );
+    }
+
+    private CompletableFuture<Object> invokeWebSocketHandler(Map<WebSocketEventType, WebSocketRouting> routings, WebSocketEventType eventType, DefaultWebSocketContext context, Buffer buffer, Throwable throwable) {
         WebSocketRouting routing = routings.get(eventType);
         if (routing != null) {
             context.getArgumentInjector()
@@ -74,12 +86,14 @@ public class DefaultWebSocketRequestHandler extends AbstractWebRequestHandler im
                    .withParameterSupplier(String.class, buffer == null ? null : buffer::toString)
                    .with(throwable);
 
-            invokeRoutingWithoutProcessingResult(routing, context)
+            return invokeRoutingWithoutProcessingResult(routing, context)
                 .whenComplete((returnValue, failure) -> {
                     if (failure != null) {
                         LOGGER.error("", failure);
                     }
                 });
+        } else {
+            return NIL_FUTURE;
         }
     }
 }

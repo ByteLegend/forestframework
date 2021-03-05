@@ -31,7 +31,7 @@ class WebSocketTestApp {
     @WebSocket("/ws1")
     suspend fun webSocketWriteBackDirectly(socket: ServerWebSocket, eventType: WebSocketEventType, message: Buffer) {
         // delay so that client can set up message handler
-        delay(1000)
+        delay(100)
 
         val messageText = when (eventType) {
             WebSocketEventType.OPEN -> "open"
@@ -92,7 +92,7 @@ class WebSocketIntegrationTest : AbstractForestIntegrationTest() {
             .close()
 
         // Wait for server receiving the close event
-        delay(5000)
+        delay(500)
 
         val expectedServerMessages = expectedClientMessages + listOf("close")
         assertEquals(expectedServerMessages, app.messages)
