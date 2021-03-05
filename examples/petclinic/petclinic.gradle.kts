@@ -15,7 +15,7 @@ tasks.withType<KotlinCompile>() {
 }
 
 dependencies {
-    val kotlinVersion = "1.4.10"
+    val kotlinVersion = "1.4.31"
     val jpaVersion = "2.2"
     val javaxValidationVersion = "2.0.1.Final"
     implementation(project(":core"))

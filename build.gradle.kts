@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.4.10" apply false
+    kotlin("jvm") version "1.4.31" apply false
     id("com.github.spotbugs") version ("4.5.0") apply false
 }
 
@@ -15,7 +15,7 @@ val configureGroovy: Project.() -> Unit by rootProject.ext
 val configureKotlin: Project.() -> Unit by rootProject.ext
 
 rootProject.group = "io.forestframework"
-rootProject.version = "0.3.1-SNAPSHOT"
+rootProject.version = "0.3.2-SNAPSHOT"
 
 allprojects {
     repositories {
