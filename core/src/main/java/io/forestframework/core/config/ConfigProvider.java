@@ -11,6 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.apiguardian.api.API;
 
 import javax.inject.Singleton;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,7 +93,7 @@ public class ConfigProvider {
         defaultOptions.put("environment", () -> "dev");
     }
 
-    public ConfigProvider() {
+    private ConfigProvider() {
         this.configFileModel = new HashMap<>();
         this.environmentModel = new HashMap<>();
     }
@@ -101,6 +102,14 @@ public class ConfigProvider {
     ConfigProvider(Map<String, Object> configFileModel, Map<String, Object> environmentModel) {
         this.configFileModel = configFileModel;
         this.environmentModel = environmentModel;
+    }
+
+    /**
+     * Creates an empty config provider.
+     * @return the empty config provider.
+     */
+    public static ConfigProvider empty() {
+        return new ConfigProvider(new HashMap<>(), new HashMap<>());
     }
 
     /**
@@ -122,6 +131,20 @@ public class ConfigProvider {
     public static ConfigProvider load() {
         try {
             return new ConfigProvider(loadConfigFile(), loadEnvironmentConfig());
+        } catch (Throwable e) {
+            throw new RuntimeException("Can't load config", e);
+        }
+    }
+
+    /**
+     * Load from specified config file and environment.
+     *
+     * @param configFile the specified config file.
+     * @return Loaded config provider.
+     */
+    public static ConfigProvider loadFromFileAndEnvironment(File configFile) {
+        try {
+            return new ConfigProvider(loadModel(configFile), loadEnvironmentConfig());
         } catch (Throwable e) {
             throw new RuntimeException("Can't load config", e);
         }
@@ -197,6 +220,11 @@ public class ConfigProvider {
             }
             return Collections.emptyMap();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> loadModel(File file) throws IOException {
+        return loadModel(new FileInputStream(file));
     }
 
     @SuppressWarnings("unchecked")

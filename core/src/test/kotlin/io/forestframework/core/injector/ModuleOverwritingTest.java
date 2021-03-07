@@ -5,9 +5,12 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class InjectorTest {
-    public static void main(String[] args) {
+public class ModuleOverwritingTest {
+    @Test
+    public void test() {
         Module module1 = new AbstractModule() {
             @Override
             protected void configure() {
@@ -33,11 +36,11 @@ public class InjectorTest {
         };
 
         Injector injector = Guice.createInjector(
-                Modules.override(
-                        Modules.override(module1).with(module2)
-                ).with(module3)
+            Modules.override(
+                Modules.override(module1).with(module2)
+            ).with(module3)
         );
-        System.out.println(injector.getInstance(A.class));
+        Assertions.assertEquals(A3.class, injector.getInstance(A.class).getClass());
     }
 }
 

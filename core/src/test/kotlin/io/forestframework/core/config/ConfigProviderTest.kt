@@ -116,7 +116,7 @@ redis:
         assertEquals(0x7ffffffe, httpServerOptions.initialSettings.maxHeaderListSize)
         assertEquals(0x7ffffffe, provider.getInstance("http.initialSettings.maxHeaderListSize", Integer::class.java))
 
-        provider.addDefaultOptions("redis", { RedisOptions() })
+        provider.addDefaultOptions("redis") { RedisOptions() }
 
         val redisOptions: RedisOptions = provider.getInstance("redis", RedisOptions::class.java)
 
@@ -156,7 +156,7 @@ redis:
         assertEquals(Http2Settings.DEFAULT_MAX_HEADER_LIST_SIZE.toLong(), httpServerOptions.initialSettings.maxHeaderListSize)
         assertEquals(null, httpServerOptions.initialSettings.extraSettings)
 
-        provider.addDefaultOptions("redis", { RedisOptions() })
+        provider.addDefaultOptions("redis") { RedisOptions() }
         val redisOptions: RedisOptions = provider.getInstance("redis", RedisOptions::class.java)
 
         assertEquals(NetClientOptions.DEFAULT_SSL_HANDSHAKE_TIMEOUT, redisOptions.netClientOptions.sslHandshakeTimeout)
@@ -191,26 +191,40 @@ redis:
         assertEquals(8192, initialSettings.headerTableSize)
     }
 
+    private fun ConfigProvider.assertEnvironmentConfigWritesFileConfig() {
+        val httpServerOptions: HttpServerOptions = getInstance("http", HttpServerOptions::class.java)
+        assertEquals(12345, httpServerOptions.port)
+        assertEquals(8192, httpServerOptions.initialSettings.headerTableSize)
+        assertEquals(true, httpServerOptions.isCompressionSupported)
+        assertEquals(false, httpServerOptions.initialSettings.isPushEnabled)
+
+        val initialSettings: Http2Settings = getInstance("http.initialSettings", Http2Settings::class.java)
+        assertEquals(8192, initialSettings.headerTableSize)
+
+        assertEquals(8192, getInstance("http.initialSettings.headerTableSize", Integer::class.java))
+    }
+
     @Test
     @SystemProperties(
         SystemProperty(name = "forest.http.port", value = "12345"),
         SystemProperty(name = "forest.http.initialSettings.headerTableSize", value = "8192")
     )
-    fun `environment config overwrites file config`(@TempDir tempDir: File) {
+    fun `environment config overwrites file config for system property config file`(@TempDir tempDir: File) {
         withSystemPropertyConfigFile(tempDir, realWorldConfig) {
-            val provider = ConfigProvider.load()
-
-            val httpServerOptions: HttpServerOptions = provider.getInstance("http", HttpServerOptions::class.java)
-            assertEquals(12345, httpServerOptions.port)
-            assertEquals(8192, httpServerOptions.initialSettings.headerTableSize)
-            assertEquals(true, httpServerOptions.isCompressionSupported)
-            assertEquals(false, httpServerOptions.initialSettings.isPushEnabled)
-
-            val initialSettings: Http2Settings = provider.getInstance("http.initialSettings", Http2Settings::class.java)
-            assertEquals(8192, initialSettings.headerTableSize)
-
-            assertEquals(8192, provider.getInstance("http.initialSettings.headerTableSize", Integer::class.java))
+            ConfigProvider.load().assertEnvironmentConfigWritesFileConfig()
         }
+    }
+
+    @Test
+    @SystemProperties(
+        SystemProperty(name = "forest.http.port", value = "12345"),
+        SystemProperty(name = "forest.http.initialSettings.headerTableSize", value = "8192")
+    )
+    fun `environment config overwrites file config for direct config file`(@TempDir tempDir: File) {
+        val configFile = tempDir.resolve("tmp.txt").apply {
+            writeText(realWorldConfig)
+        }
+        ConfigProvider.loadFromFileAndEnvironment(configFile).assertEnvironmentConfigWritesFileConfig()
     }
 
     @Test
@@ -333,7 +347,6 @@ redis:
 
     @Test
     fun `polymorphism setter test`(@TempDir tempDir: File) {
-
         withSystemPropertyConfigFile(
             tempDir,
             """

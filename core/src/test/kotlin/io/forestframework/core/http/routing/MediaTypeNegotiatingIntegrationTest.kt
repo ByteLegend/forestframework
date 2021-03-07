@@ -119,7 +119,7 @@ class MediaTypeNegotiatingIntegrationTest {
         produces: List<String> = listOf("*/*"),
         consumes: List<String> = listOf("*/*")
     ): Int {
-        val configProvider = ConfigProvider()
+        val configProvider = ConfigProvider.empty()
         val extensions = listOf(
             BindFreePortExtension(),
             object : Extension {
