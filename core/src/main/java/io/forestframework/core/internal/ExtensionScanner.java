@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import io.forestframework.ext.api.After;
 import io.forestframework.ext.api.Before;
 import io.forestframework.ext.api.Extension;
+import io.forestframework.ext.api.Repeatable;
 import io.forestframework.ext.api.WithExtensions;
 
 import java.lang.annotation.Annotation;
@@ -71,9 +72,6 @@ public class ExtensionScanner {
     }
 
     private static List<ExtensionAndAnnotation> reorder(List<ExtensionAndAnnotation> extensionAndAnnotations) {
-        // key should be before all classes in value
-        Multimap<Class<?>, Class<?>> befores = HashMultimap.create();
-        // key should be after all classes in value
         Multimap<Class<?>, Class<?>> afters = HashMultimap.create();
 
         for (ExtensionAndAnnotation extensionAndAnnotation : extensionAndAnnotations) {
@@ -84,79 +82,85 @@ public class ExtensionScanner {
             List<Class<? extends Extension>> classesShouldHappenLater = Optional.ofNullable(extensionClass.getAnnotation(Before.class))
                                                                                 .map(Before::classes).map(Arrays::asList).orElse(Collections.emptyList());
 
-            classesShouldHappenEarlier.forEach(it -> happenBefore(it, extensionClass, befores, afters));
-            classesShouldHappenLater.forEach(it -> happenBefore(extensionClass, it, befores, afters));
+            classesShouldHappenEarlier.forEach(it -> happenBefore(it, extensionClass, afters));
+            classesShouldHappenLater.forEach(it -> happenBefore(extensionClass, it, afters));
         }
 
-        checkCyclic(befores);
+        checkCyclic(afters);
 
-//        Map<Class<?>, ExtensionAndAnnotation> map = extensionAndAnnotations.stream()
-//                                                                           .collect(Collectors.toMap(ExtensionAndAnnotation::getExtensionClass, x -> x));
         List<ExtensionAndAnnotation> ret = new ArrayList<>();
+        List<ExtensionAndAnnotation> candidates = new ArrayList<>(extensionAndAnnotations);
 
-        for (ExtensionAndAnnotation extensionAndAnnotation : extensionAndAnnotations) {
-//            Set<Class<?>> earlierClasses = new HashSet<>(afters.get(extensionAndAnnotation.getExtensionClass()));
-            Set<Class<?>> laterClasses = new HashSet<>(befores.get(extensionAndAnnotation.getExtensionClass()));
-
-//            int lastEarlierClassIndex = findLastIndex(earlierClasses, ret);
-            int firstLaterClassIndex = findFirstIndex(laterClasses, ret);
-            ret.add(firstLaterClassIndex, extensionAndAnnotation);
+        while (!candidates.isEmpty()) {
+            // find out the one with "nobody ahead"
+            ExtensionAndAnnotation candidate = findTheEarliest(candidates, afters);
+            System.out.println("Picking up " + candidate.extensionClass);
+            candidates.remove(candidate);
+            ret.add(candidate);
         }
+
         return ret;
     }
 
+    private static ExtensionAndAnnotation findTheEarliest(
+        List<ExtensionAndAnnotation> candidates,
+        Multimap<Class<?>, Class<?>> afters
+    ) {
+        int counter = 0;
+        ExtensionAndAnnotation current = candidates.get(0);
+        while (true) {
+            Set<Class<?>> earlierClasses = new HashSet<>(afters.get(current.extensionClass));
+            if (earlierClasses.isEmpty()) {
+                return current;
+            }
 
-    private static int findFirstIndex(Set<Class<?>> candidates, List<ExtensionAndAnnotation> extensionList) {
-        for (int i = 0; i < extensionList.size(); i++) {
-            if (candidates.contains(extensionList.get(i).extensionClass)) {
-                return i;
+            Optional<ExtensionAndAnnotation> optional = candidates.stream().filter(it -> earlierClasses.contains(it.extensionClass)).findAny();
+            if (optional.isPresent()) {
+                current = optional.get();
+            } else {
+                return current;
+            }
+            counter++;
+            if (counter > candidates.size()) {
+                throw new IllegalStateException("Cyclic dependency graph detected!");
             }
         }
-        return extensionList.size();
     }
 
-    private static int findLastIndex(Set<Class<?>> candidates, List<ExtensionAndAnnotation> extensionList) {
-        for (int i = extensionList.size() - 1; i >= 0; i--) {
-            if (candidates.contains(extensionList.get(i).extensionClass)) {
-                return i;
-            }
-        }
-        return -1;
+    private static void checkCyclic(Multimap<Class<?>, Class<?>> afters) {
+        afters.keySet().forEach(it -> checkCyclic(afters, new LinkedHashSet<>(), it));
     }
 
-    private static void checkCyclic(Multimap<Class<?>, Class<?>> befores) {
-        befores.keySet().forEach(it -> checkCyclic(befores, new LinkedHashSet<>(), it));
-    }
-
-    private static void checkCyclic(Multimap<Class<?>, Class<?>> befores, Set<Class<?>> seenClasses, Class<?> currentClass) {
+    private static void checkCyclic(Multimap<Class<?>, Class<?>> afters, Set<Class<?>> seenClasses, Class<?> currentClass) {
         if (!seenClasses.add(currentClass)) {
             throw new IllegalStateException("Cycle: " +
                                                 seenClasses
                                                     .stream()
                                                     .map(Object::toString)
-                                                    .collect(Collectors.joining(" -> "))
-                                                + " -> " + currentClass);
+                                                    .collect(Collectors.joining(" <- "))
+                                                + " <- " + currentClass);
         }
-        Collection<Class<?>> laterClasses = befores.get(currentClass);
+        Collection<Class<?>> laterClasses = afters.get(currentClass);
 
         for (Class<?> laterClass : laterClasses) {
-            checkCyclic(befores, new LinkedHashSet<>(seenClasses), laterClass);
+            checkCyclic(afters, new LinkedHashSet<>(seenClasses), laterClass);
         }
     }
 
-    private static void happenBefore(Class<?> earlier, Class<?> later, Multimap<Class<?>, Class<?>> befores, Multimap<Class<?>, Class<?>> afters) {
-        befores.put(earlier, later);
+    private static void happenBefore(Class<?> earlier, Class<?> later, Multimap<Class<?>, Class<?>> afters) {
         afters.put(later, earlier);
     }
 
     private static List<ExtensionAndAnnotation> deduplicate(List<ExtensionAndAnnotation> extensionAndAnnotations) {
-        Set<ExtensionAndAnnotation> set = new LinkedHashSet<>();
+        List<ExtensionAndAnnotation> ret = new ArrayList<>();
         for (ExtensionAndAnnotation extensionAndAnnotation : extensionAndAnnotations) {
-            // Overwrite
-            set.remove(extensionAndAnnotation);
-            set.add(extensionAndAnnotation);
+            if (!extensionAndAnnotation.extensionClass.isAnnotationPresent(Repeatable.class)) {
+                // override
+                ret.remove(extensionAndAnnotation);
+            }
+            ret.add(extensionAndAnnotation);
         }
-        return new ArrayList<>(set);
+        return ret;
     }
 
     private static class ExtensionAndAnnotation {

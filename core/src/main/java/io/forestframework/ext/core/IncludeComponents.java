@@ -4,6 +4,7 @@ import com.github.blindpirate.annotationmagic.Extends;
 import com.google.inject.Module;
 import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.Extension;
+import io.forestframework.ext.api.Repeatable;
 import io.forestframework.ext.api.WithExtensions;
 import io.forestframework.utils.StartupUtils;
 
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 public @interface IncludeComponents {
     Class<?>[] classes() default {};
 
+    @Repeatable
     class IncludeComponentExtension implements Extension {
         private final IncludeComponents includeComponents;
 
