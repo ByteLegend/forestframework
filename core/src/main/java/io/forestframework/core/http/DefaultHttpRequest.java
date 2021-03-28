@@ -2,6 +2,7 @@ package io.forestframework.core.http;
 
 import io.forestframework.core.http.routing.RoutingMatchResult;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -14,6 +15,7 @@ import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.http.HttpVersion;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.StreamPriority;
+import io.vertx.core.http.impl.HttpServerRequestInternal;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.streams.Pipe;
@@ -25,12 +27,12 @@ import javax.security.cert.X509Certificate;
 import java.util.Map;
 
 public class DefaultHttpRequest implements HttpRequest {
-    private final io.vertx.core.http.HttpServerRequest delegate;
+    private final HttpServerRequestInternal delegate;
     private final HttpResponse response;
     private final RoutingMatchResult routingMatchResult;
     private Future<Buffer> bodyCache;
 
-    public DefaultHttpRequest(io.vertx.core.http.HttpServerRequest delegate, RoutingMatchResult routingMatchResult) {
+    public DefaultHttpRequest(HttpServerRequestInternal delegate, RoutingMatchResult routingMatchResult) {
         this.delegate = delegate;
         this.routingMatchResult = routingMatchResult;
         this.response = new DefaultHttpResponse(delegate.response());
@@ -301,5 +303,15 @@ public class DefaultHttpRequest implements HttpRequest {
     @Override
     public void pipeTo(WriteStream<Buffer> dst, Handler<AsyncResult<Void>> handler) {
         delegate.pipeTo(dst, handler);
+    }
+
+    @Override
+    public Context context() {
+        return delegate.context();
+    }
+
+    @Override
+    public Object metric() {
+        return delegate.metric();
     }
 }

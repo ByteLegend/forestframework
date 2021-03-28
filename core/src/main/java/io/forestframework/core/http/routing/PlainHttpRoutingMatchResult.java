@@ -11,6 +11,7 @@ import io.forestframework.core.http.HttpStatusCode;
 import io.forestframework.core.http.bridge.DefaultBridgeRequestHandler;
 import io.forestframework.core.http.websocket.DefaultWebSocketRequestHandler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.impl.HttpServerRequestInternal;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +39,7 @@ public class PlainHttpRoutingMatchResult implements RoutingMatchResult {
                        DefaultBridgeRequestHandler bridgeRequestHandler,
                        DefaultWebSocketRequestHandler webSocketRequestHandler,
                        DefaultPlainHttpRequestHandler plainHttpRequestHandler) {
-        plainHttpRequestHandler.handle(new DefaultHttpRequest(request, this));
+        plainHttpRequestHandler.handle(new DefaultHttpRequest((HttpServerRequestInternal) request, this));
     }
 
     public void addResult(HttpServerRequest request, List<Routing> routings, Map<String, String> pathVariables) {

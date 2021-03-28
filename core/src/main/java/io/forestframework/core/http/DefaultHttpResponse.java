@@ -16,8 +16,8 @@ import java.util.List;
 
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 public class DefaultHttpResponse implements HttpResponse {
-    private io.vertx.core.http.HttpServerResponse delegate;
-    private List<Buffer> bodyBuffers = new ArrayList<>();
+    private final io.vertx.core.http.HttpServerResponse delegate;
+    private final List<Buffer> bodyBuffers = new ArrayList<>();
 
     public DefaultHttpResponse(io.vertx.core.http.HttpServerResponse delegate) {
         this.delegate = delegate;
