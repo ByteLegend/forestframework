@@ -30,12 +30,20 @@ public class DefaultHttpRequest implements HttpRequest {
     private final HttpServerRequestInternal delegate;
     private final HttpResponse response;
     private final RoutingMatchResult routingMatchResult;
+    /**
+     * This allows a body to be read multiple times, in multiple handlers.
+     */
     private Future<Buffer> bodyCache;
 
     public DefaultHttpRequest(HttpServerRequestInternal delegate, RoutingMatchResult routingMatchResult) {
         this.delegate = delegate;
         this.routingMatchResult = routingMatchResult;
         this.response = new DefaultHttpResponse(delegate.response());
+        // TODO this is unsafe
+        // However, we need this to handle the situation in which HTTP request is read to the end
+        // before `body()` is called.
+        // Also, as said in `bodyHandler` documentation, it's unsafe to call it on a huge input
+        bodyHandler(buffer -> bodyCache = Future.succeededFuture(buffer));
     }
 
     @SuppressWarnings("unchecked")
