@@ -27,12 +27,12 @@ import java.util.regex.Pattern;
 /**
  * Provides a "Vertx-domain-specific" configuration value instance based on the configuration key for the Forest
  * application. A configuration value instance can be normal String, Integer, Long, or very complicated instances.
- *
+ * <p>
  * You can get such a configuration instance via two ways:
- *
+ * <p>
  * 1. Call {@link ConfigProvider#getInstance(String, Class)}, e.g.
  * {@code configProvider.getInstance("http.port", Integer.class)}.
- *
+ * <p>
  * 2. Inject the configuration instance via Guice DI, e.g.
  * <pre>
  * public class MyService {
@@ -43,14 +43,14 @@ import java.util.regex.Pattern;
  * }
  * </pre>
  * We make it deeply integrated into Guice DI (in a hacky way, don't want to talk too much about it).
- *
+ * <p>
  * When the configuration value is a complicated instance (usually Vert.x option classes), it's constructed by three steps:
  * <ol>
  *     <li>Get the that configuration default value instance, by calling default constructor.</li>
  *     <li>Overwrite some properties of the instance by reading the configuration file.</li>
- *     <li>Overwrite some properties of the instance by reading the system properties.</li>
+ *     <li>Overwrite some properties of the instance by reading the system properties or environment variables.</li>
  * </ol>
- *
+ * <p>
  * This means, you can get a fully configured instance partially overwritten by the external configuration or command line args.
  * For example, given configuration file:
  *
@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
  *       initialSettings:
  *         headerTableSize: 4096
  * </pre>
- *
+ * <p>
  * You can get the port via {@code configProvider.getInstance("http.port", Integer.class)}, or get the
  * fully configured {@link HttpServerOptions} instance, with the corresponding properties in the config file overwritten
  * via {@code configProvider.getInstance("http", HttpServerOptions.class)}.
@@ -69,7 +69,8 @@ import java.util.regex.Pattern;
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
 @Singleton
 public class ConfigProvider {
-    private static final Pattern ENVIRONMENT_CONFIG_PATTERN = Pattern.compile("forest(\\.[\\w\\d$])+");
+    private static final Pattern SYSTEM_PROPERTY_CONFIG_PATTERN = Pattern.compile("forest(\\.[\\w\\d$])+");
+    private static final Pattern ENV_VARIABLE_CONFIG_PATTERN = Pattern.compile("FOREST(_[\\w\\d$])+");
     private static final ObjectMapper YAML_PARSER = new ObjectMapper(new YAMLFactory());
     private static final ObjectMapper JSON_PARSER = new ObjectMapper();
     private final Map<String, Supplier<?>> defaultOptions = new ConcurrentHashMap<>();
@@ -81,7 +82,7 @@ public class ConfigProvider {
      * The config data in environment. By default, system properties with prefix "forest." go into this model, with "forest." prefix
      * removed as key. For example, the application starts with {@code -Dforest.http.port=8080 -Dforest.pg.connect.port=5432} will
      * have this model @literal {http.port=8080, pg.connect.port=5432}.
-     *
+     * <p>
      * Note that you can pass a JSON string like this: @literal -Dforest.http='{"port":8080,compressionSupported:false}'
      */
     private final Map<String, Object> environmentModel;
@@ -106,6 +107,7 @@ public class ConfigProvider {
 
     /**
      * Creates an empty config provider.
+     *
      * @return the empty config provider.
      */
     public static ConfigProvider empty() {
@@ -120,13 +122,15 @@ public class ConfigProvider {
      *     <li>The first resource file named "/forest.json" in classpath.</li>
      *     <li>The first resource file named "/forest.yml" in classpath.</li>
      *   <li>System properties (this overwrites the corresponding value in config file):</li>
+     *       <li>All system properties starting with "FOREST_a_b_c" will be read as "a.b.c". </li>
      *       <li>All system properties starting with "forest.", if the value isn't JSON string (starting with '{' or '['),
      *       store the value as it is.</li>
      *       <li>All system properties starting with "forest.", if the value is JSON string (starting with '{' or '['),
      *       let JSON parser parse the value then store the deserialized result.</li>
      * </ul>
-     *
-     * See {@link ConfigProvider#ENVIRONMENT_CONFIG_PATTERN}
+     * <p>
+     * See {@link ConfigProvider#SYSTEM_PROPERTY_CONFIG_PATTERN}
+     * See {@link ConfigProvider#ENV_VARIABLE_CONFIG_PATTERN}
      */
     public static ConfigProvider load() {
         try {
@@ -175,8 +179,17 @@ public class ConfigProvider {
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();
-            if (ENVIRONMENT_CONFIG_PATTERN.matcher(key).find()) {
+            if (SYSTEM_PROPERTY_CONFIG_PATTERN.matcher(key).find()) {
                 addConfigTo(key.substring(7), value, resultMap);
+            }
+        }
+
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (ENV_VARIABLE_CONFIG_PATTERN.matcher(key).find()) {
+                // TODO escape _ with __
+                addConfigTo(key.substring(7).replace('_', '.'), value, resultMap);
             }
         }
         return resultMap;
@@ -203,7 +216,9 @@ public class ConfigProvider {
     }
 
     private static Map<String, Object> loadConfigFile() throws IOException {
-        if (System.getProperty("forest.config.file") != null) {
+        if (System.getenv("FOREST_config_file") != null) {
+            return loadModel(new FileInputStream(System.getenv("FOREST_config_file")));
+        } else if (System.getProperty("forest.config.file") != null) {
             return loadModel(new FileInputStream(System.getProperty("forest.config.file")));
         } else {
             InputStream yml = ConfigProvider.class.getResourceAsStream("/forest.yml");

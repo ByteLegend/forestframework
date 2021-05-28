@@ -15,8 +15,12 @@ import io.vertx.redis.client.RedisClientType
 import io.vertx.redis.client.RedisOptions
 import io.vertx.redis.client.RedisRole
 import io.vertx.spi.cluster.zookeeper.ZookeeperClusterManager
+import org.hamcrest.CoreMatchers
+import org.hamcrest.MatcherAssert
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledForJreRange
+import org.junit.jupiter.api.condition.JRE
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -62,7 +66,8 @@ aaa:
     )
     fun `can read raw property`(configString: String) {
         val parser = if (configString.trim().startsWith("{")) jsonParser else yamlParser
-        val provider = ConfigProvider(parser.readValue(configString, Map::class.java) as MutableMap<String, Any>, emptyMap())
+        val provider =
+            ConfigProvider(parser.readValue(configString, Map::class.java) as MutableMap<String, Any>, emptyMap())
         assertEquals("", provider.getInstance("aaa.bbb.ccc.stringValue1", String::class.java))
         assertEquals("", provider.getInstance("aaa.bbb.ccc", JsonObject::class.java).getString("stringValue1"))
         assertEquals("This is a string", provider.getInstance("aaa.bbb.ccc.stringValue2", String::class.java))
@@ -101,7 +106,10 @@ redis:
 
     @Test
     fun `can read Options property`() {
-        val provider = ConfigProvider(yamlParser.readValue(realWorldConfig, Map::class.java) as MutableMap<String, Any>, emptyMap())
+        val provider = ConfigProvider(
+            yamlParser.readValue(realWorldConfig, Map::class.java) as MutableMap<String, Any>,
+            emptyMap()
+        )
 
         val httpJsonObject = provider.getInstance("http", JsonObject::class.java)
         assertEquals(12345, httpJsonObject.getInteger("port"))
@@ -123,15 +131,27 @@ redis:
         assertEquals(1, redisOptions.netClientOptions.sslHandshakeTimeout)
         assertEquals(1, provider.getInstance("redis.netClientOptions.sslHandshakeTimeout", Integer::class.java))
         assertEquals(TimeUnit.MINUTES, redisOptions.netClientOptions.sslHandshakeTimeoutUnit)
-        assertEquals(TimeUnit.MINUTES, provider.getInstance("redis.netClientOptions.sslHandshakeTimeoutUnit", TimeUnit::class.java))
+        assertEquals(
+            TimeUnit.MINUTES,
+            provider.getInstance("redis.netClientOptions.sslHandshakeTimeoutUnit", TimeUnit::class.java)
+        )
         assertEquals(listOf("a", "b"), ArrayList(redisOptions.netClientOptions.enabledCipherSuites))
-        assertEquals(listOf("a", "b"), provider.getInstance("redis.netClientOptions.enabledCipherSuites", List::class.java))
-        assertEquals(listOf("a", "b"), provider.getInstance("redis.netClientOptions.enabledCipherSuites", ArrayList::class.java))
+        assertEquals(
+            listOf("a", "b"),
+            provider.getInstance("redis.netClientOptions.enabledCipherSuites", List::class.java)
+        )
+        assertEquals(
+            listOf("a", "b"),
+            provider.getInstance("redis.netClientOptions.enabledCipherSuites", ArrayList::class.java)
+        )
         assertEquals(listOf("aaa"), redisOptions.netClientOptions.crlPaths)
         assertEquals(listOf("aaa"), provider.getInstance("redis.netClientOptions.crlPaths", List::class.java))
         assertEquals(listOf("aaa"), provider.getInstance("redis.netClientOptions.crlPaths", ArrayList::class.java))
         assertEquals(listOf("TLSv1"), ArrayList(redisOptions.netClientOptions.enabledSecureTransportProtocols))
-        assertEquals(listOf("TLSv1"), provider.getInstance("redis.netClientOptions.enabledSecureTransportProtocols", List::class.java))
+        assertEquals(
+            listOf("TLSv1"),
+            provider.getInstance("redis.netClientOptions.enabledSecureTransportProtocols", List::class.java)
+        )
         assertEquals(true, redisOptions.netClientOptions.isTcpQuickAck)
         assertEquals(true, provider.getInstance("redis.netClientOptions.tcpQuickAck", Boolean::class.java))
 
@@ -153,17 +173,26 @@ redis:
         assertEquals(HttpServerOptions.DEFAULT_PORT, httpServerOptions.port)
         assertEquals(HttpServerOptions.DEFAULT_COMPRESSION_SUPPORTED, httpServerOptions.isCompressionSupported)
         assertEquals(Http2Settings.DEFAULT_ENABLE_PUSH, httpServerOptions.initialSettings.isPushEnabled)
-        assertEquals(Http2Settings.DEFAULT_MAX_HEADER_LIST_SIZE.toLong(), httpServerOptions.initialSettings.maxHeaderListSize)
+        assertEquals(
+            Http2Settings.DEFAULT_MAX_HEADER_LIST_SIZE.toLong(),
+            httpServerOptions.initialSettings.maxHeaderListSize
+        )
         assertEquals(null, httpServerOptions.initialSettings.extraSettings)
 
         provider.addDefaultOptions("redis") { RedisOptions() }
         val redisOptions: RedisOptions = provider.getInstance("redis", RedisOptions::class.java)
 
         assertEquals(NetClientOptions.DEFAULT_SSL_HANDSHAKE_TIMEOUT, redisOptions.netClientOptions.sslHandshakeTimeout)
-        assertEquals(NetClientOptions.DEFAULT_SSL_HANDSHAKE_TIMEOUT_TIME_UNIT, redisOptions.netClientOptions.sslHandshakeTimeoutUnit)
+        assertEquals(
+            NetClientOptions.DEFAULT_SSL_HANDSHAKE_TIMEOUT_TIME_UNIT,
+            redisOptions.netClientOptions.sslHandshakeTimeoutUnit
+        )
         assertEquals(emptySet<String>(), redisOptions.netClientOptions.enabledCipherSuites)
         assertEquals(emptyList<String>(), redisOptions.netClientOptions.crlPaths)
-        assertEquals(NetClientOptions.DEFAULT_ENABLED_SECURE_TRANSPORT_PROTOCOLS, ArrayList(redisOptions.netClientOptions.enabledSecureTransportProtocols))
+        assertEquals(
+            NetClientOptions.DEFAULT_ENABLED_SECURE_TRANSPORT_PROTOCOLS,
+            ArrayList(redisOptions.netClientOptions.enabledSecureTransportProtocols)
+        )
         assertEquals(NetClientOptions.DEFAULT_TCP_QUICKACK, redisOptions.netClientOptions.isTcpQuickAck)
 
         assertEquals(listOf(RedisOptions.DEFAULT_ENDPOINT), redisOptions.endpoints)
@@ -262,7 +291,10 @@ redis:
         provider.addDefaultOptions("redis") { RedisOptions() }
 
         assertEquals(listOf("redis://localhost:6380"), provider.getInstance("redis.endpoints", List::class.java))
-        assertEquals(listOf("redis://localhost:6380"), provider.getInstance("redis", RedisOptions::class.java).endpoints)
+        assertEquals(
+            listOf("redis://localhost:6380"),
+            provider.getInstance("redis", RedisOptions::class.java).endpoints
+        )
     }
 
     @Test
@@ -382,5 +414,50 @@ vertx:
             assertEquals(8082, vertxOptions.eventBusOptions.port)
             assertEquals(8082, vertxOptions.eventBusOptions.clusterPublicPort)
         }
+    }
+
+    @Test
+    @EnabledForJreRange(min = JRE.JAVA_11)
+    fun `use environmental variables`(@TempDir dir: File) {
+        val mainJava = dir.resolve("Main.java")
+        mainJava.writeText(
+            """
+            import io.forestframework.core.config.ConfigProvider;
+
+            public class Main {
+                public static void main(String[] args) {
+                    ConfigProvider cp = ConfigProvider.load();
+                    System.out.println("aaa.bbb=" + cp.getInstance("aaa.bbb", String.class));
+                    System.out.println("aaa.ccc=" + cp.getInstance("aaa.ccc", String.class));
+                }
+            }
+        """.trimIndent()
+        )
+
+        val configFile = dir.resolve("config.json")
+        configFile.writeText(
+            """
+            {
+                "aaa": {
+                    "bbb": 1,
+                    "ccc": "hello"
+                }
+            }
+        """.trimIndent()
+        )
+
+        val javaBin = System.getProperty("java.home") + "/bin/java"
+        val classPath = System.getProperty("java.class.path")
+
+        val output = dir.resolve("output.txt")
+        ProcessBuilder(javaBin, "-cp", classPath, mainJava.absolutePath).apply {
+            directory(dir)
+            environment()["FOREST_config_file"] = configFile.absolutePath
+            environment()["FOREST_aaa_ccc"] = "hi"
+        }.redirectOutput(output).redirectError(output).start().waitFor()
+
+        val outputText = output.readText()
+        MatcherAssert.assertThat(outputText, CoreMatchers.containsString("aaa.bbb=1"))
+        MatcherAssert.assertThat(outputText, CoreMatchers.containsString("aaa.ccc=hi"))
     }
 }
