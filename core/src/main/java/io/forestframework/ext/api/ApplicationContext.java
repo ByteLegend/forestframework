@@ -22,7 +22,7 @@ import java.util.List;
  * The startup process is guaranteed to happen in a single non-Vert.x-managed thread.
  */
 @API(status = API.Status.EXPERIMENTAL, since = "0.1")
-public interface ApplicationContext {
+public interface ApplicationContext extends AutoCloseable {
     /**
      * Get the Vert.x instance associated with the Forest application. It's guaranteed to be only one Vert.x
      * instance per Forest application.

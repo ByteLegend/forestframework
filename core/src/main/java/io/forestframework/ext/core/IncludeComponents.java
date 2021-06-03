@@ -1,6 +1,7 @@
 package io.forestframework.ext.core;
 
 import com.github.blindpirate.annotationmagic.Extends;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.Extension;
@@ -20,6 +21,8 @@ import java.util.stream.Stream;
 @Extends(WithExtensions.class)
 @WithExtensions(extensions = IncludeComponents.IncludeComponentExtension.class)
 public @interface IncludeComponents {
+    boolean eager() default false;
+
     Class<?>[] classes() default {};
 
     @Repeatable
@@ -42,6 +45,15 @@ public @interface IncludeComponents {
 
             applicationContext.getComponents().clear();
             applicationContext.getComponents().addAll(componentClasses);
+        }
+
+        @Override
+        public void configure(Injector injector) {
+            if (includeComponents.eager()) {
+                Stream.of(includeComponents.classes())
+                      .filter(it -> !Module.class.isAssignableFrom(it))
+                      .forEach(injector::getInstance);
+            }
         }
     }
 }
