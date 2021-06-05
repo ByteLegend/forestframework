@@ -29,8 +29,8 @@ class AutoStaticResourceScanExtensionIntegrationTest : AbstractForestIntegration
         "/css/b.css,   text/css;charset=UTF-8,                   this is b.css",
         "/img/1.png,   image/png,                                BINARY",
         "/img/2.jpg,   image/jpeg,                               BINARY",
-        "/js/1.js,     application/javascript,                   this is 1.js",
-        "/js/2.js,     application/javascript,                   this is 2.js",
+        "/js/1.js,     text/javascript;charset=UTF-8,     this is 1.js",
+        "/js/2.js,     text/javascript;charset=UTF-8,     this is 2.js",
         "/index.html,  text/html;charset=UTF-8,                  This is HTML",
         "/,            text/html;charset=UTF-8,                  This is HTML",
         "/favicon.ico, image/x-icon,                             BINARY"
@@ -67,12 +67,12 @@ class AutoStaticResourceScanExtensionIntegrationTest : AbstractForestIntegration
 class AutoStaticResourceScanExtensionMultipleWebrootsIntegrationTest : AbstractForestIntegrationTest() {
     @ParameterizedTest(name = "can get resource {0}")
     @CsvSource(value = [
-        "/a/a.css, text/css;charset=UTF-8,     this is a.css",
-        "/b.css,   text/css;charset=UTF-8,     this is b.css",
-        "/1.png,   image/png,                  BINARY",
-        "/2.jpg,   image/jpeg,                 BINARY",
-        "/1.js,     application/javascript,     this is 1.js",
-        "/2.js,     application/javascript,     this is 2.js"
+        "/a/a.css, text/css;charset=UTF-8,                this is a.css",
+        "/b.css,   text/css;charset=UTF-8,                this is b.css",
+        "/1.png,   image/png,                             BINARY",
+        "/2.jpg,   image/jpeg,                            BINARY",
+        "/1.js,     text/javascript;charset=UTF-8, this is 1.js",
+        "/2.js,     text/javascript;charset=UTF-8, this is 2.js"
     ])
     fun `can get resources`(path: String, expectedContentType: String, expectedContent: String): Unit = runBlockingUnit {
         get(path)

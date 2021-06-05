@@ -154,6 +154,11 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
         }
 
         @Override
+        public <T> T get(String key, T defaultValue) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public <T> T remove(String key) {
             throw new UnsupportedOperationException();
         }
