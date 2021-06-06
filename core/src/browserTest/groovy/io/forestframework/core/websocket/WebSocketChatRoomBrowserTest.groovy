@@ -18,6 +18,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.ServerWebSocket
 import org.apache.commons.lang3.exception.ExceptionUtils
+import org.junit.jupiter.api.Timeout
 
 import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
@@ -86,6 +87,7 @@ class WebSocketChatRoomRouter {
 @ForestIntegrationTest(appClass = WebSocketChatRoomBrowserTestApp.class)
 class WebSocketChatRoomBrowserTest extends AbstractBrowserTest {
     @BrowserTest
+    @Timeout(120L)
     void chatroomTest(Map conf) {
         Browser.drive(conf) {
             baseUrl = "http://$host:${port}/"
