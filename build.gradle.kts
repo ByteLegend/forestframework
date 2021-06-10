@@ -15,7 +15,7 @@ val configureGroovy: Project.() -> Unit by rootProject.ext
 val configureKotlin: Project.() -> Unit by rootProject.ext
 
 rootProject.group = "io.forestframework"
-rootProject.version = "0.3.10-SNAPSHOT"
+rootProject.version = "0.3.11-SNAPSHOT"
 
 allprojects {
     repositories {

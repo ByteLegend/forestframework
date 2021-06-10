@@ -21,13 +21,12 @@ dependencies {
     compileOnly(libs("vertx-lang-kotlin-coroutines"))
     // com.google.code.findbugs:annotations
     compileOnly(libs("annotations"))
+    compileOnly(libs("log4j-core"))
 
     implementation(libs("reflectasm"))
     implementation(libs("commons-lang3"))
     implementation(libs("commons-io"))
     implementation(libs("guava"))
-    implementation(libs("log4j-slf4j-impl"))
-    implementation(libs("log4j-core"))
     implementation(libs("apiguardian-api"))
 
     testImplementation(project(":test-fixtures"))
