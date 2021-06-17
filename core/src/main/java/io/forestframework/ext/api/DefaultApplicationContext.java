@@ -14,8 +14,10 @@ import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class DefaultApplicationContext implements ApplicationContext, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultApplicationContext.class);
@@ -99,6 +101,21 @@ public class DefaultApplicationContext implements ApplicationContext, AutoClosea
         for (Extension extension : getExtensions()) {
             extension.close();
         }
+        for (Module module : getModules()) {
+            if (module instanceof Closeable) {
+                ((Closeable) module).close();
+            }
+        }
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        vertx.close().onComplete(result -> {
+            if (result.failed()) {
+                LOGGER.error("Failure when waiting Vertx instance to close.");
+                future.completeExceptionally(result.cause());
+            } else {
+                future.complete(result.result());
+            }
+        });
+        future.get();
     }
 
     private static Injector createInjector(ApplicationContext applicationContext, List<Module> modules) {

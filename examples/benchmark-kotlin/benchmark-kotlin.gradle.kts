@@ -21,7 +21,7 @@ sourceSets.getByName("main").java {
 }
 
 dependencies {
-    val kotlinVersion = "1.4.31"
+    val kotlinVersion = "1.5.10"
     val jpaVersion = "2.2"
     val javaxValidationVersion = "2.0.1.Final"
     val vertxVersion = "4.1.0"
