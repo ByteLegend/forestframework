@@ -8,6 +8,8 @@ import io.forestframework.ext.api.Before;
 import io.forestframework.ext.api.Extension;
 import io.forestframework.ext.api.Repeatable;
 import io.forestframework.ext.api.WithExtensions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -29,6 +31,8 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
 public class ExtensionScanner {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExtensionScanner.class);
+
     public static <T extends Annotation> List<Extension> scan(List<T> annotations) {
         List<ExtensionAndAnnotation> extensionAndAnnotations = new ArrayList<>();
 
@@ -71,6 +75,8 @@ public class ExtensionScanner {
         return null;
     }
 
+    // TODO allow same extensions to be re-ordered
+    // For example, different @ExtraConfig()
     private static List<ExtensionAndAnnotation> reorder(List<ExtensionAndAnnotation> extensionAndAnnotations) {
         Multimap<Class<?>, Class<?>> afters = HashMultimap.create();
 
@@ -94,7 +100,7 @@ public class ExtensionScanner {
         while (!candidates.isEmpty()) {
             // find out the one with "nobody ahead"
             ExtensionAndAnnotation candidate = findTheEarliest(candidates, afters);
-            System.out.println("Picking up " + candidate.extensionClass);
+            LOGGER.info("Picking up " + candidate.extensionClass);
             candidates.remove(candidate);
             ret.add(candidate);
         }

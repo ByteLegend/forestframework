@@ -3,7 +3,9 @@ package io.forestframework.testsupport
 import com.github.blindpirate.annotationmagic.Extends
 import io.forestframework.core.ForestApplication
 import io.forestframework.core.config.ConfigProvider
+import io.forestframework.ext.api.After
 import io.forestframework.ext.api.ApplicationContext
+import io.forestframework.ext.api.Before
 import io.forestframework.ext.api.Extension
 import io.forestframework.ext.api.WithExtensions
 import io.forestframework.ext.core.AutoComponentScanExtension
@@ -16,11 +18,24 @@ import org.junit.jupiter.api.Test
 import javax.inject.Inject
 
 class Extension1 : Extension
+
+@After(classes = [Extension1::class])
+@Before(classes = [BannerExtension::class])
 class Extension2 : Extension
+
+@After(classes = [HttpServerExtension::class])
 class Extension3 : Extension
+
+@After(classes = [Extension3::class])
 class Extension4 : Extension
+
+@After(classes = [Extension4::class])
+@Before(classes = [BindFreePortExtension::class])
 class Extension5 : Extension
+
+@After(classes = [BindFreePortExtension::class])
 class Extension6 : Extension
+@After(classes = [Extension6::class])
 class Extension7 : Extension
 
 @Extends(WithExtensions::class)
@@ -92,17 +107,5 @@ class TestExtraConfigOverwritingAppExtraConfigTest {
     @Test
     fun `ExtraConfig on AppTest overwrites that on App`() {
         assertEquals(2, configProvider.getInstance("order.test", Integer::class.java))
-    }
-}
-
-@ExtraConfig(value = ["order.test=2"])
-@ForestIntegrationTest(appClass = AppWithExtraConfig::class)
-class TestExtraConfigNotOverwritingAppExtraConfigText {
-    @Inject
-    lateinit var configProvider: ConfigProvider
-
-    @Test
-    fun `ExtraConfig on App overwrites that on AppTest`() {
-        assertEquals(1, configProvider.getInstance("order.test", Integer::class.java))
     }
 }

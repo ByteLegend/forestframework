@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 class SealableListWrapper<E> implements List<E>, Sealable {
     private final List<E> delegate;
-    private Supplier<Boolean> sealState;
+    private final Supplier<Boolean> sealState;
 
     public SealableListWrapper(List<E> delegate, Supplier<Boolean> sealState) {
         this.sealState = sealState;

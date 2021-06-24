@@ -16,6 +16,7 @@ import io.forestframework.testfixtures.DisableAutoScan
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.Test
 
+@Before(classes = [HttpServerExtension::class])
 class DynamicAddingRoutingExtension : Extension {
     override fun configure(injector: Injector) {
         injector.getInstance(RoutingManager::class.java)

@@ -13,7 +13,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * The JUnit 5 extension which provides support of:
@@ -49,25 +48,12 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
         }
     }
 
-    private static List<Annotation> scanEnableExtensions(Class<?> appClass, Class<?> testClass) {
-        List<Annotation> annotationsOnAppClass = Arrays.asList(appClass.getAnnotations());
-        List<Annotation> annotationsOnTestClass = Arrays.asList(testClass.getAnnotations());
-
-        List<Annotation> result = new ArrayList<>();
-
-        int testAnnoIterationIndex = 0;
-        for (; testAnnoIterationIndex < annotationsOnTestClass.size(); ++testAnnoIterationIndex) {
-            Annotation anno = annotationsOnTestClass.get(testAnnoIterationIndex);
-            if (anno instanceof ForestIntegrationTest) {
-                break;
-            } else {
-                result.add(anno);
-            }
+    private static List<Annotation> scanAnnotations(Class<?> appClass, Class<?> testClass) {
+        List<Annotation> result = new ArrayList<>(Arrays.asList(appClass.getAnnotations()));
+        while (testClass != null) {
+            result.addAll(Arrays.asList(testClass.getAnnotations()));
+            testClass = testClass.getSuperclass();
         }
-
-        result.addAll(annotationsOnAppClass);
-
-        IntStream.range(testAnnoIterationIndex, annotationsOnTestClass.size()).mapToObj(annotationsOnTestClass::get).forEach(result::add);
         return result;
     }
 
@@ -77,7 +63,7 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
             throw new IllegalArgumentException("Test class must be annotated with @ForestTest!");
         }
 
-        List<Annotation> annotations = scanEnableExtensions(forestTestAnno.appClass(), testClass);
+        List<Annotation> annotations = scanAnnotations(forestTestAnno.appClass(), testClass);
         return new DefaultApplicationContext(
             Vertx.vertx(),
             forestTestAnno.appClass(),

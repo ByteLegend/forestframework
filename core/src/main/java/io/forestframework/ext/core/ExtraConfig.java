@@ -4,6 +4,7 @@ import com.github.blindpirate.annotationmagic.Extends;
 import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.Before;
 import io.forestframework.ext.api.Extension;
+import io.forestframework.ext.api.Repeatable;
 import io.forestframework.ext.api.WithExtensions;
 
 import java.lang.annotation.ElementType;
@@ -23,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.substringBefore;
 public @interface ExtraConfig {
     String[] value() default {};
 
+    @Repeatable
     @Before(classes = AutoComponentScanExtension.class)
     class ExtraConfigExtension implements Extension {
         private final ExtraConfig extraConfig;
