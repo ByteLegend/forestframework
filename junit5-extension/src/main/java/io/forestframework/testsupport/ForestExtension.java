@@ -2,6 +2,7 @@ package io.forestframework.testsupport;
 
 import io.forestframework.core.config.ConfigProvider;
 import io.forestframework.core.internal.ExtensionScanner;
+import io.forestframework.ext.api.ApplicationContext;
 import io.forestframework.ext.api.DefaultApplicationContext;
 import io.vertx.core.Vertx;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -27,6 +28,10 @@ import java.util.List;
 public class ForestExtension implements BeforeAllCallback, AfterAllCallback, TestInstancePostProcessor {
     private DefaultApplicationContext applicationContext;
 
+    public static ApplicationContext getApplicationContext(ExtensionContext context) {
+        return context.getStore(ExtensionContext.Namespace.GLOBAL).get(ApplicationContext.class, ApplicationContext.class);
+    }
+
     @Override
     public void afterAll(ExtensionContext context) throws Exception {
         if (applicationContext != null) {
@@ -39,6 +44,7 @@ public class ForestExtension implements BeforeAllCallback, AfterAllCallback, Tes
         ConfigProvider configProvider = ConfigProvider.load();
         applicationContext = createStartupContext(context.getTestClass().get(), configProvider);
         applicationContext.start();
+        context.getStore(ExtensionContext.Namespace.GLOBAL).put(ApplicationContext.class, applicationContext);
     }
 
     @Override
