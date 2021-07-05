@@ -188,8 +188,11 @@ public class ConfigProvider {
             String key = entry.getKey();
             String value = entry.getValue();
             if (ENV_VARIABLE_CONFIG_PATTERN.matcher(key).find()) {
-                // TODO escape _ with __
-                addConfigTo(key.substring(7).replace('_', '.'), value, resultMap);
+                // escape _ with __
+                String tmp = key.substring(7).replace("__", "[ESCAPE-UNDERSCORE]");
+                tmp = tmp.replace('_', '.');
+                tmp = tmp.replace("[ESCAPE-UNDERSCORE]", "_");
+                addConfigTo(tmp, value, resultMap);
             }
         }
         return resultMap;

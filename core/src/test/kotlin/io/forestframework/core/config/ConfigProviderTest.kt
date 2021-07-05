@@ -429,6 +429,7 @@ vertx:
                     ConfigProvider cp = ConfigProvider.load();
                     System.out.println("aaa.bbb=" + cp.getInstance("aaa.bbb", String.class));
                     System.out.println("aaa.ccc=" + cp.getInstance("aaa.ccc", String.class));
+                    System.out.println("aaa.d_d_d=" + cp.getInstance("aaa.d_d_d", String.class));
                 }
             }
         """.trimIndent()
@@ -454,10 +455,12 @@ vertx:
             directory(dir)
             environment()["FOREST_config_file"] = configFile.absolutePath
             environment()["FOREST_aaa_ccc"] = "hi"
+            environment()["FOREST_aaa_d__d__d"] = "ValueWithEscapedUnderscore"
         }.redirectOutput(output).redirectError(output).start().waitFor()
 
         val outputText = output.readText()
         MatcherAssert.assertThat(outputText, CoreMatchers.containsString("aaa.bbb=1"))
         MatcherAssert.assertThat(outputText, CoreMatchers.containsString("aaa.ccc=hi"))
+        MatcherAssert.assertThat(outputText, CoreMatchers.containsString("aaa.d_d_d=ValueWithEscapedUnderscore"))
     }
 }
