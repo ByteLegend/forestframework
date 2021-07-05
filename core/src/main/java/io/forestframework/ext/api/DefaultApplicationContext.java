@@ -99,11 +99,11 @@ public class DefaultApplicationContext implements ApplicationContext, AutoClosea
     @Override
     public void close() throws Exception {
         for (Extension extension : getExtensions()) {
-            extension.close();
+            safeClose(extension);
         }
         for (Module module : getModules()) {
             if (module instanceof Closeable) {
-                ((Closeable) module).close();
+                safeClose((Closeable) module);
             }
         }
         CompletableFuture<Void> future = new CompletableFuture<>();
@@ -116,6 +116,14 @@ public class DefaultApplicationContext implements ApplicationContext, AutoClosea
             }
         });
         future.get();
+    }
+
+    private void safeClose(AutoCloseable closeable) {
+        try {
+            closeable.close();
+        } catch (Throwable e) {
+            LOGGER.error("Failed to close " + closeable, e);
+        }
     }
 
     private static Injector createInjector(ApplicationContext applicationContext, List<Module> modules) {
