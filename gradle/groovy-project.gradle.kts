@@ -5,12 +5,8 @@ rootProject.extensions.configure<ExtraPropertiesExtension>("ext") {
 
         val sourceSets: SourceSetContainer by extensions
 
-        sourceSets.create("browserTest") {
-            withConvention(GroovySourceSet::class) {
-                groovy.srcDir("src/core/groovy")
-            }
-            resources.srcDir("src/browserTest/resources")
-        }
+        sourceSets.create("browserTest")
+
         dependencies {
             "browserTestImplementation"(sourceSets["main"].output)
             "browserTestImplementation"(sourceSets["test"].output)
