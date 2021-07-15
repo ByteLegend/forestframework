@@ -18,7 +18,6 @@ import io.forestframework.testfixtures.AbstractBrowserTest
 import io.forestframework.testfixtures.BrowserTest
 import io.forestframework.testfixtures.EmbeddedRedisExtension
 import io.forestframework.testfixtures.RedisSetUpExtension
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -57,7 +56,7 @@ class TodoApplicationKotlinCoroutinesJDBCBrowserTest extends AbstractTodoApplica
 }
 
 
-@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class, ForestExtension.class])
+@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class])
 @ForestIntegrationTest(appClass = TodoApplicationKotlinCoroutinesRedis.class)
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationRedisKotlinCoroutinesBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
@@ -69,7 +68,7 @@ class TodoApplicationRedisKotlinCoroutinesBrowserIntegrationTest extends Abstrac
 class TodoApplicationJavaAsyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
-@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class, ForestExtension.class])
+@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class])
 @ForestIntegrationTest(appClass = TodoApplicationJavaAsyncRedis.class)
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaAsyncRedisBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
@@ -81,7 +80,7 @@ class TodoApplicationJavaAsyncRedisBrowserIntegrationTest extends AbstractTodoAp
 class TodoApplicationJavaSyncJDBCBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {
 }
 
-@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class, ForestExtension.class])
+@ExtendWith(value = [EmbeddedRedisExtension.class, RedisSetUpExtension.class])
 @ForestIntegrationTest(appClass = TodoApplicationJavaSyncRedis.class)
 @WithExtensions(extensions = JsSpecExtension.class)
 class TodoApplicationJavaSyncBrowserIntegrationTest extends AbstractTodoApplicationBrowserTest {

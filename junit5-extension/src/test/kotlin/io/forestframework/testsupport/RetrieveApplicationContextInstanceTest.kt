@@ -21,8 +21,8 @@ class SetupAbcExtension : BeforeAllCallback {
     }
 }
 
-@ExtendWith(value = [ForestExtension::class, SetupAbcExtension::class])
 @ForestIntegrationTest(appClass = RetrieveApplicationContextInstanceTestApp::class)
+@ExtendWith(value = [SetupAbcExtension::class])
 open class GrandParentClass
 
 class SetupDefExtension : BeforeAllCallback {

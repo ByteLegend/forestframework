@@ -15,7 +15,6 @@ import io.forestframework.example.todo.kotlin.redis.TodoApplicationKotlinCorouti
 import io.forestframework.ext.core.ExtraConfig
 import io.forestframework.testfixtures.EmbeddedRedisExtension
 import io.forestframework.testfixtures.RedisSetUpExtension
-import io.forestframework.testsupport.ForestExtension
 import io.forestframework.testsupport.ForestIntegrationTest
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
@@ -23,9 +22,6 @@ import io.vertx.core.http.impl.headers.HeadersMultiMap
 import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.await
-import java.util.UUID
-import javax.inject.Inject
-import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,42 +29,39 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.Extensions
+import java.util.UUID
+import javax.inject.Inject
+import kotlin.random.Random
 
 @Extensions(
     ExtendWith(EmbeddedRedisExtension::class),
-    ExtendWith(RedisSetUpExtension::class),
-    ExtendWith(ForestExtension::class)
+    ExtendWith(RedisSetUpExtension::class)
 )
 @ForestIntegrationTest(appClass = TodoApplicationKotlinCoroutinesRedis::class)
 class TodoApplicationRedisKotlinCoroutinesIntegrationTest : TodoApplicationIntegrationTest()
 
 @Extensions(
     ExtendWith(EmbeddedRedisExtension::class),
-    ExtendWith(RedisSetUpExtension::class),
-    ExtendWith(ForestExtension::class)
+    ExtendWith(RedisSetUpExtension::class)
 )
 @ForestIntegrationTest(appClass = TodoApplicationJavaAsyncRedis::class)
 class TodoApplicationJavaAsyncRedisIntegrationTest : TodoApplicationIntegrationTest()
 
 @Extensions(
     ExtendWith(EmbeddedRedisExtension::class),
-    ExtendWith(RedisSetUpExtension::class),
-    ExtendWith(ForestExtension::class)
+    ExtendWith(RedisSetUpExtension::class)
 )
 @ForestIntegrationTest(appClass = TodoApplicationJavaSyncRedis::class)
 class TodoApplicationJavaSyncRedisIntegrationTest : TodoApplicationIntegrationTest()
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = TodoApplicationKotlinCoroutinesJDBC::class)
 @ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationKotlinCoroutinesJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
 class TodoApplicationKotlinCoroutinesJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = TodoApplicationJavaAsyncJDBC::class)
 @ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationJavaAsyncJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
 class TodoApplicationJavaAsyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
 
-@ExtendWith(ForestExtension::class)
 @ForestIntegrationTest(appClass = TodoApplicationJavaSyncJDBC::class)
 @ExtraConfig(value = ["jdbc.url=jdbc:h2:mem:TodoApplicationJavaSyncJDBCIntegrationTest;DATABASE_TO_UPPER=false"])
 class TodoApplicationJavaSyncJDBCIntegrationTest : TodoApplicationIntegrationTest()
