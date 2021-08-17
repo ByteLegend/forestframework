@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Resolve the resource name returned by a handler method, then send the resolved file via {@link io.vertx.core.http.HttpServerResponse}.
  * <p>
- * If the returned resource name is absolute, it will be send directly; otherwise, a relative path will be interpreted as path relative to cwd or classpath entry.
+ * If the returned resource name is absolute, it will be sent directly; otherwise, a relative path will be interpreted as path relative to cwd or classpath entry.
  * <p>
  * Given a resource name "relative/path/to/resource.txt", for directory classpath entry "file:///home/my/resources",
  * the resource file "file:///home/my/resources/relative/path/to/resource.txt" will be located and sent; for jar classpath entry
@@ -51,6 +51,14 @@ public class StaticResourceProcessor implements RoutingResultProcessor {
     @Inject
     public StaticResourceProcessor(Vertx vertx) {
         this.vertx = vertx;
+    }
+
+    public void setMaxAgeSeconds(long maxAgeSeconds) {
+        staticHandler.setMaxAgeSeconds(maxAgeSeconds);
+    }
+
+    public void setCachingEnabled(boolean enabled) {
+        staticHandler.setCachingEnabled(enabled);
     }
 
     @Override

@@ -101,13 +101,17 @@ class HttpClient(private val delegate: CloseableHttpClient) {
 
 // Hide HttpClient implementations
 class HttpClientResponse(private val delegate: HttpResponse) {
-    val objectMapper = ObjectMapper()
+    private val objectMapper = ObjectMapper()
 
     fun bodyAsString() = EntityUtils.toString(delegate.entity)
 
     fun <T> toObject(klass: Class<T>) = objectMapper.readValue(bodyAsString(), klass)
 
     fun <T> toObject(klass: TypeReference<T>) = objectMapper.readValue(bodyAsString(), klass)
+
+    fun getHeader(key: String): String? {
+        return delegate.getFirstHeader(key)?.toString()
+    }
 
     fun assertContentType(type: String): HttpClientResponse {
         Assertions.assertEquals(type, delegate.getFirstHeader(OptimizedHeaders.HEADER_CONTENT_TYPE.toString()).value)
@@ -194,6 +198,8 @@ abstract class AbstractForestIntegrationTest {
                 absUrl,
                 HeadersMultiMap.headers().setAll(headers),
                 WebsocketVersion.V13,
-                emptyList()).await(),
-            absUrl)
+                emptyList()
+            ).await(),
+            absUrl
+        )
 }
