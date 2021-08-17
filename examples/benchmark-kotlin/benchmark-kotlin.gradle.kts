@@ -21,7 +21,7 @@ sourceSets.getByName("main").java {
 }
 
 dependencies {
-    val vertxVersion = "4.1.0"
+    val vertxVersion = "4.1.2"
     implementation(project(":extensions:pg-client-extension"))
     implementation("io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion")
     implementation("io.vertx:vertx-lang-kotlin:$vertxVersion")

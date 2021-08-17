@@ -1,6 +1,7 @@
 package io.forestframework.core.http;
 
 import io.forestframework.core.http.routing.RoutingMatchResult;
+import io.netty.handler.codec.DecoderResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -12,6 +13,7 @@ import io.vertx.core.http.HttpConnection;
 import io.vertx.core.http.HttpFrame;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpVersion;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.StreamPriority;
@@ -163,7 +165,6 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
-
     public String getParam(String paramName) {
         return delegate.getParam(paramName);
     }
@@ -214,13 +215,23 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
+    public void end(Handler<AsyncResult<Void>> handler) {
+        delegate.end(handler);
+    }
+
+    @Override
     public Future<Void> end() {
-        return null;
+        return delegate.end();
+    }
+
+    @Override
+    public void toNetSocket(Handler<AsyncResult<NetSocket>> handler) {
+        delegate.toNetSocket(handler);
     }
 
     @Override
     public Future<NetSocket> toNetSocket() {
-        return null;
+        return delegate.toNetSocket();
     }
 
     @Override
@@ -249,6 +260,16 @@ public class DefaultHttpRequest implements HttpRequest {
 
     public String getFormAttribute(String attributeName) {
         return delegate.getFormAttribute(attributeName);
+    }
+
+    @Override
+    public int streamId() {
+        return delegate.streamId();
+    }
+
+    @Override
+    public void toWebSocket(Handler<AsyncResult<ServerWebSocket>> handler) {
+        delegate.toWebSocket(handler);
     }
 
     @Override
@@ -284,6 +305,11 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
+    public DecoderResult decoderResult() {
+        return delegate.decoderResult();
+    }
+
+    @Override
     public Cookie getCookie(String name) {
         return delegate.getCookie(name);
     }
@@ -296,6 +322,12 @@ public class DefaultHttpRequest implements HttpRequest {
     @Override
     public Map<String, Cookie> cookieMap() {
         return delegate.cookieMap();
+    }
+
+    @Override
+    public HttpServerRequest routed(String route) {
+        delegate.routed(route);
+        return this;
     }
 
     @Override
