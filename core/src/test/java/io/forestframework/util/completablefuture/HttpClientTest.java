@@ -59,7 +59,7 @@ public class HttpClientTest {
 
     VertxCompletableFuture<Integer> requestA = new VertxCompletableFuture<>(vertx);
     client1.request(HttpMethod.GET, "/A").compose(HttpClientRequest::send).onComplete(asyncResult -> {
-        System.out.println("/A completed: " + asyncResult);
+        System.out.println("/A completed: " + asyncResult.succeeded());
         if (asyncResult.succeeded()) {
             asyncResult.result().bodyHandler(buffer -> requestA.complete(Integer.parseInt(buffer.toString())))
                     .exceptionHandler(requestA::completeExceptionally);
@@ -71,7 +71,7 @@ public class HttpClientTest {
 
     VertxCompletableFuture<Integer> requestB = new VertxCompletableFuture<>(vertx);
     client2.request(HttpMethod.GET, "/B").compose(HttpClientRequest::send).onComplete(asyncResult -> {
-        System.out.println("/B completed: " + asyncResult);
+        System.out.println("/B completed: " + asyncResult.succeeded());
         if (asyncResult.succeeded()) {
             asyncResult.result().bodyHandler(buffer -> requestB.complete(Integer.parseInt(buffer.toString())))
                     .exceptionHandler(requestB::completeExceptionally);
@@ -81,9 +81,13 @@ public class HttpClientTest {
         }
     });
 
-    VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> requestA.join() + requestB.join())
-        .thenAccept(i -> {
-            System.out.println("Accept: " + i);
+    VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> {
+                              System.out.println("ThenApply: " + v);
+                              return requestA.join() + requestB.join();
+                          })
+        .whenComplete((i, throwable) -> {
+            throwable.printStackTrace();
+            System.out.println("Complete: " + i);
           tc.assertEquals(65, i);
           async.complete();
         });
