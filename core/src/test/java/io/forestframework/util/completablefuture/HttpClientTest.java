@@ -81,20 +81,20 @@ public class HttpClientTest {
         }
     });
 
-    VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> {
-                              System.out.println("ThenApply: " + v);
-                              try {
-                                  return requestA.join() + requestB.join();
-                              }catch (Exception e) {
-                                  e.printStackTrace();
-                                  throw e;
-                              }
-                          })
-        .whenComplete((i, throwable) -> {
-            throwable.printStackTrace();
-            System.out.println("Complete: " + i);
-          tc.assertEquals(65, i);
-          async.complete();
-        });
+      VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> {
+                                System.out.println("ThenApply: " + v);
+                                try {
+                                    return requestA.join() + requestB.join();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    throw e;
+                                }
+                            })
+                            .whenComplete((i, throwable) -> {
+                                throwable.printStackTrace();
+                                System.out.println("Complete: " + i);
+                                tc.assertEquals(65, i);
+                                async.complete();
+                            });
   }
 }
