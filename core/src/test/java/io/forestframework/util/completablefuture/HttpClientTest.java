@@ -21,80 +21,100 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class HttpClientTest {
 
-  private Vertx vertx;
-  private int port = FreePortFinder.findFreeLocalPort();
+    private Vertx vertx;
+    private int port = FreePortFinder.findFreeLocalPort();
 
-  @Before
-  public void setUp(TestContext tc) {
-    vertx = Vertx.vertx();
+    @Before
+    public void setUp(TestContext tc) {
+        vertx = Vertx.vertx();
 
-    vertx.createHttpServer().requestHandler(request -> {
-        System.out.println("Get request: " + request.path());
-          switch (request.path()) {
-            case "/A":
-              request.response().end("42");
-              break;
-            case "/B":
-              request.response().end("23");
-              break;
-            default:
-              request.response().end("Hello");
-          }
-        }
-    ).listen(port, tc.asyncAssertSuccess());
-  }
+        vertx.createHttpServer().requestHandler(request -> {
+                                                    System.out.println("Get request: " + request.path());
+                                                    switch (request.path()) {
+                                                        case "/A":
+                                                            request.response().end("42");
+                                                            break;
+                                                        case "/B":
+                                                            request.response().end("23");
+                                                            break;
+                                                        default:
+                                                            request.response().end("Hello");
+                                                    }
+                                                }
+        ).listen(port, tc.asyncAssertSuccess());
+    }
 
-  @After
-  public void tearDown(TestContext tc) {
-    vertx.close(tc.asyncAssertSuccess());
-  }
+    @After
+    public void tearDown(TestContext tc) {
+        vertx.close(tc.asyncAssertSuccess());
+    }
 
-  @Test
-  public void test(TestContext tc) {
-    Async async = tc.async();
+    @Test
+    public void test(TestContext tc) {
+        Async async = tc.async();
 
-    HttpClientOptions options = new HttpClientOptions().setDefaultPort(port).setDefaultHost("localhost");
-    HttpClient client1 = vertx.createHttpClient(options);
-    HttpClient client2 = vertx.createHttpClient(options);
+        HttpClientOptions options = new HttpClientOptions().setDefaultPort(port).setDefaultHost("localhost");
+        HttpClient client1 = vertx.createHttpClient(options);
+        HttpClient client2 = vertx.createHttpClient(options);
 
-    VertxCompletableFuture<Integer> requestA = new VertxCompletableFuture<>(vertx);
-    client1.request(HttpMethod.GET, "/A").compose(HttpClientRequest::send).onComplete(asyncResult -> {
-        System.out.println("/A completed: " + asyncResult.succeeded());
-        if (asyncResult.succeeded()) {
-            asyncResult.result().bodyHandler(buffer -> requestA.complete(Integer.parseInt(buffer.toString())))
-                    .exceptionHandler(requestA::completeExceptionally);
-        } else {
-            asyncResult.cause().printStackTrace();
-            requestA.completeExceptionally(asyncResult.cause());
-        }
-    });
+        VertxCompletableFuture<Integer> requestA = new VertxCompletableFuture<>(vertx);
+        client1.request(HttpMethod.GET, "/A").compose(HttpClientRequest::send).onComplete(asyncResult -> {
+            System.out.println("/A completed: " + asyncResult.succeeded());
+            if (asyncResult.succeeded()) {
+                asyncResult.result().bodyHandler(buffer -> {
+                               try {
+                                   requestA.complete(Integer.parseInt(buffer.toString()));
+                                   System.out.println("A body completed!");
+                               } catch (Exception e) {
+                                   e.printStackTrace();
+                               }
+                           })
+                           .exceptionHandler(ex -> {
+                               ex.printStackTrace();
+                               requestA.completeExceptionally(ex);
+                           });
+            } else {
+                asyncResult.cause().printStackTrace();
+                requestA.completeExceptionally(asyncResult.cause());
+            }
+        });
 
-    VertxCompletableFuture<Integer> requestB = new VertxCompletableFuture<>(vertx);
-    client2.request(HttpMethod.GET, "/B").compose(HttpClientRequest::send).onComplete(asyncResult -> {
-        System.out.println("/B completed: " + asyncResult.succeeded());
-        if (asyncResult.succeeded()) {
-            asyncResult.result().bodyHandler(buffer -> requestB.complete(Integer.parseInt(buffer.toString())))
-                    .exceptionHandler(requestB::completeExceptionally);
-        } else {
-            asyncResult.cause().printStackTrace();
-            requestB.completeExceptionally(asyncResult.cause());
-        }
-    });
+        VertxCompletableFuture<Integer> requestB = new VertxCompletableFuture<>(vertx);
+        client2.request(HttpMethod.GET, "/B").compose(HttpClientRequest::send).onComplete(asyncResult -> {
+            System.out.println("/B completed: " + asyncResult.succeeded());
+            if (asyncResult.succeeded()) {
+                asyncResult.result().bodyHandler(buffer -> {
+                               try {
+                                   requestB.complete(Integer.parseInt(buffer.toString()));
+                                   System.out.println("B body completed!");
+                               } catch (Exception e) {
+                                   e.printStackTrace();
+                               }
+                           })
+                           .exceptionHandler(ex -> {
+                               ex.printStackTrace();
+                               requestB.completeExceptionally(ex);
+                           });
+            } else {
+                asyncResult.cause().printStackTrace();
+                requestB.completeExceptionally(asyncResult.cause());
+            }
+        });
 
-      VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> {
-                                System.out.println("ThenApply: " + v);
-                                try {
-                                    return requestA.join() + requestB.join();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    throw e;
-                                }
-                            })
-                            .whenComplete((i, throwable) -> {
-                                throwable.printStackTrace();
-                                System.out.println("Complete: " + i);
-                                tc.assertEquals(65, i);
-                                async.complete();
-                            });
-  }
+        VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> {
+                                  System.out.println("ThenApply: " + v);
+                                  try {
+                                      return requestA.join() + requestB.join();
+                                  } catch (Exception e) {
+                                      e.printStackTrace();
+                                      throw e;
+                                  }
+                              })
+                              .whenComplete((i, throwable) -> {
+                                  throwable.printStackTrace();
+                                  System.out.println("Complete: " + i);
+                                  tc.assertEquals(65, i);
+                                  async.complete();
+                              });
+    }
 }
