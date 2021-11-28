@@ -13,6 +13,7 @@ import io.vertx.core.http.StreamPriority;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 public class DefaultHttpResponse implements HttpResponse {
@@ -272,6 +273,16 @@ public class DefaultHttpResponse implements HttpResponse {
     @Override
     public Cookie removeCookie(String name, boolean invalidate) {
         return delegate.removeCookie(name, invalidate);
+    }
+
+    @Override
+    public Set<Cookie> removeCookies(String name, boolean invalidate) {
+        return delegate.removeCookies(name, invalidate);
+    }
+
+    @Override
+    public Cookie removeCookie(String name, String domain, String path, boolean invalidate) {
+        return delegate.removeCookie(name, domain, path, invalidate);
     }
 
     @Override

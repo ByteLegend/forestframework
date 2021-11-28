@@ -133,7 +133,7 @@ class AutoStaticResourceScanExtensionMultipleWebrootsIntegrationTest : AbstractF
             "/css/a/a.css/",
             "/",
             "/index.html",
-            "favicon.ico"
+            "/favicon.ico"
         ]
     )
     fun `get 404 when resource not found`(path: String) = runBlockingUnit {

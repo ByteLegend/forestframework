@@ -27,6 +27,7 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.cert.X509Certificate;
 import java.util.Map;
+import java.util.Set;
 
 public class DefaultHttpRequest implements HttpRequest {
     private final HttpServerRequestInternal delegate;
@@ -315,6 +316,11 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
+    public Cookie getCookie(String name, String domain, String path) {
+        return delegate.getCookie(name, domain, path);
+    }
+
+    @Override
     public int cookieCount() {
         return delegate.cookieCount();
     }
@@ -322,6 +328,16 @@ public class DefaultHttpRequest implements HttpRequest {
     @Override
     public Map<String, Cookie> cookieMap() {
         return delegate.cookieMap();
+    }
+
+    @Override
+    public Set<Cookie> cookies(String name) {
+        return delegate.cookies();
+    }
+
+    @Override
+    public Set<Cookie> cookies() {
+        return delegate.cookies();
     }
 
     @Override

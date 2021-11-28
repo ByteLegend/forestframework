@@ -77,7 +77,7 @@ class WebSocketIntegrationTest : AbstractForestIntegrationTest() {
             openWebsocket("/inexistent")
             Assertions.assertTrue(false)
         } catch (e: Exception) {
-            MatcherAssert.assertThat(e.message, StringContains.containsString("WebSocket connection attempt returned HTTP status code 404"))
+            MatcherAssert.assertThat(e.message, StringContains.containsString("WebSocket upgrade failure: 404 (NOT_FOUND)"))
         }
     }
 
