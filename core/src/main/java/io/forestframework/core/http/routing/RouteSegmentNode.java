@@ -4,6 +4,7 @@ import io.vertx.core.http.HttpServerRequest;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,16 +126,37 @@ class PathVariableNode extends RouteSegmentNode {
 }
 
 class RegexNode extends RouteSegmentNode {
+    private static final Pattern NAMED_GROUPS_PATTERN = Pattern.compile("\\(\\?<(.+?)>.*?\\)");
     private final Pattern pattern;
+    private final List<String> namedGroups;
 
     public RegexNode(String regex) {
         super(regex);
         this.pattern = Pattern.compile(regex);
+        this.namedGroups = findNamedGroups(regex);
+    }
+
+    private List<String> findNamedGroups(String regex) {
+        List<String> result = new ArrayList<>();
+        Matcher matcher = NAMED_GROUPS_PATTERN.matcher(regex);
+        while (matcher.find()) {
+            for (int i = 1; i <= matcher.groupCount(); i++) {
+                result.add(matcher.group(i));
+            }
+        }
+        return Collections.unmodifiableList(result);
     }
 
     @Override
     public boolean visit(AtomicReference<RoutingMatchResult> matchResult, HttpServerRequest request, String[] segments, int index, Map<String, String> pathVariables) {
-        if (pattern.matcher(request.path()).matches()) {
+        Matcher matcher = pattern.matcher(request.path());
+        if (matcher.matches()) {
+            for (String groupName : namedGroups) {
+                String groupValue = matcher.group(groupName);
+                if (groupValue != null) {
+                    pathVariables.put(groupName, groupValue);
+                }
+            }
             addResult(matchResult, request, pathVariables);
         }
         return false;
@@ -184,8 +206,8 @@ class SingleStarWildcardNode extends RouteSegmentNode {
 
         int lastStarIndex = StringUtils.lastIndexOf(name, '*');
         pattern = Pattern.compile(
-                name.substring(0, lastStarIndex).replace("*", "(.*)") +
-                        name.substring(lastStarIndex).replace("*", "(?<wildcard>.*)")
+            name.substring(0, lastStarIndex).replace("*", "(.*)") +
+                name.substring(lastStarIndex).replace("*", "(?<wildcard>.*)")
         );
     }
 

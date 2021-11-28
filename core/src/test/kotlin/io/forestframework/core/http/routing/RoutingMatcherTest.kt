@@ -54,6 +54,7 @@ class RoutingMatcherTest {
     // We can't mock Method, so workaround by getting a "real" Method instance from a large enough class StringUtils
     private fun mockRouting(
         path: String,
+        regex: String = "",
         order: Int = 0,
         method: HttpMethod = ALL,
         methods: List<HttpMethod>? = null,
@@ -61,7 +62,7 @@ class RoutingMatcherTest {
         consumes: String = "*/*",
         produces: String = "*/*"
     ): Routing {
-        return DefaultRouting(false, type, path, "", methods ?: listOf(method), realMethods[counter++], order, listOf(produces), listOf(consumes))
+        return DefaultRouting(false, type, path, regex, methods ?: listOf(method), realMethods[counter++], order, listOf(produces), listOf(consumes))
     }
 
     private fun RoutingMatcher.matchPlain(request: HttpServerRequest) = match(request) as PlainHttpRoutingMatchResult
@@ -69,25 +70,27 @@ class RoutingMatcherTest {
     private fun RoutingMatcher.matchWebSocket(request: HttpServerRequest) = match(request) as WebSocketRoutingMatchResult
 
     @ParameterizedTest(name = "{0} -> {1}")
-    @CsvSource(value = [
-        "/**,            /index.html,              true, index.html",
-        "/**,            /static/css/1.css,        true, static/css/1.css",
-        "/**,            /,                        true, '' ",
-        "/**,            /user/123/order/456,      true, user/123/order/456",
-        "/**/order/**,   /user/123/order/456,      true, 456",
-        "/**/order/**,   /user/123/order/456/a/b,  true, 456/a/b",
-        "/**/order/**,   /user/order/1,            true,  1",
-        "/**/order/**,   /user/order/1/2/3,        true, 1/2/3",
-        "/**/order/**,   /order/1,                 true, 1",
-        "/**/order/**,   /order/1/2/3,             true, 1/2/3",
-        "/order/:a/**,   /order/123/a/b/c,         true, a/b/c",
-        "/order/:a/**,   /order/123,               false, '' ",
-        "/a/**/b,        /a/b,                     true, '' ",
-        "/a/**/b,        /a/c,                     false, '' ",
-        "/a/**/b,        /a/1/b,                   true, 1",
-        "/a/**/b,        /a/1/2/b,                 true, 1/2",
-        "/a/**/b,        /a/1/2/b/c,               false, '' "
-    ])
+    @CsvSource(
+        value = [
+            "/**,            /index.html,              true, index.html",
+            "/**,            /static/css/1.css,        true, static/css/1.css",
+            "/**,            /,                        true, '' ",
+            "/**,            /user/123/order/456,      true, user/123/order/456",
+            "/**/order/**,   /user/123/order/456,      true, 456",
+            "/**/order/**,   /user/123/order/456/a/b,  true, 456/a/b",
+            "/**/order/**,   /user/order/1,            true,  1",
+            "/**/order/**,   /user/order/1/2/3,        true, 1/2/3",
+            "/**/order/**,   /order/1,                 true, 1",
+            "/**/order/**,   /order/1/2/3,             true, 1/2/3",
+            "/order/:a/**,   /order/123/a/b/c,         true, a/b/c",
+            "/order/:a/**,   /order/123,               false, '' ",
+            "/a/**/b,        /a/b,                     true, '' ",
+            "/a/**/b,        /a/c,                     false, '' ",
+            "/a/**/b,        /a/1/b,                   true, 1",
+            "/a/**/b,        /a/1/2/b,                 true, 1/2",
+            "/a/**/b,        /a/1/2/b/c,               false, '' "
+        ]
+    )
     fun `can match double star wildcard`(route: String, requestPath: String, matches: Boolean, expectedPathVariable: String) {
         every { routingManager.getRouting(HANDLER) } returns listOf(mockRouting(route))
         every { request.path() } returns requestPath
@@ -103,15 +106,17 @@ class RoutingMatcherTest {
     }
 
     @ParameterizedTest(name = "{0} -> {1}")
-    @CsvSource(value = [
-        "/*,          /index.html,          true,  index.html",
-        "/*,          /,                    true,  '' ",
-        "/*,          /user/123/order/456,  false, '' ",
-        "/*abc,       /abc,                 true,  '' ",
-        "/a*b*c,      /abc,                 true,  '' ",
-        "/*a*b*c,     /abc,                 true,  '' ",
-        "/a*/*b/*c*,  /a/b/c,               true,  '' "
-    ])
+    @CsvSource(
+        value = [
+            "/*,          /index.html,          true,  index.html",
+            "/*,          /,                    true,  '' ",
+            "/*,          /user/123/order/456,  false, '' ",
+            "/*abc,       /abc,                 true,  '' ",
+            "/a*b*c,      /abc,                 true,  '' ",
+            "/*a*b*c,     /abc,                 true,  '' ",
+            "/a*/*b/*c*,  /a/b/c,               true,  '' "
+        ]
+    )
     fun `can match single star wildcard`(route: String, requestPath: String, matches: Boolean, expectedPathVariable: String) {
         every { routingManager.getRouting(HANDLER) } returns listOf(mockRouting(route))
         every { request.path() } returns requestPath
@@ -126,36 +131,43 @@ class RoutingMatcherTest {
         }
     }
 
-    @ParameterizedTest(name = "{0} -> {1}")
-    @CsvSource(value = [
-        """/user/:userId/order/:orderId; /user/123/order/456; true; {"userId": "123", "orderId": "456"}""",
-        """/:a/:b/:c/:d;                /user/123/order/456; true; {"a": "user", "b": "123", "c": "order", "d": "456"}""",
-        """/:a/:b/:c;                 /user/123/order/456; false; '' """,
-        """/:user/:userId/order;      /user/123/order/456; false; '' """
-    ], delimiter = ';')
-    fun `can match and extract path variables`(route: String, requestPath: String, matches: Boolean, expectedPathVariableJson: String) {
-        every { routingManager.getRouting(HANDLER) } returns listOf(mockRouting(route))
+    @ParameterizedTest(name = "{2} -> {0} or {1}")
+    @CsvSource(
+        value = [
+            """/user/:userId/order/:orderId; '' ; /user/123/order/456; true; {"userId": "123", "orderId": "456"}""",
+            """/:a/:b/:c/:d;                 '' ; /user/123/order/456; true; {"a": "user", "b": "123", "c": "order", "d": "456"}""",
+            """/:a/:b/:c;                    '' ; /user/123/order/456; false; '' """,
+            """/:user/:userId/order;         '' ; /user/123/order/456; false; '' """,
+            """''; \/gh(?<subdomain>(raw|avatars))\/(?<path>.+); /ghraw/a/b/c; true; {"subdomain":"raw", "path": "a/b/c"} """
+        ], delimiter = ';'
+    )
+    fun `can match and extract path variables`(route: String, regex: String, requestPath: String, matches: Boolean, expectedPathVariableJson: String) {
+        every { routingManager.getRouting(HANDLER) } returns listOf(mockRouting(route, regex))
         every { request.path() } returns requestPath
 
         val routingMatcher = RoutingMatcher(routingManager)
 
         if (matches) {
             assertEquals(route, routingMatcher.matchPlain(request).getMatchingHandlersByType(HANDLER)[0].path)
-            assertEquals(objectMapper.readValue(expectedPathVariableJson, Map::class.java),
-                routingMatcher.matchPlain(request).getMatchResultsByType(HANDLER).first()?.pathParams)
+            assertEquals(
+                objectMapper.readValue(expectedPathVariableJson, Map::class.java),
+                routingMatcher.matchPlain(request).getMatchResultsByType(HANDLER).first()?.pathParams
+            )
         } else {
             assertTrue(routingMatcher.matchPlain(request).getMatchingHandlersByType(HANDLER).isEmpty())
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = [
-        "/",
-        "/index.html",
-        "/static/js/app.js",
-        "/a/b/c/d",
-        "/org/repo/branches"
-    ])
+    @ValueSource(
+        strings = [
+            "/",
+            "/index.html",
+            "/static/js/app.js",
+            "/a/b/c/d",
+            "/org/repo/branches"
+        ]
+    )
     fun `match results are strictly ordered`(requestPath: String) {
         every { routingManager.getRouting(HANDLER) } returns listOf(
             mockRouting("/**", method = GET, order = -1),
