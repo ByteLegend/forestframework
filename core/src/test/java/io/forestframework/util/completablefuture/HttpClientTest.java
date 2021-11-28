@@ -83,7 +83,12 @@ public class HttpClientTest {
 
     VertxCompletableFuture.allOf(requestA, requestB).thenApply(v -> {
                               System.out.println("ThenApply: " + v);
-                              return requestA.join() + requestB.join();
+                              try {
+                                  return requestA.join() + requestB.join();
+                              }catch (Exception e) {
+                                  e.printStackTrace();
+                                  throw e;
+                              }
                           })
         .whenComplete((i, throwable) -> {
             throwable.printStackTrace();
