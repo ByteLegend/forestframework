@@ -31,7 +31,7 @@ public @interface JsonResponseBody {
     @Singleton
     class JsonResultProcessor implements RoutingResultProcessor {
         private final ObjectMapper objectMapper = new ObjectMapper();
-        public static final String NOT_FOUND_JSON = "{\"message\":\"NOT_FOUND\"";
+        public static final String NOT_FOUND_JSON = "{\"message\":\"NOT_FOUND\"}";
 
         private String jsonify(JsonResponseBody anno, Object returnValue) {
             try {
