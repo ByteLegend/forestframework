@@ -1,4 +1,4 @@
-val vertxVersion = "4.2.1"
+val vertxVersion = "4.2.6"
 val guiceVersion = "5.0.1.1"
 val guavaVersion = "31.0.1-jre"
 val jacksonVersion = "2.13.0"
