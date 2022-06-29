@@ -19,7 +19,6 @@ rootProject.version = "0.3.17-SNAPSHOT"
 
 allprojects {
     repositories {
-        jcenter()
         mavenCentral()
         maven { setUrl("https://oss.sonatype.org/content/repositories/snapshots") }
     }
